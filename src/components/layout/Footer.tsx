@@ -8,8 +8,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
-              <span className="text-3xl font-bold">SERVISOO</span>
-              <div className="ml-2 h-3 w-3 rounded-full bg-accent"></div>
+              <img src="/logo.svg" alt="Servisoo Logo" className="h-12" />
             </div>
             <p className="text-primary-foreground/80 mb-6 max-w-md">
               Platform digital terdepan untuk renovasi rumah dan gedung. 
@@ -75,7 +74,7 @@ const Footer = () => {
                 <strong>WhatsApp:</strong> +62 811-2345-6789
               </li>
               <li className="text-primary-foreground/80">
-                <strong>Alamat:</strong> Jakarta, Indonesia
+                <strong>Alamat:</strong> Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318
               </li>
             </ul>
           </div>
@@ -83,7 +82,7 @@ const Footer = () => {
         
         <div className="mt-12 pt-8 border-t border-primary-foreground/20 flex flex-col md:flex-row justify-between items-center">
           <p className="text-primary-foreground/60 text-sm">
-            © 2024 SERVISOO. All rights reserved.
+            © 2024 Servisoo. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">

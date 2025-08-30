@@ -48,8 +48,7 @@ export function DashboardSidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 border-b">
-            <span className="text-2xl font-bold text-primary">SERVISOO</span>
-            <div className="ml-2 h-2 w-2 rounded-full bg-accent"></div>
+            <img src="/logo.svg" alt="Servisoo Logo" className="h-10" />
           </div>
 
           {/* User Info */}
