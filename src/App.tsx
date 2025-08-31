@@ -16,6 +16,7 @@ import AdminUpah from "./pages/AdminUpah";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminGallery from "./pages/AdminGallery";
 import AdminDepositBilling from "./pages/AdminDepositBilling";
+import AdminContentManagement from "./pages/AdminContentManagement";
 import SimulasiRAB from "./pages/SimulasiRAB";
 import HistoriProyek from "./pages/HistoriProyek";
 import BillingDeposit from "./pages/BillingDeposit";
@@ -113,6 +114,11 @@ const App = () => (
             <Route path="/admin/deposit-billing" element={
               <ProtectedRoute adminOnly>
                 <AdminDepositBilling />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/content" element={
+              <ProtectedRoute adminOnly>
+                <AdminContentManagement />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

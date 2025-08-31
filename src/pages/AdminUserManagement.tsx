@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Search, Edit, Trash2, Download, UserPlus, Shield, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { AdminSidebar } from "@/components/layout/AdminSidebar"
 
 interface UserData {
   id: string
@@ -274,29 +275,33 @@ const AdminUserManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header dengan tombol kembali */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/admin')}
-            className="mb-4 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali ke Admin Dashboard
-          </Button>
-          
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manajemen User</h1>
-              <p className="text-gray-600 mt-2">Kelola data user dan ubah role akses</p>
+    <div className="min-h-screen bg-secondary/20 flex">
+      <AdminSidebar />
+      
+      <main className="flex-1 lg:ml-0 pt-16 lg:pt-0">
+        <div className="p-4 sm:p-6">
+          {/* Header dengan tombol kembali */}
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin')}
+              className="mb-4 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Kembali ke Admin Dashboard</span>
+              <span className="sm:hidden">Kembali</span>
+            </Button>
+            
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Manajemen User</h1>
+                <p className="text-sm sm:text-base text-muted-foreground mt-2">Kelola data user dan ubah role akses</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -347,73 +352,77 @@ const AdminUserManagement = () => {
           </Card>
         </div>
 
-        {/* Controls */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col md:flex-row gap-4 flex-1">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Cari email, nama, atau lokasi..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+          {/* Controls */}
+          <Card className="mb-6">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Cari email, nama, atau lokasi..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                    <Select value={filterRole} onValueChange={setFilterRole}>
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Filter Role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="semua">Semua Role</SelectItem>
+                        {roleOptions.map(role => (
+                          <SelectItem key={role} value={role}>
+                            {role.charAt(0).toUpperCase() + role.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Filter Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="semua">Semua Status</SelectItem>
+                        {statusOptions.map(status => (
+                          <SelectItem key={status} value={status}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <Select value={filterRole} onValueChange={setFilterRole}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter Role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua Role</SelectItem>
-                    {roleOptions.map(role => (
-                      <SelectItem key={role} value={role}>
-                        {role.charAt(0).toUpperCase() + role.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua Status</SelectItem>
-                    {statusOptions.map(status => (
-                      <SelectItem key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button onClick={handleExportCSV} variant="outline">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                </Button>
+                
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                  <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto">
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Export CSV</span>
+                    <span className="sm:hidden">Export</span>
+                  </Button>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={resetForm}>
+                    <Button onClick={resetForm} className="w-full sm:w-auto">
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Tambah User
+                      <span className="hidden sm:inline">Tambah User</span>
+                      <span className="sm:hidden">Tambah</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>
+                      <DialogTitle className="text-lg sm:text-xl">
                         {editingUser ? 'Edit User' : 'Tambah User Baru'}
                       </DialogTitle>
-                      <DialogDescription>
+                      <DialogDescription className="text-sm">
                         {editingUser ? 'Perbarui informasi user' : 'Tambahkan user baru ke sistem'}
                       </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 pr-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="email">Email *</Label>
+                          <Label htmlFor="email" className="text-sm">Email *</Label>
                           <Input
                             id="email"
                             type="email"
@@ -421,25 +430,27 @@ const AdminUserManagement = () => {
                             onChange={(e) => setFormData({...formData, email: e.target.value})}
                             placeholder="user@example.com"
                             required
+                            className="text-sm"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="name">Nama Lengkap *</Label>
+                          <Label htmlFor="name" className="text-sm">Nama Lengkap *</Label>
                           <Input
                             id="name"
                             value={formData.name}
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
                             placeholder="Nama lengkap"
                             required
+                            className="text-sm"
                           />
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="role">Role *</Label>
+                          <Label htmlFor="role" className="text-sm">Role *</Label>
                           <Select value={formData.role} onValueChange={(value: 'user' | 'admin') => setFormData({...formData, role: value})}>
-                            <SelectTrigger>
+                            <SelectTrigger className="text-sm">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -452,9 +463,9 @@ const AdminUserManagement = () => {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="status">Status *</Label>
+                          <Label htmlFor="status" className="text-sm">Status *</Label>
                           <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'suspended') => setFormData({...formData, status: value})}>
-                            <SelectTrigger>
+                            <SelectTrigger className="text-sm">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -468,32 +479,34 @@ const AdminUserManagement = () => {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="project_location">Lokasi Proyek</Label>
+                          <Label htmlFor="project_location" className="text-sm">Lokasi Proyek</Label>
                           <Input
                             id="project_location"
                             value={formData.project_location}
                             onChange={(e) => setFormData({...formData, project_location: e.target.value})}
                             placeholder="Kota/Kabupaten"
+                            className="text-sm"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="phone">Nomor Telepon</Label>
+                          <Label htmlFor="phone" className="text-sm">Nomor Telepon</Label>
                           <Input
                             id="phone"
                             value={formData.phone}
                             onChange={(e) => setFormData({...formData, phone: e.target.value})}
                             placeholder="08xxxxxxxxxx"
+                            className="text-sm"
                           />
                         </div>
                       </div>
                       
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
                           Batal
                         </Button>
-                        <Button type="submit">
+                        <Button type="submit" className="w-full sm:w-auto order-1 sm:order-2">
                           {editingUser ? 'Perbarui' : 'Tambah'} User
                         </Button>
                       </div>
@@ -507,34 +520,38 @@ const AdminUserManagement = () => {
 
         {/* Table */}
         <Card>
-          <CardHeader>
-            <CardTitle>Data User ({filteredUsers.length} user)</CardTitle>
-            <CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Data User ({filteredUsers.length} user)</CardTitle>
+            <CardDescription className="text-sm">
               Daftar semua user yang terdaftar di sistem
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 sm:p-6">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Nama</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Lokasi Proyek</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead>Aksi</TableHead>
+                    <TableHead className="min-w-[200px] sm:min-w-0">Email</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0">Nama</TableHead>
+                    <TableHead className="min-w-[100px] sm:min-w-0">Role</TableHead>
+                    <TableHead className="min-w-[100px] sm:min-w-0">Status</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden md:table-cell">Lokasi Proyek</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Last Login</TableHead>
+                    <TableHead className="min-w-[120px] sm:min-w-0">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedUsers.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>{user.name}</TableCell>
+                      <TableCell className="font-medium text-sm">
+                        <div className="truncate max-w-[180px] sm:max-w-none">{user.email}</div>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        <div className="truncate max-w-[120px] sm:max-w-none">{user.name}</div>
+                      </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getRoleBadgeVariant(user.role)}>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                           </Badge>
                           {user.role === 'user' && (
@@ -542,7 +559,7 @@ const AdminUserManagement = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => handleChangeRole(user.id, 'admin')}
-                              className="text-xs"
+                              className="text-xs h-6 px-2 hidden sm:inline-flex"
                             >
                               Jadikan Admin
                             </Button>
@@ -552,7 +569,7 @@ const AdminUserManagement = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => handleChangeRole(user.id, 'user')}
-                              className="text-xs"
+                              className="text-xs h-6 px-2 hidden sm:inline-flex"
                             >
                               Jadikan User
                             </Button>
@@ -560,8 +577,8 @@ const AdminUserManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getStatusBadgeVariant(user.status)}>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+                          <Badge variant={getStatusBadgeVariant(user.status)} className="text-xs">
                             {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                           </Badge>
                           {user.status !== 'active' && (
@@ -569,7 +586,7 @@ const AdminUserManagement = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => handleChangeStatus(user.id, 'active')}
-                              className="text-xs"
+                              className="text-xs h-6 px-2 hidden sm:inline-flex"
                             >
                               Aktifkan
                             </Button>
@@ -579,34 +596,37 @@ const AdminUserManagement = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => handleChangeStatus(user.id, 'suspended')}
-                              className="text-xs"
+                              className="text-xs h-6 px-2 hidden sm:inline-flex"
                             >
                               Suspend
                             </Button>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{user.project_location || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{user.project_location || '-'}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">
                         {user.last_login ? formatDate(user.last_login.split(' ')[0]) : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1 sm:gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(user)}
+                            className="h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
                           </Button>
                           {user.id !== '1' && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="h-4 w-4" />
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3">
+                                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  <span className="sr-only sm:not-sr-only sm:ml-2">Hapus</span>
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent className="mx-4 sm:mx-0">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Hapus User</AlertDialogTitle>
                                   <AlertDialogDescription>
@@ -633,35 +653,51 @@ const AdminUserManagement = () => {
             
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 px-4 sm:px-0">
+                <div className="flex items-center gap-2">
                   <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    onClick={() => setCurrentPage(page)}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="text-xs sm:text-sm"
                   >
-                    {page}
+                    <span className="hidden sm:inline">Previous</span>
+                    <span className="sm:hidden">Prev</span>
                   </Button>
-                ))}
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
+                  <div className="flex gap-1 sm:gap-2 max-w-[200px] sm:max-w-none overflow-x-auto">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className="min-w-[32px] h-8 text-xs sm:text-sm sm:min-w-[40px] sm:h-9"
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="text-xs sm:text-sm"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <span className="sm:hidden">Next</span>
+                  </Button>
+                </div>
+                <div className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-0">
+                  Halaman {currentPage} dari {totalPages}
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

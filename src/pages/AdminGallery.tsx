@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { 
   ArrowLeft,
   Plus, 
@@ -340,41 +341,49 @@ const AdminGallery = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="flex h-screen bg-gray-50">
+      <AdminSidebar />
+      <main className="flex-1 overflow-auto">
+        <div className="container mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <Button 
             onClick={() => navigate('/admin')} 
             variant="outline" 
             size="sm"
+            className="w-fit"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
+            <span className="hidden sm:inline">Kembali ke Dashboard</span>
+            <span className="sm:hidden">Kembali</span>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Manajemen Galeri</h1>
-            <p className="text-muted-foreground">Kelola gambar dan konten galeri proyek</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Manajemen Galeri</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Kelola gambar dan konten galeri proyek</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Button
             onClick={handleUploadClick}
             variant="outline"
+            className="w-full sm:w-auto"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Upload Gambar
+            <span className="hidden sm:inline">Upload Gambar</span>
+            <span className="sm:hidden">Upload</span>
           </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
-                Tambah Item
+                <span className="hidden sm:inline">Tambah Item</span>
+                <span className="sm:hidden">Tambah</span>
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md mx-4 sm:mx-auto">
             <DialogHeader>
-              <DialogTitle>Tambah Item Galeri</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-lg sm:text-xl">Tambah Item Galeri</DialogTitle>
+              <DialogDescription className="text-sm sm:text-base">
                 Tambahkan item baru ke galeri proyek
               </DialogDescription>
             </DialogHeader>
@@ -491,8 +500,8 @@ const AdminGallery = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -500,13 +509,13 @@ const AdminGallery = () => {
                   placeholder="Cari berdasarkan judul, deskripsi, atau tags..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm sm:text-base"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -520,7 +529,7 @@ const AdminGallery = () => {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -535,7 +544,7 @@ const AdminGallery = () => {
       </Card>
 
       {/* Gallery Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredItems.map((item) => (
           <Card key={item.id} className="overflow-hidden">
             <div className="aspect-video relative">
@@ -550,11 +559,11 @@ const AdminGallery = () => {
                 </Badge>
               </div>
             </div>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <h3 className="font-semibold text-lg line-clamp-1">{item.title}</h3>
-                  <Badge variant="outline" className="text-xs">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-base sm:text-lg line-clamp-1 flex-1">{item.title}</h3>
+                  <Badge variant="outline" className="text-xs shrink-0">
                     {getCategoryLabel(item.category)}
                   </Badge>
                 </div>
@@ -578,31 +587,37 @@ const AdminGallery = () => {
                   <span>{item.views} views</span>
                 </div>
               </div>
-              <div className="flex gap-2 mt-4">
+              <div className="flex flex-col sm:flex-row gap-2 mt-4">
                 <Button 
                   size="sm" 
                   variant="outline" 
                   onClick={() => handleView(item)}
-                  className="flex-1"
+                  className="flex-1 w-full sm:w-auto"
                 >
                   <Eye className="h-4 w-4 mr-1" />
-                  Lihat
+                  <span className="hidden sm:inline">Lihat</span>
+                  <span className="sm:hidden">Detail</span>
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => handleEdit(item)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => handleDelete(item.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => handleEdit(item)}
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Edit className="h-4 w-4 sm:mr-0" />
+                    <span className="ml-1 sm:hidden">Edit</span>
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => handleDelete(item.id)}
+                    className="text-red-600 hover:text-red-700 flex-1 sm:flex-none"
+                  >
+                    <Trash2 className="h-4 w-4 sm:mr-0" />
+                    <span className="ml-1 sm:hidden">Hapus</span>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -611,16 +626,16 @@ const AdminGallery = () => {
 
       {filteredItems.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
+          <CardContent className="p-8 sm:p-12 text-center">
             <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Tidak ada item ditemukan</h3>
-            <p className="text-muted-foreground mb-4">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">Tidak ada item ditemukan</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
               {searchTerm || filterCategory !== 'all' || filterStatus !== 'all' 
                 ? 'Coba ubah filter atau kata kunci pencarian'
                 : 'Belum ada item galeri. Tambahkan item pertama Anda!'}
             </p>
             {!searchTerm && filterCategory === 'all' && filterStatus === 'all' && (
-              <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Tambah Item Pertama
               </Button>
@@ -631,10 +646,10 @@ const AdminGallery = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle>Edit Item Galeri</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Edit Item Galeri</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Perbarui informasi item galeri
             </DialogDescription>
           </DialogHeader>
@@ -695,11 +710,11 @@ const AdminGallery = () => {
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
               Batal
             </Button>
-            <Button onClick={handleUpdate}>
+            <Button onClick={handleUpdate} className="w-full sm:w-auto order-1 sm:order-2">
               Perbarui
             </Button>
           </DialogFooter>
@@ -708,10 +723,10 @@ const AdminGallery = () => {
 
       {/* Upload Dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle>Upload Gambar</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Upload Gambar</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Upload gambar baru ke galeri proyek
             </DialogDescription>
           </DialogHeader>
@@ -804,7 +819,7 @@ const AdminGallery = () => {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => {
               setIsUploadDialogOpen(false)
               setSelectedImage(null)
@@ -812,10 +827,10 @@ const AdminGallery = () => {
               if (fileInputRef.current) {
                 fileInputRef.current.value = ''
               }
-            }}>
+            }} className="w-full sm:w-auto order-2 sm:order-1">
               Batal
             </Button>
-            <Button onClick={handleQuickUpload}>
+            <Button onClick={handleQuickUpload} className="w-full sm:w-auto order-1 sm:order-2">
               <Upload className="h-4 w-4 mr-2" />
               Upload
             </Button>
@@ -825,10 +840,10 @@ const AdminGallery = () => {
 
       {/* View Detail Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detail Item Galeri</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Detail Item Galeri</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Informasi lengkap item galeri
             </DialogDescription>
           </DialogHeader>
@@ -847,7 +862,7 @@ const AdminGallery = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">ID</Label>
                   <p className="text-sm">{selectedItem.id}</p>
@@ -888,8 +903,8 @@ const AdminGallery = () => {
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
               Tutup
             </Button>
             <Button onClick={() => {
@@ -897,13 +912,15 @@ const AdminGallery = () => {
               if (selectedItem) {
                 handleEdit(selectedItem)
               }
-            }}>
+            }} className="w-full sm:w-auto order-1 sm:order-2">
               <Edit className="h-4 w-4 mr-2" />
               Edit Item
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </div>
+      </main>
     </div>
   )
 }
