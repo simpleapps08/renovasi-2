@@ -284,7 +284,7 @@ const AdminMaterial = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header dengan tombol kembali */}
         <div className="mb-6">
@@ -294,23 +294,25 @@ const AdminMaterial = () => {
             className="mb-4 text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali ke Admin Dashboard
+            <span className="hidden sm:inline">Kembali ke Admin Dashboard</span>
+            <span className="sm:hidden">Kembali</span>
           </Button>
           
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manajemen Harga Material</h1>
-              <p className="text-gray-600 mt-2">Kelola data harga material konstruksi</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Manajemen Harga Material</h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">Kelola data harga material konstruksi</p>
             </div>
           </div>
         </div>
 
         {/* Controls */}
         <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col md:flex-row gap-4 flex-1">
-                <div className="relative flex-1 max-w-md">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4">
+              {/* Search and Filter Row */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Cari material, kategori, atau supplier..."
@@ -320,7 +322,7 @@ const AdminMaterial = () => {
                   />
                 </div>
                 <Select value={filterKategori} onValueChange={setFilterKategori}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Filter Kategori" />
                   </SelectTrigger>
                   <SelectContent>
@@ -332,15 +334,18 @@ const AdminMaterial = () => {
                 </Select>
               </div>
               
-              <div className="flex gap-2">
-                <Button onClick={handleExportCSV} variant="outline">
+              {/* Action Buttons Row */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button onClick={handleExportCSV} variant="outline" className="flex-1 sm:flex-none">
                   <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  <span className="hidden sm:inline">Export CSV</span>
+                  <span className="sm:hidden">Export</span>
                 </Button>
-                <label>
-                  <Button variant="outline" className="cursor-pointer">
+                <label className="flex-1 sm:flex-none">
+                  <Button variant="outline" className="cursor-pointer w-full">
                     <Upload className="h-4 w-4 mr-2" />
-                    Import CSV
+                    <span className="hidden sm:inline">Import CSV</span>
+                    <span className="sm:hidden">Import</span>
                   </Button>
                   <input
                     type="file"
@@ -351,22 +356,23 @@ const AdminMaterial = () => {
                 </label>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={resetForm}>
+                    <Button onClick={resetForm} className="flex-1 sm:flex-none">
                       <Plus className="h-4 w-4 mr-2" />
-                      Tambah Material
+                      <span className="hidden sm:inline">Tambah Material</span>
+                      <span className="sm:hidden">Tambah</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
                     <DialogHeader>
-                      <DialogTitle>
+                      <DialogTitle className="text-lg sm:text-xl">
                         {editingMaterial ? 'Edit Material' : 'Tambah Material Baru'}
                       </DialogTitle>
-                      <DialogDescription>
+                      <DialogDescription className="text-sm">
                         {editingMaterial ? 'Perbarui informasi material' : 'Tambahkan material baru ke database'}
                       </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="nama">Nama Material *</Label>
                           <Input
@@ -392,7 +398,7 @@ const AdminMaterial = () => {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="satuan">Satuan *</Label>
                           <Select value={formData.satuan} onValueChange={(value) => setFormData({...formData, satuan: value})}>
@@ -472,23 +478,23 @@ const AdminMaterial = () => {
         {/* Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Data Material ({filteredMaterials.length} item)</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Data Material ({filteredMaterials.length} item)</CardTitle>
+            <CardDescription className="text-sm">
               Daftar semua material konstruksi dengan harga terkini
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 sm:p-6">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nama Material</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Satuan</TableHead>
-                    <TableHead>Harga</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
+                    <TableHead className="min-w-[150px]">Nama Material</TableHead>
+                    <TableHead className="min-w-[120px]">Kategori</TableHead>
+                    <TableHead className="min-w-[80px]">Satuan</TableHead>
+                    <TableHead className="min-w-[100px]">Harga</TableHead>
+                    <TableHead className="min-w-[120px]">Supplier</TableHead>
+                    <TableHead className="min-w-[80px]">Status</TableHead>
+                    <TableHead className="min-w-[120px]">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -505,18 +511,21 @@ const AdminMaterial = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex space-x-1 sm:space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(material)}
+                            className="px-2 sm:px-3"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Edit</span>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-4 w-4" />
+                              <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                                <Trash2 className="h-4 w-4 sm:mr-1" />
+                                <span className="hidden sm:inline">Hapus</span>
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
