@@ -38,29 +38,74 @@ const Footer = () => {
   const fetchFooterData = async () => {
     try {
       // Fetch social media links
-      const { data: socialData } = await supabase
+      const { data: socialData, error: socialError } = await supabase
         .from('social_media_links')
         .select('*')
         .eq('is_active', true)
         .order('display_order')
 
       // Fetch contact info
-      const { data: contactData } = await supabase
+      const { data: contactData, error: contactError } = await supabase
         .from('contact_info')
         .select('*')
         .eq('is_active', true)
 
       // Fetch footer content
-      const { data: contentData } = await supabase
+      const { data: contentData, error: contentError } = await supabase
         .from('footer_content')
         .select('*')
         .eq('is_active', true)
 
-      if (socialData) setSocialLinks(socialData)
-      if (contactData) setContactInfo(contactData)
-      if (contentData) setFooterContent(contentData)
+      // Use fallback data if tables don't exist yet
+      if (socialError || !socialData) {
+        setSocialLinks([
+          { id: '1', platform: 'instagram', name: 'Instagram', url: '#', icon: 'instagram', display_order: 1 },
+          { id: '2', platform: 'facebook', name: 'Facebook', url: '#', icon: 'facebook', display_order: 2 },
+          { id: '3', platform: 'tiktok', name: 'TikTok', url: '#', icon: 'tiktok', display_order: 3 },
+          { id: '4', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 4 }
+        ])
+      } else {
+        setSocialLinks(socialData)
+      }
+
+      if (contactError || !contactData) {
+        setContactInfo([
+          { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
+          { id: '2', type: 'phone', label: 'Phone', value: '+6282336548080', formatted_value: '+62 823-3654-8080' },
+          { id: '3', type: 'whatsapp', label: 'WhatsApp', value: '+6285808675233', formatted_value: '+62 858-0867-5233' },
+          { id: '4', type: 'address', label: 'Alamat', value: 'Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318', formatted_value: null }
+        ])
+      } else {
+        setContactInfo(contactData)
+      }
+
+      if (contentError || !contentData) {
+        setFooterContent([
+          { id: '1', section: 'description', content: 'Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.' },
+          { id: '2', section: 'services', content: 'Renovasi Rumah,Pembangunan Gedung,Desain & Perencanaan,Konsultasi RAB' }
+        ])
+      } else {
+        setFooterContent(contentData)
+      }
     } catch (error) {
       console.error('Error fetching footer data:', error)
+      // Set fallback data on error
+      setSocialLinks([
+        { id: '1', platform: 'instagram', name: 'Instagram', url: '#', icon: 'instagram', display_order: 1 },
+        { id: '2', platform: 'facebook', name: 'Facebook', url: '#', icon: 'facebook', display_order: 2 },
+        { id: '3', platform: 'tiktok', name: 'TikTok', url: '#', icon: 'tiktok', display_order: 3 },
+        { id: '4', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 4 }
+      ])
+      setContactInfo([
+        { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
+        { id: '2', type: 'phone', label: 'Phone', value: '+6282336548080', formatted_value: '+62 823-3654-8080' },
+        { id: '3', type: 'whatsapp', label: 'WhatsApp', value: '+6285808675233', formatted_value: '+62 858-0867-5233' },
+        { id: '4', type: 'address', label: 'Alamat', value: 'Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318', formatted_value: null }
+      ])
+      setFooterContent([
+        { id: '1', section: 'description', content: 'Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.' },
+        { id: '2', section: 'services', content: 'Renovasi Rumah,Pembangunan Gedung,Desain & Perencanaan,Konsultasi RAB' }
+      ])
     } finally {
       setLoading(false)
     }
