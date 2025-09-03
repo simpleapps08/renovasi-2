@@ -45,9 +45,9 @@ CREATE POLICY "Allow public read access to social_media_links" ON public.social_
 CREATE POLICY "Allow admin full access to social_media_links" ON public.social_media_links
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE profiles.id = auth.uid()
-            AND profiles.role = 'admin'
+            SELECT 1 FROM public.user_profiles
+            WHERE user_profiles.user_id = auth.uid()
+            AND user_profiles.role = 'admin'
         )
     );
 
@@ -58,9 +58,9 @@ CREATE POLICY "Allow public read access to contact_info" ON public.contact_info
 CREATE POLICY "Allow admin full access to contact_info" ON public.contact_info
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE profiles.id = auth.uid()
-            AND profiles.role = 'admin'
+            SELECT 1 FROM public.user_profiles
+            WHERE user_profiles.user_id = auth.uid()
+            AND user_profiles.role = 'admin'
         )
     );
 
@@ -71,9 +71,9 @@ CREATE POLICY "Allow public read access to footer_content" ON public.footer_cont
 CREATE POLICY "Allow admin full access to footer_content" ON public.footer_content
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE profiles.id = auth.uid()
-            AND profiles.role = 'admin'
+            SELECT 1 FROM public.user_profiles
+            WHERE user_profiles.user_id = auth.uid()
+            AND user_profiles.role = 'admin'
         )
     );
 

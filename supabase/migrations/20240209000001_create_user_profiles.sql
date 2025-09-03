@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   gender VARCHAR(10) CHECK (gender IN ('male', 'female')),
   occupation VARCHAR(200),
   bio TEXT,
+  role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id)
