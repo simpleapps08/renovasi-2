@@ -333,9 +333,10 @@ const AdminUpah = () => {
         {/* Controls */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col md:flex-row gap-4 flex-1">
-                <div className="relative flex-1 max-w-md">
+            <div className="flex flex-col gap-4">
+              {/* Search and Filters */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Cari jenis pekerjaan, kategori, atau lokasi..."
@@ -344,41 +345,44 @@ const AdminUpah = () => {
                     className="pl-10"
                   />
                 </div>
-                <Select value={filterKategori} onValueChange={setFilterKategori}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter Kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua Kategori</SelectItem>
-                    {kategoriOptions.map(kategori => (
-                      <SelectItem key={kategori} value={kategori}>{kategori}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={filterKeahlian} onValueChange={setFilterKeahlian}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter Keahlian" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua Keahlian</SelectItem>
-                    {keahlianOptions.map(keahlian => (
-                      <SelectItem key={keahlian} value={keahlian}>
-                        {keahlian.charAt(0).toUpperCase() + keahlian.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                  <Select value={filterKategori} onValueChange={setFilterKategori}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SelectValue placeholder="Filter Kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="semua">Semua Kategori</SelectItem>
+                      {kategoriOptions.map(kategori => (
+                        <SelectItem key={kategori} value={kategori}>{kategori}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterKeahlian} onValueChange={setFilterKeahlian}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SelectValue placeholder="Filter Keahlian" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="semua">Semua Keahlian</SelectItem>
+                      {keahlianOptions.map(keahlian => (
+                        <SelectItem key={keahlian} value={keahlian}>
+                          {keahlian.charAt(0).toUpperCase() + keahlian.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button onClick={handleExportCSV} variant="outline">
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  <span className="sm:inline">Export CSV</span>
                 </Button>
-                <label>
-                  <Button variant="outline" className="cursor-pointer">
+                <label className="w-full sm:w-auto">
+                  <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                     <Upload className="h-4 w-4 mr-2" />
-                    Import CSV
+                    <span className="sm:inline">Import CSV</span>
                   </Button>
                   <input
                     type="file"
@@ -389,9 +393,9 @@ const AdminUpah = () => {
                 </label>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={resetForm}>
+                    <Button onClick={resetForm} className="w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" />
-                      Tambah Data Upah
+                      <span className="sm:inline">Tambah Data Upah</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
@@ -566,18 +570,21 @@ const AdminUpah = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 sm:space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(upah)}
+                            className="w-full sm:w-auto sm:inline"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-4 w-4 sm:mr-0" />
+                            <span className="ml-2 sm:hidden">Edit</span>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-4 w-4" />
+                              <Button variant="outline" size="sm" className="w-full sm:w-auto sm:inline">
+                                <Trash2 className="h-4 w-4 sm:mr-0" />
+                                <span className="ml-2 sm:hidden">Hapus</span>
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -606,27 +613,32 @@ const AdminUpah = () => {
             
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
+                  className="w-full sm:w-auto"
                 >
                   Previous
                 </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
+                <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      onClick={() => setCurrentPage(page)}
+                      className="w-8 h-8 sm:w-auto sm:h-auto p-0 sm:p-2"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
                 <Button
                   variant="outline"
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
+                  className="w-full sm:w-auto"
                 >
                   Next
                 </Button>

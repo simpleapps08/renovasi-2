@@ -492,8 +492,8 @@ const AdminDepositBilling = () => {
         {/* Controls */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col md:flex-row gap-4 flex-1">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full sm:w-auto">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
@@ -504,7 +504,7 @@ const AdminDepositBilling = () => {
                   />
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Filter Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -517,7 +517,7 @@ const AdminDepositBilling = () => {
                   </SelectContent>
                 </Select>
                 <Select value={filterPaymentMethod} onValueChange={setFilterPaymentMethod}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Filter Metode" />
                   </SelectTrigger>
                   <SelectContent>
@@ -529,16 +529,18 @@ const AdminDepositBilling = () => {
                 </Select>
               </div>
               
-              <div className="flex gap-2">
-                <Button onClick={handleExportCSV} variant="outline">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  <span className="sm:hidden">Export</span>
+                  <span className="hidden sm:inline">Export CSV</span>
                 </Button>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={resetForm}>
+                    <Button onClick={resetForm} className="w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" />
-                      Tambah Deposit
+                      <span className="sm:hidden">Tambah</span>
+                      <span className="hidden sm:inline">Tambah Deposit</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
@@ -722,12 +724,12 @@ const AdminDepositBilling = () => {
                               {deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1)}
                             </Badge>
                             {deposit.status === 'pending' && (
-                              <div className="flex gap-1">
+                              <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleStatusChange(deposit.id, 'approved')}
-                                  className="text-xs text-green-600"
+                                  className="text-xs text-green-600 w-full sm:w-auto"
                                 >
                                   Approve
                                 </Button>
@@ -735,7 +737,7 @@ const AdminDepositBilling = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleStatusChange(deposit.id, 'rejected')}
-                                  className="text-xs text-red-600"
+                                  className="text-xs text-red-600 w-full sm:w-auto"
                                 >
                                   Reject
                                 </Button>
@@ -746,7 +748,7 @@ const AdminDepositBilling = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleStatusChange(deposit.id, 'completed')}
-                                className="text-xs text-blue-600"
+                                className="text-xs text-blue-600 w-full sm:w-auto"
                               >
                                 Complete
                               </Button>
@@ -762,18 +764,21 @@ const AdminDepositBilling = () => {
                         </TableCell>
                         <TableCell>{formatDate(deposit.created_at)}</TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleEdit(deposit)}
+                              className="w-full sm:w-auto"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-4 w-4 sm:mr-0" />
+                              <span className="ml-2 sm:hidden">Edit</span>
                             </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="h-4 w-4" />
+                                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                                  <Trash2 className="h-4 w-4 sm:mr-0" />
+                                  <span className="ml-2 sm:hidden">Hapus</span>
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
@@ -803,11 +808,12 @@ const AdminDepositBilling = () => {
             
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
+              <div className="flex flex-col sm:flex-row justify-center gap-2 mt-6 flex-wrap">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
+                  className="w-full sm:w-auto p-0 sm:p-2"
                 >
                   Previous
                 </Button>
@@ -816,6 +822,7 @@ const AdminDepositBilling = () => {
                     key={page}
                     variant={currentPage === page ? "default" : "outline"}
                     onClick={() => setCurrentPage(page)}
+                    className="w-full sm:w-auto p-0 sm:p-2"
                   >
                     {page}
                   </Button>
@@ -824,6 +831,7 @@ const AdminDepositBilling = () => {
                   variant="outline"
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
+                  className="w-full sm:w-auto p-0 sm:p-2"
                 >
                   Next
                 </Button>
