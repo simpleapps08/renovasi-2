@@ -310,72 +310,72 @@ const Profil = () => {
       </div>
 
       {/* Main Content */}
-       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-         <div className="space-y-6">
+       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+         <div className="space-y-4 sm:space-y-6">
            {/* Profile Header */}
            <Card>
-             <CardContent className="pt-6">
-               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+             <CardContent className="pt-4 sm:pt-6">
+               <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6">
                  <div className="relative">
-                   <Avatar className="h-24 w-24">
+                   <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                      <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} alt="Profile" />
-                     <AvatarFallback className="text-lg font-semibold bg-primary text-primary-foreground">
+                     <AvatarFallback className="text-base sm:text-lg font-semibold bg-primary text-primary-foreground">
                        {loading ? '...' : `${profileData.firstName.charAt(0)}${profileData.lastName.charAt(0)}`.toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                      </AvatarFallback>
                    </Avatar>
                    <Button 
                      size="sm" 
-                     className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+                     className="absolute -bottom-2 -right-2 h-7 w-7 sm:h-8 sm:w-8 rounded-full p-0"
                      onClick={() => toast.info('Fitur upload foto akan segera tersedia')}
                    >
-                     <Camera className="h-4 w-4" />
+                     <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
                    </Button>
                  </div>
                  
-                 <div className="flex-1">
-                   <h2 className="text-2xl font-bold text-gray-900">
+                 <div className="flex-1 text-center sm:text-left">
+                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                      {profileData.firstName} {profileData.lastName}
                    </h2>
-                   <p className="text-gray-600 mt-1">{profileData.email}</p>
-                   <p className="text-gray-500 text-sm mt-2">{profileData.occupation || 'Belum diisi'}</p>
+                   <p className="text-gray-600 mt-1 text-sm sm:text-base">{profileData.email}</p>
+                   <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-2">{profileData.occupation || 'Belum diisi'}</p>
                  </div>
                </div>
              </CardContent>
            </Card>
 
-           <Tabs defaultValue="profile" className="space-y-6">
-             <TabsList>
-               <TabsTrigger value="profile">Profil</TabsTrigger>
-               <TabsTrigger value="security">Keamanan</TabsTrigger>
-               <TabsTrigger value="notifications">Notifikasi</TabsTrigger>
+           <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+             <TabsList className="grid w-full grid-cols-3">
+               <TabsTrigger value="profile" className="text-xs sm:text-sm">Profil</TabsTrigger>
+               <TabsTrigger value="security" className="text-xs sm:text-sm">Keamanan</TabsTrigger>
+               <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifikasi</TabsTrigger>
              </TabsList>
 
-              <TabsContent value="profile" className="space-y-6">
+              <TabsContent value="profile" className="space-y-4 sm:space-y-6">
                 {/* Profile Photo */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Foto Profil</CardTitle>
-                    <CardDescription>Upload dan kelola foto profil Anda</CardDescription>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg sm:text-xl">Foto Profil</CardTitle>
+                    <CardDescription className="text-sm">Upload dan kelola foto profil Anda</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6">
-                      <Avatar className="h-24 w-24">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                      <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                         <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} alt="Profile" />
-                        <AvatarFallback className="text-2xl">
+                        <AvatarFallback className="text-lg sm:text-2xl">
                           {loading ? '...' : `${profileData.firstName.charAt(0)}${profileData.lastName.charAt(0)}`.toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <h3 className="font-medium">{profileData.firstName} {profileData.lastName}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
+                      <div className="flex-1 text-center sm:text-left">
+                        <h3 className="font-medium text-sm sm:text-base">{profileData.firstName} {profileData.lastName}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                           Format yang didukung: JPG, PNG. Maksimal 2MB.
                         </p>
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={() => toast.info('Fitur upload foto akan segera tersedia')}>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button size="sm" onClick={() => toast.info('Fitur upload foto akan segera tersedia')} className="w-full sm:w-auto">
                             <Camera className="h-4 w-4 mr-2" />
                             Upload Foto
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => toast.info('Fitur hapus foto akan segera tersedia')}>
+                          <Button variant="outline" size="sm" onClick={() => toast.info('Fitur hapus foto akan segera tersedia')} className="w-full sm:w-auto">
                             Hapus
                           </Button>
                         </div>
@@ -386,65 +386,70 @@ const Profil = () => {
 
                 {/* Personal Information */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <User className="h-4 w-4 sm:h-5 sm:w-5" />
                       Informasi Pribadi
                     </CardTitle>
-                    <CardDescription>Perbarui informasi pribadi Anda</CardDescription>
+                    <CardDescription className="text-sm">Perbarui informasi pribadi Anda</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="space-y-4 sm:space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">Nama Depan *</Label>
+                        <Label htmlFor="firstName" className="text-sm font-medium">Nama Depan *</Label>
                         <Input
                           id="firstName"
                           value={profileData.firstName}
                           onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
                           placeholder="Nama depan"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Nama Belakang *</Label>
+                        <Label htmlFor="lastName" className="text-sm font-medium">Nama Belakang *</Label>
                         <Input
                           id="lastName"
                           value={profileData.lastName}
                           onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
                           placeholder="Nama belakang"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
+                        <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
                         <Input
                           id="email"
                           type="email"
                           value={profileData.email}
                           onChange={(e) => setProfileData({...profileData, email: e.target.value})}
                           placeholder="email@example.com"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Nomor Telepon</Label>
+                        <Label htmlFor="phone" className="text-sm font-medium">Nomor Telepon</Label>
                         <Input
                           id="phone"
                           value={profileData.phone}
                           onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                           placeholder="081234567890"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="dateOfBirth">Tanggal Lahir</Label>
+                        <Label htmlFor="dateOfBirth" className="text-sm font-medium">Tanggal Lahir</Label>
                         <Input
                           id="dateOfBirth"
                           type="date"
                           value={profileData.dateOfBirth}
                           onChange={(e) => setProfileData({...profileData, dateOfBirth: e.target.value})}
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="gender">Jenis Kelamin</Label>
+                        <Label htmlFor="gender" className="text-sm font-medium">Jenis Kelamin</Label>
                         <Select value={profileData.gender} onValueChange={(value) => setProfileData({...profileData, gender: value})}>
-                          <SelectTrigger>
+                          <SelectTrigger className="h-10 sm:h-10">
                             <SelectValue placeholder="Pilih jenis kelamin" />
                           </SelectTrigger>
                           <SelectContent>
@@ -454,24 +459,26 @@ const Profil = () => {
                         </Select>
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="occupation">Pekerjaan</Label>
+                        <Label htmlFor="occupation" className="text-sm font-medium">Pekerjaan</Label>
                         <Input
                           id="occupation"
                           value={profileData.occupation}
                           onChange={(e) => setProfileData({...profileData, occupation: e.target.value})}
                           placeholder="Pekerjaan Anda"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
+                      <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
                       <Textarea
                         id="bio"
                         value={profileData.bio}
                         onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                         placeholder="Ceritakan sedikit tentang diri Anda..."
                         rows={3}
+                        className="min-h-[80px] resize-none"
                       />
                     </div>
                   </CardContent>
@@ -479,58 +486,62 @@ const Profil = () => {
 
                 {/* Address Information */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                       <MapPin className="h-5 w-5" />
                       Alamat
                     </CardTitle>
-                    <CardDescription>Informasi alamat tempat tinggal</CardDescription>
+                    <CardDescription className="text-sm text-muted-foreground">Informasi alamat tempat tinggal</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 p-4 sm:p-6">
                     <div className="space-y-2">
-                      <Label htmlFor="address">Alamat Lengkap</Label>
+                      <Label htmlFor="address" className="text-sm font-medium">Alamat Lengkap</Label>
                       <Textarea
                         id="address"
                         value={profileData.address}
                         onChange={(e) => setProfileData({...profileData, address: e.target.value})}
                         placeholder="Jalan, nomor rumah, RT/RW"
                         rows={2}
+                        className="min-h-[60px] resize-none"
                       />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="city">Kota</Label>
+                        <Label htmlFor="city" className="text-sm font-medium">Kota</Label>
                         <Input
                           id="city"
                           value={profileData.city}
                           onChange={(e) => setProfileData({...profileData, city: e.target.value})}
                           placeholder="Nama kota"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="province">Provinsi</Label>
+                        <Label htmlFor="province" className="text-sm font-medium">Provinsi</Label>
                         <Input
                           id="province"
                           value={profileData.province}
                           onChange={(e) => setProfileData({...profileData, province: e.target.value})}
                           placeholder="Nama provinsi"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="postalCode">Kode Pos</Label>
+                        <Label htmlFor="postalCode" className="text-sm font-medium">Kode Pos</Label>
                         <Input
                           id="postalCode"
                           value={profileData.postalCode}
                           onChange={(e) => setProfileData({...profileData, postalCode: e.target.value})}
                           placeholder="12345"
+                          className="h-10 sm:h-10"
                         />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <div className="flex justify-end">
-                  <Button onClick={handleProfileUpdate} disabled={saving}>
+                <div className="flex flex-col sm:flex-row justify-end gap-3">
+                  <Button onClick={handleProfileUpdate} disabled={saving} className="w-full sm:w-auto h-10 sm:h-10">
                     {saving ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
@@ -544,16 +555,16 @@ const Profil = () => {
              <TabsContent value="security" className="space-y-6">
                {/* Change Password */}
                <Card>
-                 <CardHeader>
-                   <CardTitle className="flex items-center gap-2">
+                 <CardHeader className="pb-4">
+                   <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                      <Shield className="h-5 w-5" />
                      Ubah Password
                    </CardTitle>
-                   <CardDescription>Perbarui password untuk keamanan akun</CardDescription>
+                   <CardDescription className="text-sm text-muted-foreground">Perbarui password untuk keamanan akun</CardDescription>
                  </CardHeader>
-                 <CardContent className="space-y-4">
+                 <CardContent className="space-y-4 p-4 sm:p-6">
                    <div className="space-y-2">
-                     <Label htmlFor="currentPassword">Password Saat Ini</Label>
+                     <Label htmlFor="currentPassword" className="text-sm font-medium">Password Saat Ini</Label>
                      <div className="relative">
                        <Input
                          id="currentPassword"
@@ -561,12 +572,13 @@ const Profil = () => {
                          value={passwordData.currentPassword}
                          onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                          placeholder="Masukkan password saat ini"
+                         className="h-10 sm:h-10 pr-10"
                        />
                        <Button
                          type="button"
                          variant="ghost"
                          size="sm"
-                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                         className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                        >
                          {showCurrentPassword ? (
@@ -578,7 +590,7 @@ const Profil = () => {
                      </div>
                    </div>
                    <div className="space-y-2">
-                     <Label htmlFor="newPassword">Password Baru</Label>
+                     <Label htmlFor="newPassword" className="text-sm font-medium">Password Baru</Label>
                      <div className="relative">
                        <Input
                          id="newPassword"
@@ -586,12 +598,13 @@ const Profil = () => {
                          value={passwordData.newPassword}
                          onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                          placeholder="Masukkan password baru (minimal 8 karakter)"
+                         className="h-10 sm:h-10 pr-10"
                        />
                        <Button
                          type="button"
                          variant="ghost"
                          size="sm"
-                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                         className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
                          onClick={() => setShowNewPassword(!showNewPassword)}
                        >
                          {showNewPassword ? (
@@ -603,7 +616,7 @@ const Profil = () => {
                      </div>
                    </div>
                    <div className="space-y-2">
-                     <Label htmlFor="confirmPassword">Konfirmasi Password Baru</Label>
+                     <Label htmlFor="confirmPassword" className="text-sm font-medium">Konfirmasi Password Baru</Label>
                      <div className="relative">
                        <Input
                          id="confirmPassword"
@@ -611,12 +624,13 @@ const Profil = () => {
                          value={passwordData.confirmPassword}
                          onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                          placeholder="Ulangi password baru"
+                         className="h-10 sm:h-10 pr-10"
                        />
                        <Button
                          type="button"
                          variant="ghost"
                          size="sm"
-                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                         className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                        >
                          {showConfirmPassword ? (
@@ -627,7 +641,7 @@ const Profil = () => {
                        </Button>
                      </div>
                    </div>
-                   <Button onClick={handlePasswordChange} disabled={saving}>
+                   <Button onClick={handlePasswordChange} disabled={saving} className="w-full sm:w-auto h-10 sm:h-10">
                      {saving ? (
                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                      ) : (
@@ -640,11 +654,11 @@ const Profil = () => {
 
                {/* Account Info */}
                <Card>
-                 <CardHeader>
-                   <CardTitle>Informasi Akun</CardTitle>
+                 <CardHeader className="pb-4">
+                   <CardTitle className="text-lg font-semibold">Informasi Akun</CardTitle>
                  </CardHeader>
-                 <CardContent className="space-y-4">
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <CardContent className="space-y-4 p-4 sm:p-6">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div>
                        <p className="text-sm font-medium">Tanggal Bergabung</p>
                        <p className="text-sm text-muted-foreground">15 Januari 2024</p>
@@ -668,23 +682,24 @@ const Profil = () => {
 
              <TabsContent value="notifications" className="space-y-6">
                <Card>
-                 <CardHeader>
-                   <CardTitle className="flex items-center gap-2">
+                 <CardHeader className="pb-4">
+                   <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                      <Bell className="h-5 w-5" />
                      Pengaturan Notifikasi
                    </CardTitle>
-                   <CardDescription>Kelola preferensi notifikasi Anda</CardDescription>
+                   <CardDescription className="text-sm text-muted-foreground">Kelola preferensi notifikasi Anda</CardDescription>
                  </CardHeader>
-                 <CardContent className="space-y-6">
+                 <CardContent className="space-y-6 p-4 sm:p-6">
                    <div className="space-y-4">
-                     <div className="flex items-center justify-between">
-                       <div>
-                         <p className="font-medium">Notifikasi Email</p>
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div className="flex-1">
+                         <p className="font-medium text-sm sm:text-base">Notifikasi Email</p>
                          <p className="text-sm text-muted-foreground">Terima notifikasi melalui email</p>
                        </div>
                        <Button
                          variant={notificationSettings.emailNotifications ? "default" : "outline"}
                          size="sm"
+                         className="w-full sm:w-auto h-9"
                          onClick={() => setNotificationSettings({
                            ...notificationSettings,
                            emailNotifications: !notificationSettings.emailNotifications
@@ -694,14 +709,15 @@ const Profil = () => {
                        </Button>
                      </div>
                      
-                     <div className="flex items-center justify-between">
-                       <div>
-                         <p className="font-medium">Notifikasi SMS</p>
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div className="flex-1">
+                         <p className="font-medium text-sm sm:text-base">Notifikasi SMS</p>
                          <p className="text-sm text-muted-foreground">Terima notifikasi melalui SMS</p>
                        </div>
                        <Button
                          variant={notificationSettings.smsNotifications ? "default" : "outline"}
                          size="sm"
+                         className="w-full sm:w-auto h-9"
                          onClick={() => setNotificationSettings({
                            ...notificationSettings,
                            smsNotifications: !notificationSettings.smsNotifications
@@ -711,14 +727,15 @@ const Profil = () => {
                        </Button>
                      </div>
                      
-                     <div className="flex items-center justify-between">
-                       <div>
-                         <p className="font-medium">Push Notification</p>
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div className="flex-1">
+                         <p className="font-medium text-sm sm:text-base">Push Notification</p>
                          <p className="text-sm text-muted-foreground">Notifikasi langsung di browser</p>
                        </div>
                        <Button
                          variant={notificationSettings.pushNotifications ? "default" : "outline"}
                          size="sm"
+                         className="w-full sm:w-auto h-9"
                          onClick={() => setNotificationSettings({
                            ...notificationSettings,
                            pushNotifications: !notificationSettings.pushNotifications
@@ -728,14 +745,15 @@ const Profil = () => {
                        </Button>
                      </div>
                      
-                     <div className="flex items-center justify-between">
-                       <div>
-                         <p className="font-medium">Update Proyek</p>
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div className="flex-1">
+                         <p className="font-medium text-sm sm:text-base">Update Proyek</p>
                          <p className="text-sm text-muted-foreground">Notifikasi progress dan update proyek</p>
                        </div>
                        <Button
                          variant={notificationSettings.projectUpdates ? "default" : "outline"}
                          size="sm"
+                         className="w-full sm:w-auto h-9"
                          onClick={() => setNotificationSettings({
                            ...notificationSettings,
                            projectUpdates: !notificationSettings.projectUpdates
@@ -745,14 +763,15 @@ const Profil = () => {
                        </Button>
                      </div>
                      
-                     <div className="flex items-center justify-between">
-                       <div>
-                         <p className="font-medium">Email Promosi</p>
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div className="flex-1">
+                         <p className="font-medium text-sm sm:text-base">Email Promosi</p>
                          <p className="text-sm text-muted-foreground">Penawaran khusus dan promosi</p>
                        </div>
                        <Button
                          variant={notificationSettings.promotionalEmails ? "default" : "outline"}
                          size="sm"
+                         className="w-full sm:w-auto h-9"
                          onClick={() => setNotificationSettings({
                            ...notificationSettings,
                            promotionalEmails: !notificationSettings.promotionalEmails
@@ -762,14 +781,15 @@ const Profil = () => {
                        </Button>
                      </div>
                      
-                     <div className="flex items-center justify-between">
-                       <div>
-                         <p className="font-medium">Pengingat Pembayaran</p>
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div className="flex-1">
+                         <p className="font-medium text-sm sm:text-base">Pengingat Pembayaran</p>
                          <p className="text-sm text-muted-foreground">Reminder untuk pembayaran yang jatuh tempo</p>
                        </div>
                        <Button
                          variant={notificationSettings.paymentReminders ? "default" : "outline"}
                          size="sm"
+                         className="w-full sm:w-auto h-9"
                          onClick={() => setNotificationSettings({
                            ...notificationSettings,
                            paymentReminders: !notificationSettings.paymentReminders
@@ -780,7 +800,7 @@ const Profil = () => {
                      </div>
                    </div>
                    
-                   <Button onClick={handleNotificationUpdate}>
+                   <Button onClick={handleNotificationUpdate} className="w-full sm:w-auto h-10 sm:h-10">
                      <Save className="h-4 w-4 mr-2" />
                      Simpan Pengaturan
                    </Button>
