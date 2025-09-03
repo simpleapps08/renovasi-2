@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Edit, Trash2, Plus, Save, Upload, Eye, Settings } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
+import { supabase } from "@/integrations/supabase/client"
 
 // Mock data - akan diganti dengan data dari database
 const initialHeaderData = {
@@ -84,7 +85,7 @@ const initialPortfolioData = [
 ]
 
 const initialFooterData = {
-  description: "Platform digital terdepan untuk renovasi rumah dan gedung. Dapatkan estimasi biaya yang akurat dan transparan untuk proyek impian Anda.",
+  description: "Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.",
   services: [
     "Renovasi Rumah",
     "Pembangunan Gedung",
@@ -92,16 +93,16 @@ const initialFooterData = {
     "Konsultasi RAB"
   ],
   contact: {
-    email: "info@servisoo.com",
-    phone: "+62 811-2345-6789",
-    whatsapp: "+62 811-2345-6789",
+    email: "servisoo.dev@gmail.com",
+    phone: "+62 823-3654-8080",
+    whatsapp: "+62 858-0867-5233",
     address: "Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318"
   },
   socialMedia: [
-    { name: "Facebook", url: "#", icon: "facebook" },
     { name: "Instagram", url: "#", icon: "instagram" },
-    { name: "Twitter", url: "#", icon: "twitter" },
-    { name: "LinkedIn", url: "#", icon: "linkedin" }
+    { name: "Facebook", url: "#", icon: "facebook" },
+    { name: "TikTok", url: "#", icon: "tiktok" },
+    { name: "YouTube", url: "#", icon: "youtube" }
   ]
 }
 
@@ -114,6 +115,7 @@ const AdminContentManagement = () => {
   const [servicesData, setServicesData] = useState(initialServicesData)
   const [portfolioData, setPortfolioData] = useState(initialPortfolioData)
   const [footerData, setFooterData] = useState(initialFooterData)
+  const [isLoading, setIsLoading] = useState(false)
   
   // State untuk dialog
   const [isEditingHeader, setIsEditingHeader] = useState(false)
@@ -192,13 +194,79 @@ const AdminContentManagement = () => {
     })
   }
 
-  const handleSaveFooter = () => {
-    // Implementasi save footer ke database
-    toast({
-      title: "Footer berhasil diperbarui",
-      description: "Perubahan footer telah disimpan.",
-    })
-    setIsEditingFooter(false)
+  const handleSaveFooter = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Save footer content
+      const { error: footerError } = await supabase
+        .from('footer_content')
+        .upsert({
+          id: 1,
+          description: footerData.description,
+          services: footerData.services
+        });
+      
+      if (footerError) throw footerError;
+      
+      // Save contact info
+      const contactUpdates = [
+        { type: 'email', value: footerData.contact.email },
+        { type: 'phone', value: footerData.contact.phone },
+        { type: 'whatsapp', value: footerData.contact.whatsapp },
+        { type: 'address', value: footerData.contact.address }
+      ];
+      
+      for (const contact of contactUpdates) {
+        const { error: contactError } = await supabase
+          .from('contact_info')
+          .upsert({
+            type: contact.type,
+            value: contact.value
+          }, {
+            onConflict: 'type'
+          });
+        
+        if (contactError) throw contactError;
+      }
+      
+      // Save social media links
+      // First, delete existing links
+      const { error: deleteError } = await supabase
+        .from('social_media_links')
+        .delete()
+        .neq('id', 0); // Delete all
+      
+      if (deleteError) throw deleteError;
+      
+      // Then insert new links
+      const socialLinks = footerData.socialMedia.map(social => ({
+        platform: social.name.toLowerCase(),
+        url: social.url,
+        is_active: true
+      }));
+      
+      const { error: socialError } = await supabase
+        .from('social_media_links')
+        .insert(socialLinks);
+      
+      if (socialError) throw socialError;
+      
+      toast({
+        title: "Footer berhasil diperbarui",
+        description: "Perubahan footer telah disimpan.",
+      })
+      setIsEditingFooter(false)
+    } catch (error) {
+      console.error('Error saving footer:', error);
+      toast({
+        title: "Error",
+        description: "Gagal memperbarui footer. Silakan coba lagi.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

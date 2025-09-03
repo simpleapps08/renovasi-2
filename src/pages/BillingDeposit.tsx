@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/enhanced-button'
@@ -19,9 +19,12 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Transaction {
   id: string
+  user_id: string
   type: 'deposit' | 'payment' | 'refund'
   amount: number
   description: string
@@ -29,76 +32,74 @@ interface Transaction {
   status: 'completed' | 'pending' | 'failed'
   method: string
   projectId?: string
+  created_at: string
+  updated_at: string
 }
 
 const BillingDeposit = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [topUpAmount, setTopUpAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
   const [filterType, setFilterType] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [currentBalance, setCurrentBalance] = useState(0)
+  const [pendingBalance, setPendingBalance] = useState(0)
+  const [loading, setLoading] = useState(true)
 
-  // Data dummy untuk pengguna Agus
-  const currentBalance = 2500000
-  const pendingBalance = 500000
+  // Fetch transactions and balance from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) {
+        setLoading(false)
+        return
+      }
 
-  const transactions: Transaction[] = [
-    {
-      id: 'TXN-001',
-      type: 'deposit',
-      amount: 5000000,
-      description: 'Top Up Saldo via Transfer Bank',
-      date: '2024-12-01',
-      status: 'completed',
-      method: 'Bank Transfer'
-    },
-    {
-      id: 'TXN-002',
-      type: 'payment',
-      amount: -2500000,
-      description: 'Pembayaran Proyek Renovasi Dapur',
-      date: '2024-12-02',
-      status: 'completed',
-      method: 'Saldo Deposit',
-      projectId: 'PRJ-001'
-    },
-    {
-      id: 'TXN-003',
-      type: 'deposit',
-      amount: 1000000,
-      description: 'Top Up Saldo via E-Wallet',
-      date: '2024-12-05',
-      status: 'completed',
-      method: 'GoPay'
-    },
-    {
-      id: 'TXN-004',
-      type: 'payment',
-      amount: -1000000,
-      description: 'Pembayaran Konsultasi Desain',
-      date: '2024-12-08',
-      status: 'completed',
-      method: 'Saldo Deposit'
-    },
-    {
-      id: 'TXN-005',
-      type: 'deposit',
-      amount: 500000,
-      description: 'Top Up Saldo via Virtual Account',
-      date: '2024-12-10',
-      status: 'pending',
-      method: 'Virtual Account BCA'
-    },
-    {
-      id: 'TXN-006',
-      type: 'refund',
-      amount: 250000,
-      description: 'Refund Pembatalan Konsultasi',
-      date: '2024-12-12',
-      status: 'completed',
-      method: 'Saldo Deposit'
+      try {
+        // Fetch transactions
+        const { data: transactionsData, error: transactionsError } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+
+        if (transactionsError) {
+          console.error('Error fetching transactions:', transactionsError)
+          toast.error('Gagal memuat data transaksi')
+        } else {
+          setTransactions(transactionsData || [])
+        }
+
+        // Fetch user balance
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('saldo_deposit')
+          .eq('id', user.id)
+          .single()
+
+        if (userError) {
+          console.error('Error fetching user balance:', userError)
+        } else {
+          setCurrentBalance(userData?.saldo_deposit || 0)
+        }
+
+        // Calculate pending balance from pending transactions
+        const pendingDeposits = (transactionsData || [])
+          .filter(t => t.type === 'deposit' && t.status === 'pending')
+          .reduce((sum, t) => sum + t.amount, 0)
+        setPendingBalance(pendingDeposits)
+
+      } catch (error) {
+        console.error('Error:', error)
+        toast.error('Terjadi kesalahan saat memuat data')
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchData()
+  }, [user])
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
@@ -158,7 +159,7 @@ const BillingDeposit = () => {
     return matchesType && matchesStatus
   })
 
-  const handleTopUp = () => {
+  const handleTopUp = async () => {
     if (!topUpAmount || !paymentMethod) {
       toast.error('Mohon lengkapi jumlah dan metode pembayaran')
       return
@@ -175,10 +176,41 @@ const BillingDeposit = () => {
       return
     }
 
-    // Simulate payment process
-    toast.success(`Permintaan top up Rp ${amount.toLocaleString('id-ID')} via ${paymentMethod} berhasil dibuat`)
-    setTopUpAmount('')
-    setPaymentMethod('')
+    if (!user) {
+      toast.error('Anda harus login terlebih dahulu')
+      return
+    }
+
+    try {
+      // Create transaction record
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'deposit',
+          amount: amount,
+          description: `Top up saldo via ${paymentMethod}`,
+          date: new Date().toISOString(),
+          status: 'pending',
+          method: paymentMethod.toLowerCase().replace(/\s+/g, '_')
+        })
+
+      if (error) {
+        console.error('Error creating transaction:', error)
+        toast.error('Gagal memproses top up')
+        return
+      }
+
+      toast.success(`Permintaan top up Rp ${amount.toLocaleString('id-ID')} via ${paymentMethod} berhasil dibuat! Menunggu konfirmasi pembayaran.`)
+      setTopUpAmount('')
+      setPaymentMethod('')
+      
+      // Refresh data
+      window.location.reload()
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Terjadi kesalahan saat memproses top up')
+    }
   }
 
   const downloadStatement = () => {
@@ -309,7 +341,11 @@ const BillingDeposit = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredTransactions.length === 0 ? (
+                {loading ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Memuat data transaksi...</p>
+                  </div>
+                ) : filteredTransactions.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">Tidak ada transaksi yang ditemukan</p>
                   </div>
@@ -321,7 +357,7 @@ const BillingDeposit = () => {
                         <div>
                           <p className="font-medium">{transaction.description}</p>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>{new Date(transaction.date).toLocaleDateString('id-ID')}</span>
+                            <span>{new Date(transaction.date || transaction.created_at).toLocaleDateString('id-ID')}</span>
                             <span>•</span>
                             <span>{transaction.method}</span>
                             <span>•</span>
@@ -331,9 +367,9 @@ const BillingDeposit = () => {
                       </div>
                       <div className="text-right">
                         <p className={`font-semibold ${
-                          transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                          transaction.type === 'deposit' || transaction.type === 'refund' ? 'text-green-600' : 'text-red-600'
                         }`}>
-                          {transaction.amount > 0 ? '+' : ''}Rp {Math.abs(transaction.amount).toLocaleString('id-ID')}
+                          {(transaction.type === 'deposit' || transaction.type === 'refund') ? '+' : '-'}Rp {transaction.amount.toLocaleString('id-ID')}
                         </p>
                         <div className="flex items-center gap-2">
                           <Badge className={getStatusColor(transaction.status)}>

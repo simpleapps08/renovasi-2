@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
@@ -7,91 +7,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Eye, Download, Search, Filter, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Project {
   id: string
+  project_id: string
   name: string
   type: string
   status: 'completed' | 'in-progress' | 'pending' | 'cancelled'
-  startDate: string
-  endDate?: string
+  start_date: string
+  end_date?: string
   budget: number
-  actualCost?: number
+  actual_cost?: number
   progress: number
   description: string
   location: string
+  created_at: string
+  updated_at: string
 }
 
 const HistoriProyek = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Data dummy untuk pengguna Agus
-  const projects: Project[] = [
-    {
-      id: 'PRJ-001',
-      name: 'Renovasi Dapur dan Ruang Makan',
-      type: 'Renovasi Rumah',
-      status: 'completed',
-      startDate: '2024-01-15',
-      endDate: '2024-03-20',
-      budget: 85000000,
-      actualCost: 82500000,
-      progress: 100,
-      description: 'Renovasi total dapur dengan kitchen set baru, lantai keramik, dan perluasan ruang makan',
-      location: 'Jl. Merdeka No. 123, Jakarta Selatan'
-    },
-    {
-      id: 'PRJ-002',
-      name: 'Pembangunan Kamar Mandi Tambahan',
-      type: 'Pembangunan Baru',
-      status: 'completed',
-      startDate: '2024-04-10',
-      endDate: '2024-05-25',
-      budget: 35000000,
-      actualCost: 33800000,
-      progress: 100,
-      description: 'Pembangunan kamar mandi baru di lantai 2 dengan shower dan water heater',
-      location: 'Jl. Merdeka No. 123, Jakarta Selatan'
-    },
-    {
-      id: 'PRJ-003',
-      name: 'Renovasi Teras dan Taman',
-      type: 'Renovasi Rumah',
-      status: 'in-progress',
-      startDate: '2024-11-01',
-      budget: 45000000,
-      progress: 65,
-      description: 'Renovasi teras dengan pergola, pemasangan deck kayu, dan landscaping taman',
-      location: 'Jl. Merdeka No. 123, Jakarta Selatan'
-    },
-    {
-      id: 'PRJ-004',
-      name: 'Perbaikan Atap dan Talang',
-      type: 'Perbaikan',
-      status: 'pending',
-      startDate: '2025-01-15',
-      budget: 25000000,
-      progress: 0,
-      description: 'Perbaikan kebocoran atap, penggantian genteng, dan instalasi talang air baru',
-      location: 'Jl. Merdeka No. 123, Jakarta Selatan'
-    },
-    {
-      id: 'PRJ-005',
-      name: 'Renovasi Kamar Tidur Utama',
-      type: 'Renovasi Rumah',
-      status: 'completed',
-      startDate: '2023-09-10',
-      endDate: '2023-11-15',
-      budget: 55000000,
-      actualCost: 58200000,
-      progress: 100,
-      description: 'Renovasi kamar tidur utama dengan walk-in closet, AC split, dan kamar mandi dalam',
-      location: 'Jl. Merdeka No. 123, Jakarta Selatan'
+  // Fetch projects from Supabase
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('Error fetching projects:', error)
+          toast.error('Gagal memuat data proyek')
+        } else {
+          setProjects(data || [])
+        }
+      } catch (error) {
+        console.error('Error:', error)
+        toast.error('Terjadi kesalahan saat memuat data')
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchProjects()
+  }, [user])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -137,9 +112,9 @@ const HistoriProyek = () => {
     const detailInfo = `
 📋 Detail Proyek: ${project.name}
 🏷️ ID: ${project.id}
-📅 Periode: ${new Date(project.startDate).toLocaleDateString('id-ID')}${project.endDate ? ` - ${new Date(project.endDate).toLocaleDateString('id-ID')}` : ''}
+📅 Periode: ${new Date(project.start_date).toLocaleDateString('id-ID')}${project.end_date ? ` - ${new Date(project.end_date).toLocaleDateString('id-ID')}` : ''}
 💰 Anggaran: Rp ${project.budget.toLocaleString('id-ID')}
-${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleString('id-ID')}` : ''}
+${project.actual_cost ? `💸 Biaya Aktual: Rp ${project.actual_cost.toLocaleString('id-ID')}` : ''}
 📍 Lokasi: ${project.location}
 📝 Deskripsi: ${project.description}
     `
@@ -157,10 +132,10 @@ ${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleStrin
       projectName: project.name,
       type: project.type,
       status: project.status,
-      startDate: project.startDate,
-      endDate: project.endDate,
+      startDate: project.start_date,
+      endDate: project.end_date,
       budget: project.budget,
-      actualCost: project.actualCost,
+      actualCost: project.actual_cost,
       progress: project.progress,
       description: project.description,
       location: project.location,
@@ -168,7 +143,7 @@ ${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleStrin
     }
     
     // Create a blob with report data (simulating PDF content)
-    const reportContent = `LAPORAN PROYEK\n\nNama Proyek: ${project.name}\nID Proyek: ${project.id}\nJenis: ${project.type}\nStatus: ${getStatusText(project.status)}\nTanggal Mulai: ${new Date(project.startDate).toLocaleDateString('id-ID')}\n${project.endDate ? `Tanggal Selesai: ${new Date(project.endDate).toLocaleDateString('id-ID')}\n` : ''}Anggaran: Rp ${project.budget.toLocaleString('id-ID')}\n${project.actualCost ? `Biaya Aktual: Rp ${project.actualCost.toLocaleString('id-ID')}\n` : ''}Progress: ${project.progress}%\nLokasi: ${project.location}\nDeskripsi: ${project.description}\n\nLaporan dibuat pada: ${new Date().toLocaleString('id-ID')}`
+    const reportContent = `LAPORAN PROYEK\n\nNama Proyek: ${project.name}\nID Proyek: ${project.id}\nJenis: ${project.type}\nStatus: ${getStatusText(project.status)}\nTanggal Mulai: ${new Date(project.start_date).toLocaleDateString('id-ID')}\n${project.end_date ? `Tanggal Selesai: ${new Date(project.end_date).toLocaleDateString('id-ID')}\n` : ''}Anggaran: Rp ${project.budget.toLocaleString('id-ID')}\n${project.actual_cost ? `Biaya Aktual: Rp ${project.actual_cost.toLocaleString('id-ID')}\n` : ''}Progress: ${project.progress}%\nLokasi: ${project.location}\nDeskripsi: ${project.description}\n\nLaporan dibuat pada: ${new Date().toLocaleString('id-ID')}`
     
     const blob = new Blob([reportContent], { type: 'text/plain' })
     const url = window.URL.createObjectURL(blob)
@@ -259,7 +234,15 @@ ${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleStrin
 
       {/* Projects List */}
       <div className="grid gap-6">
-        {filteredProjects.length === 0 ? (
+        {loading ? (
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <p className="text-muted-foreground">Memuat data proyek...</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : filteredProjects.length === 0 ? (
           <Card>
             <CardContent className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -283,8 +266,8 @@ ${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleStrin
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(project.startDate).toLocaleDateString('id-ID')}
-                        {project.endDate && ` - ${new Date(project.endDate).toLocaleDateString('id-ID')}`}
+                        {new Date(project.start_date).toLocaleDateString('id-ID')}
+                        {project.end_date && ` - ${new Date(project.end_date).toLocaleDateString('id-ID')}`}
                       </span>
                       <span>ID: {project.id}</span>
                     </div>
@@ -345,17 +328,17 @@ ${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleStrin
                       Rp {project.budget.toLocaleString('id-ID')}
                     </p>
                   </div>
-                  {project.actualCost && (
+                  {project.actual_cost && (
                     <div>
                       <p className="text-sm font-medium">Biaya Aktual</p>
                       <p className={`text-lg font-semibold ${
-                        project.actualCost <= project.budget ? 'text-green-600' : 'text-red-600'
+                        project.actual_cost <= project.budget ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        Rp {project.actualCost.toLocaleString('id-ID')}
+                        Rp {project.actual_cost.toLocaleString('id-ID')}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {project.actualCost <= project.budget ? 'Hemat' : 'Lebih'}: 
-                        Rp {Math.abs(project.actualCost - project.budget).toLocaleString('id-ID')}
+                        {project.actual_cost <= project.budget ? 'Hemat' : 'Lebih'}: 
+                        Rp {Math.abs(project.actual_cost - project.budget).toLocaleString('id-ID')}
                       </p>
                     </div>
                   )}
@@ -366,47 +349,53 @@ ${project.actualCost ? `💸 Biaya Aktual: Rp ${project.actualCost.toLocaleStrin
         )}
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{projects.length}</p>
-              <p className="text-sm text-muted-foreground">Total Proyek</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
-                {projects.filter(p => p.status === 'completed').length}
-              </p>
-              <p className="text-sm text-muted-foreground">Proyek Selesai</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
-                {projects.filter(p => p.status === 'in-progress').length}
-              </p>
-              <p className="text-sm text-muted-foreground">Sedang Berlangsung</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">
-                Rp {projects.reduce((sum, p) => sum + p.budget, 0).toLocaleString('id-ID')}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Investasi</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Statistics */}
+      {(() => {
+        const totalProjects = projects.length
+        const completedProjects = projects.filter(p => p.status === 'completed').length
+        const inProgressProjects = projects.filter(p => p.status === 'in-progress').length
+        const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0)
+        const totalActualCost = projects.reduce((sum, p) => sum + (p.actual_cost || 0), 0)
+
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">{totalProjects}</p>
+                  <p className="text-sm text-muted-foreground">Total Proyek</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{completedProjects}</p>
+                  <p className="text-sm text-muted-foreground">Proyek Selesai</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">{inProgressProjects}</p>
+                  <p className="text-sm text-muted-foreground">Sedang Berlangsung</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-orange-600">
+                    Rp {totalBudget.toLocaleString('id-ID')}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Total Investasi</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )
+      })()}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
 import { Input } from "@/components/ui/input"
@@ -12,9 +12,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Search, Edit, Trash2, Download, Plus, CreditCard, CheckCircle, XCircle, Clock, DollarSign } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface DepositData {
   id: string
+  user_id: string
   user_email: string
   user_name: string
   project_name: string
@@ -33,6 +36,7 @@ interface DepositData {
 const AdminDepositBilling = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('semua')
   const [filterPaymentMethod, setFilterPaymentMethod] = useState('semua')
@@ -40,80 +44,55 @@ const AdminDepositBilling = () => {
   const [editingDeposit, setEditingDeposit] = useState<DepositData | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const [loading, setLoading] = useState(true)
 
-  // Dummy data deposits
-  const [deposits, setDeposits] = useState<DepositData[]>([
-    {
-      id: '1',
-      user_email: 'john.doe@email.com',
-      user_name: 'John Doe',
-      project_name: 'Renovasi Rumah Bandung',
-      amount: 50000000,
-      status: 'pending',
-      payment_method: 'bank_transfer',
-      payment_proof: 'proof_001.jpg',
-      notes: 'Deposit untuk tahap pertama renovasi',
-      created_at: '2024-01-20',
-      updated_at: '2024-01-20'
-    },
-    {
-      id: '2',
-      user_email: 'jane.smith@email.com',
-      user_name: 'Jane Smith',
-      project_name: 'Pembangunan Rumah Surabaya',
-      amount: 75000000,
-      status: 'approved',
-      payment_method: 'credit_card',
-      notes: 'Deposit untuk material dan tenaga kerja',
-      admin_notes: 'Pembayaran telah diverifikasi',
-      approved_by: 'admin@servisoo.com',
-      approved_at: '2024-01-19 10:30:00',
-      created_at: '2024-01-18',
-      updated_at: '2024-01-19'
-    },
-    {
-      id: '3',
-      user_email: 'bob.wilson@email.com',
-      user_name: 'Bob Wilson',
-      project_name: 'Renovasi Dapur Medan',
-      amount: 25000000,
-      status: 'completed',
-      payment_method: 'e_wallet',
-      notes: 'Deposit untuk renovasi dapur',
-      admin_notes: 'Proyek telah selesai, deposit dikembalikan',
-      approved_by: 'admin@servisoo.com',
-      approved_at: '2024-01-15 14:20:00',
-      created_at: '2024-01-10',
-      updated_at: '2024-01-17'
-    },
-    {
-      id: '4',
-      user_email: 'alice.brown@email.com',
-      user_name: 'Alice Brown',
-      project_name: 'Pembangunan Kamar Mandi Yogyakarta',
-      amount: 30000000,
-      status: 'rejected',
-      payment_method: 'bank_transfer',
-      payment_proof: 'proof_004.jpg',
-      notes: 'Deposit untuk pembangunan kamar mandi',
-      admin_notes: 'Bukti pembayaran tidak valid',
-      created_at: '2024-01-16',
-      updated_at: '2024-01-17'
-    },
-    {
-      id: '5',
-      user_email: 'charlie.davis@email.com',
-      user_name: 'Charlie Davis',
-      project_name: 'Renovasi Teras Jakarta',
-      amount: 15000000,
-      status: 'pending',
-      payment_method: 'bank_transfer',
-      payment_proof: 'proof_005.jpg',
-      notes: 'Deposit untuk renovasi teras rumah',
-      created_at: '2024-01-21',
-      updated_at: '2024-01-21'
+  const [deposits, setDeposits] = useState<DepositData[]>([])
+
+  // Fetch deposits from Supabase
+  useEffect(() => {
+    const fetchDeposits = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('deposits')
+          .select(`
+            *,
+            profiles!deposits_user_id_fkey (
+              email,
+              full_name
+            )
+          `)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('Error fetching deposits:', error)
+          toast({
+            title: "Error",
+            description: "Gagal memuat data deposit",
+            variant: "destructive",
+          })
+        } else {
+          // Transform data to match interface
+          const transformedData = (data || []).map(deposit => ({
+            ...deposit,
+            user_email: deposit.profiles?.email || deposit.user_email,
+            user_name: deposit.profiles?.full_name || deposit.user_name
+          }))
+          setDeposits(transformedData)
+        }
+      } catch (error) {
+        console.error('Error:', error)
+        toast({
+          title: "Error",
+          description: "Terjadi kesalahan saat memuat data",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
     }
-  ])
+
+    fetchDeposits()
+  }, [])
 
   const [formData, setFormData] = useState({
     user_email: '',
@@ -144,7 +123,7 @@ const AdminDepositBilling = () => {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedDeposits = filteredDeposits.slice(startIndex, startIndex + itemsPerPage)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.user_email || !formData.user_name || !formData.project_name || !formData.amount) {
@@ -156,38 +135,111 @@ const AdminDepositBilling = () => {
       return
     }
 
-    const depositData: DepositData = {
-      id: editingDeposit ? editingDeposit.id : Date.now().toString(),
-      user_email: formData.user_email,
-      user_name: formData.user_name,
-      project_name: formData.project_name,
-      amount: parseInt(formData.amount),
-      status: formData.status,
-      payment_method: formData.payment_method,
-      notes: formData.notes,
-      admin_notes: formData.admin_notes,
-      created_at: editingDeposit ? editingDeposit.created_at : new Date().toISOString().split('T')[0],
-      updated_at: new Date().toISOString().split('T')[0],
-      approved_by: formData.status === 'approved' ? 'admin@servisoo.com' : editingDeposit?.approved_by,
-      approved_at: formData.status === 'approved' ? new Date().toISOString() : editingDeposit?.approved_at
-    }
+    try {
+      if (editingDeposit) {
+        // Update existing deposit
+        const { error } = await supabase
+          .from('deposits')
+          .update({
+            user_email: formData.user_email,
+            user_name: formData.user_name,
+            project_name: formData.project_name,
+            amount: parseInt(formData.amount),
+            status: formData.status,
+            payment_method: formData.payment_method,
+            notes: formData.notes,
+            admin_notes: formData.admin_notes,
+            updated_at: new Date().toISOString(),
+            approved_by: formData.status === 'approved' ? user?.email || 'admin@servisoo.com' : editingDeposit.approved_by,
+            approved_at: formData.status === 'approved' ? new Date().toISOString() : editingDeposit.approved_at
+          })
+          .eq('id', editingDeposit.id)
 
-    if (editingDeposit) {
-      setDeposits(deposits.map(d => d.id === editingDeposit.id ? depositData : d))
+        if (error) {
+          console.error('Error updating deposit:', error)
+          toast({
+            title: "Error",
+            description: "Gagal memperbarui deposit",
+            variant: "destructive",
+          })
+          return
+        }
+
+        // Update local state
+        const updatedDeposit = {
+          ...editingDeposit,
+          user_email: formData.user_email,
+          user_name: formData.user_name,
+          project_name: formData.project_name,
+          amount: parseInt(formData.amount),
+          status: formData.status,
+          payment_method: formData.payment_method,
+          notes: formData.notes,
+          admin_notes: formData.admin_notes,
+          updated_at: new Date().toISOString(),
+          approved_by: formData.status === 'approved' ? user?.email || 'admin@servisoo.com' : editingDeposit.approved_by,
+          approved_at: formData.status === 'approved' ? new Date().toISOString() : editingDeposit.approved_at
+        }
+        setDeposits(deposits.map(d => d.id === editingDeposit.id ? updatedDeposit : d))
+        toast({
+          title: "Berhasil",
+          description: "Data deposit berhasil diperbarui.",
+        })
+      } else {
+        // Add new deposit
+        const { data, error } = await supabase
+          .from('deposits')
+          .insert({
+            user_email: formData.user_email,
+            user_name: formData.user_name,
+            project_name: formData.project_name,
+            amount: parseInt(formData.amount),
+            status: formData.status,
+            payment_method: formData.payment_method,
+            notes: formData.notes,
+            admin_notes: formData.admin_notes
+          })
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error adding deposit:', error)
+          toast({
+            title: "Error",
+            description: "Gagal menambahkan deposit",
+            variant: "destructive",
+          })
+          return
+        }
+
+        // Add to local state
+        const newDeposit: DepositData = {
+          ...data,
+          user_id: data.user_id || ''
+        }
+        setDeposits([...deposits, newDeposit])
+        toast({
+          title: "Berhasil",
+          description: "Deposit baru berhasil ditambahkan.",
+        })
+      }
+
+      resetForm()
+      setIsDialogOpen(false)
+    } catch (error) {
+      console.error('Error saving deposit:', error)
       toast({
-        title: "Berhasil",
-        description: "Data deposit berhasil diperbarui.",
-      })
-    } else {
-      setDeposits([...deposits, depositData])
-      toast({
-        title: "Berhasil",
-        description: "Deposit baru berhasil ditambahkan.",
+        title: "Error",
+        description: "Terjadi kesalahan saat menyimpan deposit",
+        variant: "destructive",
       })
     }
+  }
 
+  const handleAdd = () => {
+    setEditingDeposit(null)
     resetForm()
-    setIsDialogOpen(false)
+    setIsDialogOpen(true)
   }
 
   const handleEdit = (deposit: DepositData) => {
@@ -205,30 +257,86 @@ const AdminDepositBilling = () => {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    setDeposits(deposits.filter(d => d.id !== id))
-    toast({
-      title: "Berhasil",
-      description: "Deposit berhasil dihapus.",
-    })
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('deposits')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        console.error('Error deleting deposit:', error)
+        toast({
+          title: "Error",
+          description: "Gagal menghapus deposit",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Update local state
+      setDeposits(deposits.filter(d => d.id !== id))
+      toast({
+        title: "Berhasil",
+        description: "Deposit berhasil dihapus.",
+      })
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menghapus deposit",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleStatusChange = (depositId: string, newStatus: 'pending' | 'approved' | 'rejected' | 'completed') => {
-    setDeposits(deposits.map(d => 
-      d.id === depositId 
-        ? { 
-            ...d, 
-            status: newStatus, 
-            updated_at: new Date().toISOString().split('T')[0],
-            approved_by: newStatus === 'approved' ? 'admin@servisoo.com' : d.approved_by,
-            approved_at: newStatus === 'approved' ? new Date().toISOString() : d.approved_at
-          }
-        : d
-    ))
-    toast({
-      title: "Berhasil",
-      description: `Status deposit berhasil diubah menjadi ${newStatus}.`,
-    })
+  const handleStatusChange = async (depositId: string, newStatus: 'pending' | 'approved' | 'rejected' | 'completed') => {
+    try {
+      const { error } = await supabase
+        .from('deposits')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          approved_by: newStatus === 'approved' ? user?.email || 'admin@servisoo.com' : null,
+          approved_at: newStatus === 'approved' ? new Date().toISOString() : null
+        })
+        .eq('id', depositId)
+
+      if (error) {
+        console.error('Error updating deposit status:', error)
+        toast({
+          title: "Error",
+          description: "Gagal mengubah status deposit",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Update local state
+      setDeposits(deposits.map(d => 
+        d.id === depositId 
+          ? { 
+              ...d, 
+              status: newStatus, 
+              updated_at: new Date().toISOString(),
+              approved_by: newStatus === 'approved' ? user?.email || 'admin@servisoo.com' : d.approved_by,
+              approved_at: newStatus === 'approved' ? new Date().toISOString() : d.approved_at
+            }
+          : d
+      ))
+      
+      toast({
+        title: "Berhasil",
+        description: `Status deposit berhasil diubah menjadi ${newStatus}.`,
+      })
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat mengubah status",
+        variant: "destructive",
+      })
+    }
   }
 
   const resetForm = () => {
@@ -582,99 +690,113 @@ const AdminDepositBilling = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedDeposits.map((deposit) => (
-                    <TableRow key={deposit.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{deposit.user_name}</div>
-                          <div className="text-sm text-gray-500">{deposit.user_email}</div>
-                        </div>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8">
+                        <p className="text-gray-500">Memuat data deposit...</p>
                       </TableCell>
-                      <TableCell className="font-medium">{deposit.project_name}</TableCell>
-                      <TableCell className="font-bold text-green-600">
-                        {formatCurrency(deposit.amount)}
+                    </TableRow>
+                  ) : paginatedDeposits.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8">
+                        <p className="text-gray-500">Tidak ada data deposit yang ditemukan</p>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getStatusBadgeVariant(deposit.status)} className="flex items-center gap-1">
-                            {getStatusIcon(deposit.status)}
-                            {deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1)}
+                    </TableRow>
+                  ) : (
+                    paginatedDeposits.map((deposit) => (
+                      <TableRow key={deposit.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{deposit.user_name}</div>
+                            <div className="text-sm text-gray-500">{deposit.user_email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{deposit.project_name}</TableCell>
+                        <TableCell className="font-bold text-green-600">
+                          {formatCurrency(deposit.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={getStatusBadgeVariant(deposit.status)} className="flex items-center gap-1">
+                              {getStatusIcon(deposit.status)}
+                              {deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1)}
+                            </Badge>
+                            {deposit.status === 'pending' && (
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleStatusChange(deposit.id, 'approved')}
+                                  className="text-xs text-green-600"
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleStatusChange(deposit.id, 'rejected')}
+                                  className="text-xs text-red-600"
+                                >
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                            {deposit.status === 'approved' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleStatusChange(deposit.id, 'completed')}
+                                className="text-xs text-blue-600"
+                              >
+                                Complete
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {deposit.payment_method === 'bank_transfer' && 'Bank Transfer'}
+                            {deposit.payment_method === 'credit_card' && 'Credit Card'}
+                            {deposit.payment_method === 'e_wallet' && 'E-Wallet'}
                           </Badge>
-                          {deposit.status === 'pending' && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleStatusChange(deposit.id, 'approved')}
-                                className="text-xs text-green-600"
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleStatusChange(deposit.id, 'rejected')}
-                                className="text-xs text-red-600"
-                              >
-                                Reject
-                              </Button>
-                            </div>
-                          )}
-                          {deposit.status === 'approved' && (
+                        </TableCell>
+                        <TableCell>{formatDate(deposit.created_at)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleStatusChange(deposit.id, 'completed')}
-                              className="text-xs text-blue-600"
+                              onClick={() => handleEdit(deposit)}
                             >
-                              Complete
+                              <Edit className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {deposit.payment_method === 'bank_transfer' && 'Bank Transfer'}
-                          {deposit.payment_method === 'credit_card' && 'Credit Card'}
-                          {deposit.payment_method === 'e_wallet' && 'E-Wallet'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(deposit.created_at)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(deposit)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Hapus Deposit</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Apakah Anda yakin ingin menghapus deposit "{deposit.project_name}"? 
-                                  Tindakan ini tidak dapat dibatalkan.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(deposit.id)}>
-                                  Hapus
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Deposit</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Apakah Anda yakin ingin menghapus deposit "{deposit.project_name}"? 
+                                    Tindakan ini tidak dapat dibatalkan.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(deposit.id)}>
+                                    Hapus
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
