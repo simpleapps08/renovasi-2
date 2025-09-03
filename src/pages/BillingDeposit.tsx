@@ -219,22 +219,23 @@ const BillingDeposit = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
           <Button 
             onClick={() => navigate('/dashboard')} 
             variant="outline" 
             size="sm"
+            className="w-fit"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Billing & Deposit</h1>
-            <p className="text-muted-foreground">Kelola saldo dan riwayat transaksi Anda</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">Billing & Deposit</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Kelola saldo dan riwayat transaksi Anda</p>
           </div>
         </div>
-        <Button onClick={downloadStatement} variant="outline">
+        <Button onClick={downloadStatement} variant="outline" className="w-fit sm:w-auto">
           <Download className="h-4 w-4 mr-2" />
           Unduh Laporan
         </Button>

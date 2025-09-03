@@ -160,19 +160,20 @@ ${project.actual_cost ? `💸 Biaya Aktual: Rp ${project.actual_cost.toLocaleStr
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
           <Button 
             onClick={() => navigate('/dashboard')} 
             variant="outline" 
             size="sm"
+            className="w-fit"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Histori Proyek</h1>
-            <p className="text-muted-foreground">Riwayat semua proyek renovasi dan pembangunan</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">Histori Proyek</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Riwayat semua proyek renovasi dan pembangunan</p>
           </div>
         </div>
       </div>
