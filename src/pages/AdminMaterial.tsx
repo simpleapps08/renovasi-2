@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Plus, Search, Edit, Trash2, Download, Upload } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Material {
   id: string
@@ -18,9 +19,8 @@ interface Material {
   kategori: string
   satuan: string
   harga: number
-  supplier?: string
-  deskripsi?: string
-  status: 'aktif' | 'nonaktif'
+  kualitas: string
+  lokasi?: string
   created_at: string
   updated_at: string
 }
@@ -34,79 +34,55 @@ const AdminMaterial = () => {
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const [loading, setLoading] = useState(true)
 
-  // Dummy data material
-  const [materials, setMaterials] = useState<Material[]>([
-    {
-      id: '1',
-      nama: 'Semen Portland',
-      kategori: 'Semen',
-      satuan: 'sak',
-      harga: 65000,
-      supplier: 'PT Semen Indonesia',
-      deskripsi: 'Semen portland type I untuk konstruksi umum',
-      status: 'aktif',
-      created_at: '2024-01-15',
-      updated_at: '2024-01-15'
-    },
-    {
-      id: '2',
-      nama: 'Bata Merah',
-      kategori: 'Bata',
-      satuan: 'buah',
-      harga: 800,
-      supplier: 'CV Bata Jaya',
-      deskripsi: 'Bata merah berkualitas tinggi',
-      status: 'aktif',
-      created_at: '2024-01-16',
-      updated_at: '2024-01-16'
-    },
-    {
-      id: '3',
-      nama: 'Pasir Cor',
-      kategori: 'Pasir',
-      satuan: 'm3',
-      harga: 350000,
-      supplier: 'UD Pasir Sejahtera',
-      deskripsi: 'Pasir cor halus untuk pengecoran',
-      status: 'aktif',
-      created_at: '2024-01-17',
-      updated_at: '2024-01-17'
-    },
-    {
-      id: '4',
-      nama: 'Keramik 40x40',
-      kategori: 'Keramik',
-      satuan: 'm2',
-      harga: 85000,
-      supplier: 'PT Keramik Indah',
-      deskripsi: 'Keramik lantai ukuran 40x40 cm',
-      status: 'nonaktif',
-      created_at: '2024-01-18',
-      updated_at: '2024-01-18'
-    },
-    {
-      id: '5',
-      nama: 'Cat Tembok',
-      kategori: 'Cat',
-      satuan: 'kaleng',
-      harga: 125000,
-      supplier: 'PT Cat Warna',
-      deskripsi: 'Cat tembok interior berkualitas premium',
-      status: 'aktif',
-      created_at: '2024-01-19',
-      updated_at: '2024-01-19'
+  // Data material dari Supabase
+  const [materials, setMaterials] = useState<Material[]>([])
+
+  // Fetch materials from Supabase
+  const fetchMaterials = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('materials')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching materials:', error)
+        toast({
+          title: "Error",
+          description: "Gagal memuat data material",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      setMaterials(data || [])
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat memuat data",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
     }
-  ])
+  }
+
+  // Load materials on component mount
+  useEffect(() => {
+    fetchMaterials()
+  }, [])
 
   const [formData, setFormData] = useState({
     nama: '',
     kategori: '',
     satuan: '',
     harga: '',
-    supplier: '',
-    deskripsi: '',
-    status: 'aktif' as 'aktif' | 'nonaktif'
+    kualitas: '',
+    lokasi: ''
   })
 
   const kategoriOptions = ['Semen', 'Bata', 'Pasir', 'Keramik', 'Cat', 'Besi', 'Kayu', 'Pipa', 'Kabel', 'Lainnya']
@@ -126,10 +102,10 @@ const AdminMaterial = () => {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedMaterials = filteredMaterials.slice(startIndex, startIndex + itemsPerPage)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.nama || !formData.kategori || !formData.satuan || !formData.harga) {
+    if (!formData.nama || !formData.kategori || !formData.satuan || !formData.harga || !formData.kualitas) {
       toast({
         title: "Error",
         description: "Mohon lengkapi semua field yang wajib diisi.",
@@ -138,35 +114,69 @@ const AdminMaterial = () => {
       return
     }
 
-    const materialData: Material = {
-      id: editingMaterial ? editingMaterial.id : Date.now().toString(),
-      nama: formData.nama,
-      kategori: formData.kategori,
-      satuan: formData.satuan,
-      harga: parseInt(formData.harga),
-      supplier: formData.supplier,
-      deskripsi: formData.deskripsi,
-      status: formData.status,
-      created_at: editingMaterial ? editingMaterial.created_at : new Date().toISOString().split('T')[0],
-      updated_at: new Date().toISOString().split('T')[0]
-    }
+    try {
+      const materialData = {
+        nama: formData.nama,
+        kategori: formData.kategori,
+        satuan: formData.satuan,
+        harga: parseInt(formData.harga),
+        kualitas: formData.kualitas,
+        lokasi: formData.lokasi || null
+      }
 
-    if (editingMaterial) {
-      setMaterials(materials.map(m => m.id === editingMaterial.id ? materialData : m))
+      if (editingMaterial) {
+        const { error } = await supabase
+          .from('materials')
+          .update(materialData)
+          .eq('id', editingMaterial.id)
+        
+        if (error) {
+          console.error('Error updating material:', error)
+          toast({
+            title: "Error",
+            description: "Gagal memperbarui data material",
+            variant: "destructive"
+          })
+          return
+        }
+        
+        toast({
+          title: "Berhasil",
+          description: "Data material berhasil diperbarui.",
+        })
+      } else {
+        const { error } = await supabase
+          .from('materials')
+          .insert([materialData])
+        
+        if (error) {
+          console.error('Error adding material:', error)
+          toast({
+            title: "Error",
+            description: "Gagal menambahkan material baru",
+            variant: "destructive"
+          })
+          return
+        }
+        
+        toast({
+          title: "Berhasil",
+          description: "Material baru berhasil ditambahkan.",
+        })
+      }
+
+      // Refresh data
+      await fetchMaterials()
+      resetForm()
+      setIsDialogOpen(false)
+    } catch (error) {
+      console.error('Error:', error)
       toast({
-        title: "Berhasil",
-        description: "Data material berhasil diperbarui.",
-      })
-    } else {
-      setMaterials([...materials, materialData])
-      toast({
-        title: "Berhasil",
-        description: "Material baru berhasil ditambahkan.",
+        title: "Error",
+        description: "Terjadi kesalahan saat menyimpan data",
+        variant: "destructive"
       })
     }
-
-    resetForm()
-    setIsDialogOpen(false)
   }
 
   const handleEdit = (material: Material) => {
@@ -176,19 +186,44 @@ const AdminMaterial = () => {
       kategori: material.kategori,
       satuan: material.satuan,
       harga: material.harga.toString(),
-      supplier: material.supplier || '',
-      deskripsi: material.deskripsi || '',
-      status: material.status
+      kualitas: material.kualitas,
+      lokasi: material.lokasi || ''
     })
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    setMaterials(materials.filter(m => m.id !== id))
-    toast({
-      title: "Berhasil",
-      description: "Material berhasil dihapus.",
-    })
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('materials')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        console.error('Error deleting material:', error)
+        toast({
+          title: "Error",
+          description: "Gagal menghapus material",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      toast({
+        title: "Berhasil",
+        description: "Material berhasil dihapus.",
+      })
+      
+      // Refresh data
+      await fetchMaterials()
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menghapus data",
+        variant: "destructive"
+      })
+    }
   }
 
   const resetForm = () => {
@@ -197,9 +232,8 @@ const AdminMaterial = () => {
       kategori: '',
       satuan: '',
       harga: '',
-      supplier: '',
-      deskripsi: '',
-      status: 'aktif'
+      kualitas: '',
+      lokasi: ''
     })
     setEditingMaterial(null)
   }
@@ -427,36 +461,27 @@ const AdminMaterial = () => {
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="supplier">Supplier</Label>
-                          <Input
-                            id="supplier"
-                            value={formData.supplier}
-                            onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-                            placeholder="Nama supplier"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="status">Status</Label>
-                          <Select value={formData.status} onValueChange={(value: 'aktif' | 'nonaktif') => setFormData({...formData, status: value})}>
+                          <Label htmlFor="kualitas">Kualitas *</Label>
+                          <Select value={formData.kualitas} onValueChange={(value) => setFormData({...formData, kualitas: value})}>
                             <SelectTrigger>
-                              <SelectValue />
+                              <SelectValue placeholder="Pilih kualitas" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="aktif">Aktif</SelectItem>
-                              <SelectItem value="nonaktif">Non-aktif</SelectItem>
+                              <SelectItem value="standar">Standar</SelectItem>
+                              <SelectItem value="premium">Premium</SelectItem>
+                              <SelectItem value="super">Super</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="deskripsi">Deskripsi</Label>
-                        <Input
-                          id="deskripsi"
-                          value={formData.deskripsi}
-                          onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}
-                          placeholder="Deskripsi material (opsional)"
-                        />
+                        <div>
+                          <Label htmlFor="lokasi">Lokasi</Label>
+                          <Input
+                            id="lokasi"
+                            value={formData.lokasi}
+                            onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
+                            placeholder="Lokasi supplier (opsional)"
+                          />
+                        </div>
                       </div>
                       
                       <div className="flex justify-end gap-2 pt-4">
@@ -492,8 +517,8 @@ const AdminMaterial = () => {
                     <TableHead className="min-w-[120px]">Kategori</TableHead>
                     <TableHead className="min-w-[80px]">Satuan</TableHead>
                     <TableHead className="min-w-[100px]">Harga</TableHead>
-                    <TableHead className="min-w-[120px]">Supplier</TableHead>
-                    <TableHead className="min-w-[80px]">Status</TableHead>
+                    <TableHead className="min-w-[100px]">Kualitas</TableHead>
+                    <TableHead className="min-w-[120px]">Lokasi</TableHead>
                     <TableHead className="min-w-[120px]">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -504,12 +529,12 @@ const AdminMaterial = () => {
                       <TableCell>{material.kategori}</TableCell>
                       <TableCell>{material.satuan}</TableCell>
                       <TableCell>Rp {material.harga.toLocaleString('id-ID')}</TableCell>
-                      <TableCell>{material.supplier || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant={material.status === 'aktif' ? 'default' : 'secondary'}>
-                          {material.status}
+                        <Badge variant={material.kualitas === 'premium' ? 'default' : material.kualitas === 'super' ? 'destructive' : 'secondary'}>
+                          {material.kualitas}
                         </Badge>
                       </TableCell>
+                      <TableCell>{material.lokasi || '-'}</TableCell>
                       <TableCell>
                         <div className="flex space-x-1 sm:space-x-2">
                           <Button
