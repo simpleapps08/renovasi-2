@@ -1,0 +1,145 @@
+{
+  "name": "SERVISOO Chat Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c684fd84-12fe-4349-b82f-f2087a78d314/chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-node",
+      "name": "Webhook - Chat Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "c684fd84-12fe-4349-b82f-f2087a78d314"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract data from webhook\nconst message = $input.first().json.message;\nconst timestamp = $input.first().json.timestamp;\nconst sessionId = $input.first().json.sessionId;\n\n// Log incoming message\nconsole.log('Received message:', message);\nconsole.log('Session ID:', sessionId);\nconsole.log('Timestamp:', timestamp);\n\n// Process the message (you can add AI/chatbot logic here)\nlet response = '';\n\n// Simple keyword-based responses\nif (message.toLowerCase().includes('halo') || message.toLowerCase().includes('hai')) {\n  response = 'Halo! Selamat datang di SERVISOO. Bagaimana saya bisa membantu Anda hari ini?';\n} else if (message.toLowerCase().includes('layanan') || message.toLowerCase().includes('service')) {\n  response = 'SERVISOO menyediakan layanan renovasi rumah lengkap termasuk desain, konstruksi, dan finishing. Apakah ada yang ingin Anda tanyakan?';\n} else if (message.toLowerCase().includes('harga') || message.toLowerCase().includes('biaya')) {\n  response = 'Untuk informasi harga, silakan gunakan fitur Simulasi RAB di website kami atau hubungi tim kami untuk konsultasi gratis.';\n} else if (message.toLowerCase().includes('kontak') || message.toLowerCase().includes('hubungi')) {\n  response = 'Anda bisa menghubungi kami melalui WhatsApp atau email. Tim kami siap membantu Anda 24/7.';\n} else {\n  response = 'Terima kasih atas pesan Anda. Tim customer service kami akan segera merespons. Sementara itu, Anda bisa menjelajahi layanan kami di website.';\n}\n\nreturn {\n  message: message,\n  response: response,\n  sessionId: sessionId,\n  timestamp: timestamp,\n  processedAt: new Date().toISOString()\n};"
+      },
+      "id": "process-message",
+      "name": "Process Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.response }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=utf-8"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "database",
+        "table": {
+          "value": "chat_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.sessionId }}",
+            "user_message": "={{ $json.message }}",
+            "bot_response": "={{ $json.response }}",
+            "timestamp": "={{ $json.timestamp }}",
+            "processed_at": "={{ $json.processedAt }}"
+          }
+        }
+      },
+      "id": "save-to-database",
+      "name": "Save Chat Log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 480],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - Chat Input": {
+      "main": [
+        [
+          {
+            "node": "Process Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Chat Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2024-01-15T10:00:00.000Z",
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "settings": {
+    "timezone": "Asia/Jakarta"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2024-01-15T10:00:00.000Z",
+      "id": "chat-tag",
+      "name": "Chat"
+    },
+    {
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2024-01-15T10:00:00.000Z",
+      "id": "servisoo-tag",
+      "name": "SERVISOO"
+    }
+  ],
+  "triggerCount": 0,
+  "versionId": "1"
+}
