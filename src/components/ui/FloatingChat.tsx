@@ -36,16 +36,18 @@ const FloatingChat = () => {
     setIsTyping(true)
 
     try {
-      const response = await fetch(N8N_WEBHOOK_URL, {
-        method: 'POST',
+      // Kirim data sebagai query parameters untuk GET request
+      const params = new URLSearchParams({
+        message: inputMessage,
+        timestamp: new Date().toISOString(),
+        sessionId: 'chat-session-' + Date.now()
+      })
+      
+      const response = await fetch(`${N8N_WEBHOOK_URL}?${params.toString()}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputMessage,
-          timestamp: new Date().toISOString(),
-          sessionId: 'chat-session-' + Date.now()
-        })
+        }
       })
 
       if (response.ok) {
