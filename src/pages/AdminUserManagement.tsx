@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
 import { Input } from "@/components/ui/input"
@@ -12,16 +12,23 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Search, Edit, Trash2, Download, UserPlus, Shield, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
+import { supabase } from "@/integrations/supabase/client"
 
 interface UserData {
   id: string
+  user_id: string
   email: string
   name: string
   role: 'user' | 'admin'
-  status: 'active' | 'inactive' | 'suspended'
-  project_location?: string
   phone?: string
-  last_login?: string
+  address?: string
+  city?: string
+  province?: string
+  postal_code?: string
+  date_of_birth?: string
+  gender?: 'male' | 'female'
+  occupation?: string
+  bio?: string
   created_at: string
   updated_at: string
 }
@@ -31,96 +38,98 @@ const AdminUserManagement = () => {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState('semua')
-  const [filterStatus, setFilterStatus] = useState('semua')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<UserData | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(true)
   const itemsPerPage = 10
 
-  // Dummy data users
-  const [users, setUsers] = useState<UserData[]>([
-    {
-      id: '1',
-      email: 'admin@servisoo.com',
-      name: 'Administrator',
-      role: 'admin',
-      status: 'active',
-      project_location: 'Jakarta',
-      phone: '081234567890',
-      last_login: '2024-01-20 10:30:00',
-      created_at: '2024-01-01',
-      updated_at: '2024-01-20'
-    },
-    {
-      id: '2',
-      email: 'john.doe@email.com',
-      name: 'John Doe',
-      role: 'user',
-      status: 'active',
-      project_location: 'Bandung',
-      phone: '081234567891',
-      last_login: '2024-01-19 15:45:00',
-      created_at: '2024-01-10',
-      updated_at: '2024-01-19'
-    },
-    {
-      id: '3',
-      email: 'jane.smith@email.com',
-      name: 'Jane Smith',
-      role: 'user',
-      status: 'active',
-      project_location: 'Surabaya',
-      phone: '081234567892',
-      last_login: '2024-01-18 09:20:00',
-      created_at: '2024-01-12',
-      updated_at: '2024-01-18'
-    },
-    {
-      id: '4',
-      email: 'bob.wilson@email.com',
-      name: 'Bob Wilson',
-      role: 'user',
-      status: 'inactive',
-      project_location: 'Medan',
-      phone: '081234567893',
-      last_login: '2024-01-10 14:15:00',
-      created_at: '2024-01-05',
-      updated_at: '2024-01-10'
-    },
-    {
-      id: '5',
-      email: 'alice.brown@email.com',
-      name: 'Alice Brown',
-      role: 'user',
-      status: 'suspended',
-      project_location: 'Yogyakarta',
-      phone: '081234567894',
-      last_login: '2024-01-08 11:30:00',
-      created_at: '2024-01-03',
-      updated_at: '2024-01-15'
+  const [users, setUsers] = useState<UserData[]>([])
+
+  // Fetch users from Supabase
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select(`
+          *,
+          users:user_id (
+            email
+          )
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching users:', error)
+        toast({
+          title: "Error",
+          description: "Gagal memuat data pengguna",
+          variant: "destructive",
+        })
+      } else {
+        const transformedData = (data || []).map(profile => ({
+          id: profile.id,
+          user_id: profile.user_id,
+          email: profile.users?.email || '',
+          name: profile.full_name || '',
+          role: profile.role,
+          phone: profile.phone,
+          address: profile.address,
+          city: profile.city,
+          province: profile.province,
+          postal_code: profile.postal_code,
+          date_of_birth: profile.date_of_birth,
+          gender: profile.gender,
+          occupation: profile.occupation,
+          bio: profile.bio,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at
+        }))
+        setUsers(transformedData)
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat memuat data",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-  ])
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
   const [formData, setFormData] = useState({
     email: '',
     name: '',
     role: 'user' as 'user' | 'admin',
-    status: 'active' as 'active' | 'inactive' | 'suspended',
-    project_location: '',
-    phone: ''
+    phone: '',
+    address: '',
+    city: '',
+    province: '',
+    postal_code: '',
+    date_of_birth: '',
+    gender: '' as 'male' | 'female' | '',
+    occupation: '',
+    bio: ''
   })
 
   const roleOptions = ['user', 'admin']
-  const statusOptions = ['active', 'inactive', 'suspended']
+  const genderOptions = ['male', 'female']
 
   // Filter dan search
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.project_location?.toLowerCase().includes(searchTerm.toLowerCase())
+                         user.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.occupation?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = filterRole === 'semua' || user.role === filterRole
-    const matchesStatus = filterStatus === 'semua' || user.status === filterStatus
-    return matchesSearch && matchesRole && matchesStatus
+    return matchesSearch && matchesRole
   })
 
   // Pagination
@@ -128,47 +137,77 @@ const AdminUserManagement = () => {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.email || !formData.name) {
+    if (!formData.name) {
       toast({
         title: "Error",
-        description: "Email dan nama wajib diisi.",
+        description: "Nama wajib diisi.",
         variant: "destructive",
       })
       return
     }
 
-    const userData: UserData = {
-      id: editingUser ? editingUser.id : Date.now().toString(),
-      email: formData.email,
-      name: formData.name,
-      role: formData.role,
-      status: formData.status,
-      project_location: formData.project_location,
-      phone: formData.phone,
-      last_login: editingUser ? editingUser.last_login : undefined,
-      created_at: editingUser ? editingUser.created_at : new Date().toISOString().split('T')[0],
-      updated_at: new Date().toISOString().split('T')[0]
-    }
+    try {
+      setLoading(true)
+      
+      const profileData = {
+        full_name: formData.name,
+        role: formData.role,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        city: formData.city || null,
+        province: formData.province || null,
+        postal_code: formData.postal_code || null,
+        date_of_birth: formData.date_of_birth || null,
+        gender: formData.gender || null,
+        occupation: formData.occupation || null,
+        bio: formData.bio || null
+      }
 
-    if (editingUser) {
-      setUsers(users.map(u => u.id === editingUser.id ? userData : u))
-      toast({
-        title: "Berhasil",
-        description: "Data user berhasil diperbarui.",
-      })
-    } else {
-      setUsers([...users, userData])
-      toast({
-        title: "Berhasil",
-        description: "User baru berhasil ditambahkan.",
-      })
-    }
+      if (editingUser) {
+        const { error } = await supabase
+          .from('user_profiles')
+          .update(profileData)
+          .eq('id', editingUser.id)
 
-    resetForm()
-    setIsDialogOpen(false)
+        if (error) {
+          console.error('Error updating user:', error)
+          toast({
+            title: "Error",
+            description: "Gagal memperbarui data pengguna",
+            variant: "destructive",
+          })
+          return
+        }
+
+        toast({
+          title: "Berhasil",
+          description: "Data pengguna berhasil diperbarui.",
+        })
+      } else {
+        // Note: Creating new users requires auth.users entry first
+        // This is typically handled by user registration
+        toast({
+          title: "Info",
+          description: "Pembuatan pengguna baru harus melalui proses registrasi.",
+        })
+      }
+
+      await fetchUsers() // Refresh data
+      resetForm()
+      setIsDialogOpen(false)
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menyimpan data",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleEdit = (user: UserData) => {
@@ -177,98 +216,127 @@ const AdminUserManagement = () => {
       email: user.email,
       name: user.name,
       role: user.role,
-      status: user.status,
-      project_location: user.project_location || '',
-      phone: user.phone || ''
+      phone: user.phone || '',
+      address: user.address || '',
+      city: user.city || '',
+      province: user.province || '',
+      postal_code: user.postal_code || '',
+      date_of_birth: user.date_of_birth || '',
+      gender: user.gender || '',
+      occupation: user.occupation || '',
+      bio: user.bio || ''
     })
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    setUsers(users.filter(u => u.id !== id))
-    toast({
-      title: "Berhasil",
-      description: "User berhasil dihapus.",
-    })
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        console.error('Error deleting user:', error)
+        toast({
+          title: "Error",
+          description: "Gagal menghapus pengguna",
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Berhasil",
+        description: "Pengguna berhasil dihapus.",
+      })
+      
+      await fetchUsers() // Refresh data
+    } catch (error) {
+      console.error('Error:', error)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menghapus data",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleChangeRole = (userId: string, newRole: 'user' | 'admin') => {
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, role: newRole, updated_at: new Date().toISOString().split('T')[0] }
-        : u
-    ))
-    toast({
-      title: "Berhasil",
-      description: `Role user berhasil diubah menjadi ${newRole}.`,
-    })
-  }
+  const handleChangeRole = async (userId: string, newRole: 'user' | 'admin') => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ role: newRole })
+        .eq('id', userId)
 
-  const handleChangeStatus = (userId: string, newStatus: 'active' | 'inactive' | 'suspended') => {
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, status: newStatus, updated_at: new Date().toISOString().split('T')[0] }
-        : u
-    ))
-    toast({
-      title: "Berhasil",
-      description: `Status user berhasil diubah menjadi ${newStatus}.`,
-    })
-  }
+      if (error) {
+        console.error('Error updating role:', error)
+        toast({
+          title: "Error",
+          description: "Gagal mengubah role pengguna",
+          variant: "destructive",
+        })
+        return
+      }
 
-  const resetForm = () => {
-    setFormData({
-      email: '',
-      name: '',
-      role: 'user',
-      status: 'active',
-      project_location: '',
-      phone: ''
-    })
-    setEditingUser(null)
-  }
+      toast({
+         title: "Berhasil",
+         description: `Role pengguna berhasil diubah menjadi ${newRole}.\`,
+       })
+       
+       await fetchUsers() // Refresh data
+     } catch (error) {
+       console.error('Error:', error)
+       toast({
+         title: "Error",
+         description: "Terjadi kesalahan saat mengubah role",
+         variant: "destructive",
+       })
+     }
+   }
 
-  const handleExportCSV = () => {
-    const csvContent = [
-      ['Email', 'Nama', 'Role', 'Status', 'Lokasi Proyek', 'Telepon', 'Last Login', 'Tanggal Dibuat'],
-      ...users.map(u => [
-        u.email,
-        u.name,
-        u.role,
-        u.status,
-        u.project_location || '',
-        u.phone || '',
-        u.last_login || '',
-        u.created_at
-      ])
-    ].map(row => row.join(',')).join('\n')
+   const resetForm = () => {
+     setFormData({
+       email: '',
+       name: '',
+       role: 'user',
+       phone: '',
+       address: '',
+       city: '',
+       province: '',
+       postal_code: '',
+       date_of_birth: '',
+       gender: '',
+       occupation: '',
+       bio: ''
+     })
+     setEditingUser(null)
+   }
 
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `data-users-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    window.URL.revokeObjectURL(url)
-
-    toast({
-      title: "Berhasil",
-      description: "Data user berhasil diekspor ke CSV.",
-    })
-  }
+   const exportToCSV = () => {
+     const csvContent = "data:text/csv;charset=utf-8," + 
+       "Email,Nama,Role,Telepon,Kota,Pekerjaan,Tanggal Dibuat\n" +
+       filteredUsers.map(user => 
+         `${user.email},${user.name},${user.role},${user.phone || ''},${user.city || ''},${user.occupation || ''},${user.created_at}`
+       ).join("\n")
+     
+     const encodedUri = encodeURI(csvContent)
+     const link = document.createElement("a")
+     link.setAttribute("href", encodedUri)
+     link.setAttribute("download", "users_data.csv")
+     document.body.appendChild(link)
+     link.click()
+     document.body.removeChild(link)
+     
+       description: "Data pengguna berhasil diekspor ke CSV.",
+     })
+   }
 
   const getRoleBadgeVariant = (role: string) => {
     return role === 'admin' ? 'destructive' : 'default'
   }
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'active': return 'default'
-      case 'inactive': return 'secondary'
-      case 'suspended': return 'destructive'
-      default: return 'secondary'
-    }
-  }
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID')
@@ -328,8 +396,8 @@ const AdminUserManagement = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">User Aktif</p>
-                  <p className="text-2xl font-bold">{users.filter(u => u.status === 'active').length}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Kota</p>
+                  <p className="text-2xl font-bold">{new Set(users.map(u => u.city).filter(Boolean)).size}</p>
                 </div>
                 <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
                   <div className="h-4 w-4 bg-green-600 rounded-full"></div>
@@ -341,11 +409,11 @@ const AdminUserManagement = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">User Suspended</p>
-                  <p className="text-2xl font-bold">{users.filter(u => u.status === 'suspended').length}</p>
+                  <p className="text-sm font-medium text-gray-600">Dengan Profil Lengkap</p>
+                  <p className="text-2xl font-bold">{users.filter(u => u.phone && u.address && u.city).length}</p>
                 </div>
-                <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
-                  <div className="h-4 w-4 bg-red-600 rounded-full"></div>
+                <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="h-4 w-4 bg-blue-600 rounded-full"></div>
                 </div>
               </div>
             </CardContent>
@@ -360,7 +428,7 @@ const AdminUserManagement = () => {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
-                      placeholder="Cari email, nama, atau lokasi..."
+                      placeholder="Cari email, nama, kota, atau pekerjaan..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -380,24 +448,12 @@ const AdminUserManagement = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Filter Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="semua">Semua Status</SelectItem>
-                        {statusOptions.map(status => (
-                          <SelectItem key={status} value={status}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
                   </div>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                  <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto">
+                  <Button onClick={exportToCSV} variant="outline" className="w-full sm:w-auto">
                     <Download className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Export CSV</span>
                     <span className="sm:hidden">Export</span>
@@ -422,14 +478,14 @@ const AdminUserManagement = () => {
                     <form onSubmit={handleSubmit} className="space-y-4 pr-2">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="email" className="text-sm">Email *</Label>
+                          <Label htmlFor="email" className="text-sm">Email</Label>
                           <Input
                             id="email"
                             type="email"
                             value={formData.email}
                             onChange={(e) => setFormData({...formData, email: e.target.value})}
                             placeholder="user@example.com"
-                            required
+                            disabled={!!editingUser}
                             className="text-sm"
                           />
                         </div>
@@ -463,40 +519,58 @@ const AdminUserManagement = () => {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="status" className="text-sm">Status *</Label>
-                          <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'suspended') => setFormData({...formData, status: value})}>
-                            <SelectTrigger className="text-sm">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {statusOptions.map(status => (
-                                <SelectItem key={status} value={status}>
-                                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="project_location" className="text-sm">Lokasi Proyek</Label>
-                          <Input
-                            id="project_location"
-                            value={formData.project_location}
-                            onChange={(e) => setFormData({...formData, project_location: e.target.value})}
-                            placeholder="Kota/Kabupaten"
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
                           <Label htmlFor="phone" className="text-sm">Nomor Telepon</Label>
                           <Input
                             id="phone"
                             value={formData.phone}
                             onChange={(e) => setFormData({...formData, phone: e.target.value})}
                             placeholder="08xxxxxxxxxx"
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="address" className="text-sm">Alamat</Label>
+                          <Input
+                            id="address"
+                            value={formData.address}
+                            onChange={(e) => setFormData({...formData, address: e.target.value})}
+                            placeholder="Alamat lengkap"
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="city" className="text-sm">Kota</Label>
+                          <Input
+                            id="city"
+                            value={formData.city}
+                            onChange={(e) => setFormData({...formData, city: e.target.value})}
+                            placeholder="Nama kota"
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="province" className="text-sm">Provinsi</Label>
+                          <Input
+                            id="province"
+                            value={formData.province}
+                            onChange={(e) => setFormData({...formData, province: e.target.value})}
+                            placeholder="Nama provinsi"
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="occupation" className="text-sm">Pekerjaan</Label>
+                          <Input
+                            id="occupation"
+                            value={formData.occupation}
+                            onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                            placeholder="Pekerjaan"
                             className="text-sm"
                           />
                         </div>
@@ -534,9 +608,9 @@ const AdminUserManagement = () => {
                     <TableHead className="min-w-[200px] sm:min-w-0">Email</TableHead>
                     <TableHead className="min-w-[150px] sm:min-w-0">Nama</TableHead>
                     <TableHead className="min-w-[100px] sm:min-w-0">Role</TableHead>
-                    <TableHead className="min-w-[100px] sm:min-w-0">Status</TableHead>
-                    <TableHead className="min-w-[150px] sm:min-w-0 hidden md:table-cell">Lokasi Proyek</TableHead>
-                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Last Login</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden md:table-cell">Kota</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Telepon</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Pekerjaan</TableHead>
                     <TableHead className="min-w-[120px] sm:min-w-0">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -576,37 +650,16 @@ const AdminUserManagement = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-                          <Badge variant={getStatusBadgeVariant(user.status)} className="text-xs">
-                            {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                          </Badge>
-                          {user.status !== 'active' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleChangeStatus(user.id, 'active')}
-                              className="text-xs h-6 px-2 hidden sm:inline-flex"
-                            >
-                              Aktifkan
-                            </Button>
-                          )}
-                          {user.status === 'active' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleChangeStatus(user.id, 'suspended')}
-                              className="text-xs h-6 px-2 hidden sm:inline-flex"
-                            >
-                              Suspend
-                            </Button>
-                          )}
-                        </div>
+                      <TableCell className="hidden md:table-cell text-sm">
+                        <div className="truncate max-w-[120px]">{user.city || '-'}</div>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">{user.project_location || '-'}</TableCell>
                       <TableCell className="hidden lg:table-cell text-sm">
-                        {user.last_login ? formatDate(user.last_login.split(' ')[0]) : '-'}
+                        <div className="truncate max-w-[120px]">{user.phone || '-'}</div>
                       </TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">
+                        <div className="truncate max-w-[120px]">{user.occupation || '-'}</div>
+                      </TableCell>
+
                       <TableCell>
                         <div className="flex gap-1 sm:gap-2">
                           <Button

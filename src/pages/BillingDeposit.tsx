@@ -24,14 +24,19 @@ import { useAuth } from '@/contexts/AuthContext'
 
 interface Transaction {
   id: string
+  transaction_id: string
   user_id: string
+  project_id?: string
   type: 'deposit' | 'payment' | 'refund'
   amount: number
   description: string
-  date: string
   status: 'completed' | 'pending' | 'failed'
-  method: string
-  projectId?: string
+  payment_method: string
+  payment_proof?: string
+  notes?: string
+  admin_notes?: string
+  processed_by?: string
+  processed_at?: string
   created_at: string
   updated_at: string
 }
@@ -73,9 +78,9 @@ const BillingDeposit = () => {
 
         // Fetch user balance
         const { data: userData, error: userError } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('saldo_deposit')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single()
 
         if (userError) {
@@ -182,17 +187,20 @@ const BillingDeposit = () => {
     }
 
     try {
+      // Generate unique transaction ID
+      const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+      
       // Create transaction record
       const { error } = await supabase
         .from('transactions')
         .insert({
+          transaction_id: transactionId,
           user_id: user.id,
           type: 'deposit',
           amount: amount,
           description: `Top up saldo via ${paymentMethod}`,
-          date: new Date().toISOString(),
           status: 'pending',
-          method: paymentMethod.toLowerCase().replace(/\s+/g, '_')
+          payment_method: paymentMethod
         })
 
       if (error) {
@@ -358,11 +366,11 @@ const BillingDeposit = () => {
                         <div>
                           <p className="font-medium">{transaction.description}</p>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>{new Date(transaction.date || transaction.created_at).toLocaleDateString('id-ID')}</span>
+                            <span>{new Date(transaction.created_at).toLocaleDateString('id-ID')}</span>
                             <span>•</span>
-                            <span>{transaction.method}</span>
+                            <span>{transaction.payment_method}</span>
                             <span>•</span>
-                            <span>ID: {transaction.id}</span>
+                            <span>ID: {transaction.transaction_id}</span>
                           </div>
                         </div>
                       </div>
