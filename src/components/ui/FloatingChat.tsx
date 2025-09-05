@@ -96,10 +96,10 @@ const FloatingChat = () => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="h-20 w-20 rounded-full shadow-2xl animate-pulse-glow"
+          className="h-14 w-14 rounded-full shadow-2xl animate-pulse-glow"
           size="icon"
         >
-          <MessageCircle className="h-8 w-8 text-white" />
+          <MessageCircle className="h-6 w-6 text-white" />
         </Button>
       )}
 
