@@ -5,6 +5,7 @@ import GallerySection from "@/components/sections/GallerySection";
 import CTASection from "@/components/sections/CTASection";
 import Footer from "@/components/layout/Footer";
 import FloatingChat from "@/components/ui/FloatingChat";
+import FloatingChatLeft from "@/components/ui/FloatingChatLeft";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
       </main>
       <Footer />
       <FloatingChat />
+      <FloatingChatLeft />
     </>
   );
 };
