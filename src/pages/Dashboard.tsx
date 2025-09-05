@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
 import { Calculator, History, CreditCard, TrendingUp } from "lucide-react"
 import { Link } from "react-router-dom"
-import FloatingChat from "@/components/ui/FloatingChat"
+
 
 const Dashboard = () => {
   return (
@@ -128,7 +128,6 @@ const Dashboard = () => {
           </Card>
         </div>
       </main>
-      <FloatingChat />
     </div>
   )
 }
