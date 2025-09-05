@@ -26,7 +26,7 @@ const FloatingChat = () => {
   const [isTyping, setIsTyping] = useState(false)
 
   // URL webhook n8n
-  const N8N_WEBHOOK_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook/495c8d46-c0c4-442a-abd8-ffc024efe126'
+  const N8N_WEBHOOK_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook-test/chat'
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return
