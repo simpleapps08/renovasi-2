@@ -281,7 +281,7 @@ const AdminUserManagement = () => {
 
       toast({
          title: "Berhasil",
-         description: `Role pengguna berhasil diubah menjadi ${newRole}.\`,
+         description: `Role pengguna berhasil diubah menjadi ${newRole}.`,
        })
        
        await fetchUsers() // Refresh data
