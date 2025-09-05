@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/enhanced-button'
@@ -20,21 +20,14 @@ import {
   Filter,
   Download,
   ImageIcon,
-  X
+  X,
+  Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { GalleryItem, GalleryUploadForm, GalleryUpdateForm } from '@/types/gallery'
+import { galleryService } from '@/services/galleryService'
 
-interface GalleryItem {
-  id: string
-  title: string
-  description: string
-  category: string
-  imageUrl: string
-  tags: string[]
-  status: 'active' | 'inactive'
-  uploadDate: string
-  views: number
-}
+// Interface moved to @/types/gallery
 
 const AdminGallery = () => {
   const navigate = useNavigate()
@@ -48,33 +41,70 @@ const AdminGallery = () => {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [uploadFormData, setUploadFormData] = useState({
+  const [uploadFormData, setUploadFormData] = useState<GalleryUploadForm>({
     title: '',
     description: '',
     category: '',
     tags: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active',
+    imageFile: null
   })
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<GalleryUpdateForm>({
     title: '',
     description: '',
     category: '',
     tags: '',
-    status: 'active' as 'active' | 'inactive',
-    imageFile: null as File | null
+    status: 'active'
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
-  // Data dummy galeri
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([
+  // Gallery items dari Supabase
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+
+  // Load gallery items dari Supabase
+  useEffect(() => {
+    loadGalleryItems()
+  }, [])
+
+  const loadGalleryItems = async () => {
+    try {
+      setIsLoading(true)
+      const items = await galleryService.getGalleryItems({
+        search: searchTerm,
+        category: filterCategory,
+        status: filterStatus
+      })
+      setGalleryItems(items)
+    } catch (error) {
+      console.error('Failed to load gallery items:', error)
+      toast.error('Gagal memuat data galeri')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Reload data ketika filter berubah
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadGalleryItems()
+    }, 300) // Debounce search
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, filterCategory, filterStatus])
+
+  // Data dummy untuk fallback (akan dihapus setelah testing)
+  const dummyGalleryItems: GalleryItem[] = [
     {
       id: 'GAL-001',
       title: 'Renovasi Dapur Modern',
       description: 'Transformasi dapur tradisional menjadi dapur modern dengan island dan kitchen set minimalis',
       category: 'kitchen',
-      imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlNWU3ZWIiLz4KPHN2ZyB4PSIxNzUiIHk9IjEyNSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjOWNhM2FmIj4KICA8cGF0aCBkPSJNMjUgNUwyMCA0MEgzMEwyNSA1WiIvPgo8L3N2Zz4KPHR4dCB4PSIyMDAiIHk9IjI3MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjM3MzgxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5EYXB1ciBNb2Rlcm48L3R4dD4KPC9zdmc+',
+      foto_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlNWU3ZWIiLz4KPHN2ZyB4PSIxNzUiIHk9IjEyNSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjOWNhM2FmIj4KICA8cGF0aCBkPSJNMjUgNUwyMCA0MEgzMEwyNSA1WiIvPgo8L3N2Zz4KPHR4dCB4PSIyMDAiIHk9IjI3MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjM3MzgxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5EYXB1ciBNb2Rlcm48L3R4dD4KPC9zdmc+',
       tags: ['modern', 'minimalis', 'island'],
       status: 'active',
-      uploadDate: '2024-12-01',
+      created_at: '2024-12-01T00:00:00Z',
+      updated_at: '2024-12-01T00:00:00Z',
       views: 245
     },
     {
@@ -82,10 +112,11 @@ const AdminGallery = () => {
       title: 'Kamar Tidur Scandinavian',
       description: 'Desain kamar tidur dengan konsep Scandinavian yang nyaman dan fungsional',
       category: 'bedroom',
-      imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjlmYWZiIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Q5ZjNmZiIvPgo8cmVjdCB4PSIxMjAiIHk9IjgwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjYmZkYmZlIi8+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+S2FtYXIgU2NhbmRpbmF2aWFuPC90eHQ+Cjwvc3ZnPg==',
+      foto_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjlmYWZiIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Q5ZjNmZiIvPgo8cmVjdCB4PSIxMjAiIHk9IjgwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjYmZkYmZlIi8+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+S2FtYXIgU2NhbmRpbmF2aWFuPC90eHQ+Cjwvc3ZnPg==',
       tags: ['scandinavian', 'nyaman', 'natural'],
       status: 'active',
-      uploadDate: '2024-12-02',
+      created_at: '2024-12-02T00:00:00Z',
+      updated_at: '2024-12-02T00:00:00Z',
       views: 189
     },
     {
@@ -93,10 +124,11 @@ const AdminGallery = () => {
       title: 'Ruang Tamu Industrial',
       description: 'Konsep ruang tamu industrial dengan perpaduan material beton dan kayu',
       category: 'living-room',
-      imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjFmNWY5Ii8+CjxyZWN0IHg9IjgwIiB5PSIxMjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iODAiIGZpbGw9IiM2Yjc0ODEiLz4KPHN2ZyB4PSIxNzUiIHk9IjE0NSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjZjNmNGY2Ij4KICA8cmVjdCB3aWR0aD0iNTAiIGhlaWdodD0iMzAiIGZpbGw9IiNmM2Y0ZjYiLz4KPC9zdmc+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UnVhbmcgVGFtdSBJbmR1c3RyaWFsPC90eHQ+Cjwvc3ZnPg==',
+      foto_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjFmNWY5Ii8+CjxyZWN0IHg9IjgwIiB5PSIxMjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iODAiIGZpbGw9IiM2Yjc0ODEiLz4KPHN2ZyB4PSIxNzUiIHk9IjE0NSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjZjNmNGY2Ij4KICA8cmVjdCB3aWR0aD0iNTAiIGhlaWdodD0iMzAiIGZpbGw9IiNmM2Y0ZjYiLz4KPC9zdmc+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UnVhbmcgVGFtdSBJbmR1c3RyaWFsPC90eHQ+Cjwvc3ZnPg==',
       tags: ['industrial', 'beton', 'kayu'],
       status: 'active',
-      uploadDate: '2024-12-03',
+      created_at: '2024-12-03T00:00:00Z',
+      updated_at: '2024-12-03T00:00:00Z',
       views: 156
     },
     {
@@ -104,10 +136,11 @@ const AdminGallery = () => {
       title: 'Kamar Mandi Luxury',
       description: 'Desain kamar mandi mewah dengan bathtub dan shower terpisah',
       category: 'bathroom',
-      imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmVmZWZlIi8+CjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIxNTAiIHJ4PSIxMDAiIHJ5PSI0MCIgZmlsbD0iI2VkZjJmNyIvPgo8cmVjdCB4PSIzMDAiIHk9IjEwMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Q5ZjNmZiIvPgo8dHh0IHg9IjIwMCIgeT0iMjcwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2MzczODEiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkthbWFyIE1hbmRpIEx1eHVyeTwvdHh0Pgo8L3N2Zz4=',
+      foto_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmVmZWZlIi8+CjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIxNTAiIHJ4PSIxMDAiIHJ5PSI0MCIgZmlsbD0iI2VkZjJmNyIvPgo8cmVjdCB4PSIzMDAiIHk9IjEwMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Q5ZjNmZiIvPgo8dHh0IHg9IjIwMCIgeT0iMjcwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2MzczODEiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkthbWFyIE1hbmRpIEx1eHVyeTwvdHh0Pgo8L3N2Zz4=',
       tags: ['luxury', 'bathtub', 'modern'],
       status: 'active',
-      uploadDate: '2024-12-04',
+      created_at: '2024-12-04T00:00:00Z',
+      updated_at: '2024-12-04T00:00:00Z',
       views: 298
     },
     {
@@ -115,10 +148,11 @@ const AdminGallery = () => {
       title: 'Taman Indoor Minimalis',
       description: 'Konsep taman indoor dengan tanaman hias dan pencahayaan alami',
       category: 'garden',
-      imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjBmZGY0Ii8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjE1MCIgcj0iMzAiIGZpbGw9IiMxNmE2NGEiLz4KPGNpcmNsZSBjeD0iMjUwIiBjeT0iMTMwIiByPSIyNSIgZmlsbD0iIzIyYzU1ZSIvPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxODAiIHI9IjIwIiBmaWxsPSIjMTVhZjRhIi8+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VGFtYW4gSW5kb29yPC90eHQ+Cjwvc3ZnPg==',
+      foto_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjBmZGY0Ii8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjE1MCIgcj0iMzAiIGZpbGw9IiMxNmE2NGEiLz4KPGNpcmNsZSBjeD0iMjUwIiBjeT0iMTMwIiByPSIyNSIgZmlsbD0iIzIyYzU1ZSIvPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxODAiIHI9IjIwIiBmaWxsPSIjMTVhZjRhIi8+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VGFtYW4gSW5kb29yPC90eHQ+Cjwvc3ZnPg==',
       tags: ['indoor', 'minimalis', 'natural'],
       status: 'inactive',
-      uploadDate: '2024-12-05',
+      created_at: '2024-12-05T00:00:00Z',
+      updated_at: '2024-12-05T00:00:00Z',
       views: 87
     },
     {
@@ -126,13 +160,14 @@ const AdminGallery = () => {
       title: 'Home Office Modern',
       description: 'Ruang kerja di rumah dengan desain modern dan ergonomis',
       category: 'office',
-      imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmFmYWZhIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTIwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZTVlN2ViIi8+CjxyZWN0IHg9IjE0MCIgeT0iMTAwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMzc0MTUxIi8+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SG9tZSBPZmZpY2U8L3R4dD4KPC9zdmc+',
+      foto_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmFmYWZhIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTIwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZTVlN2ViIi8+CjxyZWN0IHg9IjE0MCIgeT0iMTAwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMzc0MTUxIi8+Cjx0eHQgeD0iMjAwIiB5PSIyNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzYzNzM4MSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SG9tZSBPZmZpY2U8L3R4dD4KPC9zdmc+',
       tags: ['office', 'modern', 'ergonomis'],
       status: 'active',
-      uploadDate: '2024-12-06',
+      created_at: '2024-12-06T00:00:00Z',
+      updated_at: '2024-12-06T00:00:00Z',
       views: 134
     }
-  ])
+  ]);
 
   const categories = [
     { value: 'kitchen', label: 'Dapur' },
@@ -141,7 +176,7 @@ const AdminGallery = () => {
     { value: 'bathroom', label: 'Kamar Mandi' },
     { value: 'garden', label: 'Taman' },
     { value: 'office', label: 'Ruang Kerja' }
-  ]
+  ];
 
   const filteredItems = galleryItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -186,7 +221,7 @@ const AdminGallery = () => {
     setSelectedItem(item)
     setFormData({
       title: item.title,
-      description: item.description,
+      description: item.description || '',
       category: item.category,
       tags: item.tags.join(', '),
       status: item.status
@@ -194,70 +229,96 @@ const AdminGallery = () => {
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!selectedItem || !formData.title || !formData.description || !formData.category) {
       toast.error('Mohon lengkapi semua field yang wajib diisi')
       return
     }
 
-    const updatedItems = galleryItems.map(item => 
-      item.id === selectedItem.id 
-        ? {
-            ...item,
-            title: formData.title,
-            description: formData.description,
-            category: formData.category,
-            tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-            status: formData.status
-          }
-        : item
-    )
+    try {
+      setIsLoading(true)
+      const updates: Partial<GalleryItem> = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        status: formData.status
+      }
 
-    setGalleryItems(updatedItems)
-    setFormData({ title: '', description: '', category: '', tags: '', status: 'active', imageFile: null })
-    setSelectedImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      await galleryService.updateGalleryItem(selectedItem.id, updates)
+      
+      // Reload data
+      await loadGalleryItems()
+      
+      setFormData({ title: '', description: '', category: '', tags: '', status: 'active' })
+      setSelectedImage(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      setSelectedItem(null)
+      setIsEditDialogOpen(false)
+      toast.success('Item galeri berhasil diperbarui')
+    } catch (error) {
+      console.error('Failed to update gallery item:', error)
+      toast.error('Gagal memperbarui item galeri')
+    } finally {
+      setIsLoading(false)
     }
-    setSelectedItem(null)
-    setIsEditDialogOpen(false)
-    toast.success('Item galeri berhasil diperbarui')
   }
 
-  const handleDelete = (id: string) => {
-    setGalleryItems(galleryItems.filter(item => item.id !== id))
-    toast.success('Item galeri berhasil dihapus')
+  const handleDelete = async (id: string) => {
+    try {
+      setIsLoading(true)
+      await galleryService.deleteGalleryItem(id)
+      
+      // Reload data
+      await loadGalleryItems()
+      
+      toast.success('Item galeri berhasil dihapus')
+    } catch (error) {
+      console.error('Failed to delete gallery item:', error)
+      toast.error('Gagal menghapus item galeri')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleView = (item: GalleryItem) => {
-    // Update views count
-    const updatedItems = galleryItems.map(galleryItem => 
-      galleryItem.id === item.id 
-        ? { ...galleryItem, views: galleryItem.views + 1 }
-        : galleryItem
-    )
-    setGalleryItems(updatedItems)
-    setSelectedItem(item)
-    setIsViewDialogOpen(true)
+  const handleView = async (item: GalleryItem) => {
+    try {
+      // Increment views in database
+      await galleryService.incrementViews(item.id)
+      
+      // Update local state
+      const updatedItems = galleryItems.map(galleryItem => 
+        galleryItem.id === item.id 
+          ? { ...galleryItem, views: galleryItem.views + 1 }
+          : galleryItem
+      )
+      setGalleryItems(updatedItems)
+      
+      setSelectedItem(item)
+      setIsViewDialogOpen(true)
+    } catch (error) {
+      console.error('Failed to increment views:', error)
+      // Still show the dialog even if view increment fails
+      setSelectedItem(item)
+      setIsViewDialogOpen(true)
+    }
   }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error('Ukuran file terlalu besar. Maksimal 5MB')
-        return
-      }
-      
-      if (!file.type.startsWith('image/')) {
-        toast.error('File harus berupa gambar')
+      const validation = galleryService.validateFile(file)
+      if (!validation.valid) {
+        toast.error(validation.error || 'File tidak valid')
         return
       }
 
       const reader = new FileReader()
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string)
-        setFormData({ ...formData, imageFile: file })
+        setUploadFormData({ ...uploadFormData, imageFile: file })
       }
       reader.readAsDataURL(file)
       toast.success('Gambar berhasil dipilih')
@@ -268,30 +329,59 @@ const AdminGallery = () => {
     setIsUploadDialogOpen(true)
   }
 
-  const handleDirectImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDirectImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error('Ukuran file terlalu besar. Maksimal 5MB')
-        return
-      }
-      
-      if (!file.type.startsWith('image/')) {
-        toast.error('File harus berupa gambar')
+      const validation = galleryService.validateFile(file)
+      if (!validation.valid) {
+        toast.error(validation.error || 'File tidak valid')
         return
       }
 
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string)
+      try {
+        setIsUploading(true)
+        
+        // Generate unique filename
+        const fileName = galleryService.generateFileName(file.name)
+        
+        // Upload image to Supabase Storage
+        const uploadResult = await galleryService.uploadImage(file, fileName)
+        
+        if (uploadResult.error || !uploadResult.data) {
+          throw new Error(uploadResult.error?.message || 'Failed to upload image')
+        }
+        
+        // Get public URL
+        const imageUrl = galleryService.getImageUrl(uploadResult.data.path)
+        
+        // Create gallery item in database
+        const newItem: Omit<GalleryItem, 'id' | 'created_at' | 'updated_at'> = {
+          title: `Gambar ${galleryItems.length + 1}`,
+          description: 'Gambar galeri proyek',
+          category: 'kitchen',
+          foto_url: imageUrl,
+          tags: ['renovasi'],
+          status: 'active',
+          views: 0
+        }
+        
+        await galleryService.createGalleryItem(newItem)
+        
+        // Reload data
+        await loadGalleryItems()
+        
+        toast.success('Gambar berhasil diupload')
+      } catch (error) {
+        console.error('Failed to upload image:', error)
+        toast.error('Gagal mengupload gambar')
+      } finally {
+        setIsUploading(false)
       }
-      reader.readAsDataURL(file)
-      toast.success('Gambar berhasil dipilih')
     }
   }
 
-  const handleQuickUpload = () => {
-    if (!selectedImage) {
+  const handleQuickUpload = async () => {
+    if (!uploadFormData.imageFile) {
       toast.error('Mohon pilih gambar terlebih dahulu')
       return
     }
@@ -301,26 +391,60 @@ const AdminGallery = () => {
       return
     }
 
-    const newItem: GalleryItem = {
-      id: `GAL-${String(galleryItems.length + 1).padStart(3, '0')}`,
-      title: uploadFormData.title,
-      description: uploadFormData.description || 'Gambar galeri proyek',
-      category: uploadFormData.category,
-      imageUrl: selectedImage,
-      tags: uploadFormData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      status: uploadFormData.status,
-      uploadDate: new Date().toISOString().split('T')[0],
-      views: 0
+    try {
+      setIsUploading(true)
+      
+      // Generate unique filename
+      const fileName = galleryService.generateFileName(uploadFormData.imageFile.name)
+      
+      // Upload image to Supabase Storage
+      const uploadResult = await galleryService.uploadImage(uploadFormData.imageFile, fileName)
+      
+      if (uploadResult.error || !uploadResult.data) {
+        throw new Error(uploadResult.error?.message || 'Failed to upload image')
+      }
+      
+      // Get public URL
+      const imageUrl = galleryService.getImageUrl(uploadResult.data.path)
+      
+      // Create gallery item in database
+      const newItem: Omit<GalleryItem, 'id' | 'created_at' | 'updated_at'> = {
+        title: uploadFormData.title,
+        description: uploadFormData.description || 'Gambar galeri proyek',
+        category: uploadFormData.category,
+        foto_url: imageUrl,
+        tags: uploadFormData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        status: uploadFormData.status,
+        views: 0
+      }
+      
+      await galleryService.createGalleryItem(newItem)
+      
+      // Reload data to get the complete item with ID and timestamps
+      await loadGalleryItems()
+      
+      toast.success('Gambar berhasil diupload ke galeri')
+      
+      // Reset form
+      setUploadFormData({
+        title: '',
+        description: '',
+        category: '',
+        tags: '',
+        status: 'active',
+        imageFile: null
+      })
+      setSelectedImage(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      setIsUploadDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      toast.error('Gagal mengupload gambar')
+    } finally {
+      setIsUploading(false)
     }
-
-    setGalleryItems([...galleryItems, newItem])
-    setUploadFormData({ title: '', description: '', category: '', tags: '', status: 'active' })
-    setSelectedImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-    setIsUploadDialogOpen(false)
-    toast.success('Gambar berhasil diupload ke galeri')
   }
 
   const removeSelectedImage = () => {
@@ -404,9 +528,14 @@ const AdminGallery = () => {
                     variant="outline"
                     onClick={handleUploadClick}
                     className="w-full"
+                    disabled={isUploading}
                   >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {selectedImage ? 'Ganti Gambar' : 'Pilih Gambar'}
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4 mr-2" />
+                    )}
+                    {isUploading ? 'Mengupload...' : (selectedImage ? 'Ganti Gambar' : 'Pilih Gambar')}
                   </Button>
                   {selectedImage && (
                     <div className="relative">
@@ -544,12 +673,20 @@ const AdminGallery = () => {
       </Card>
 
       {/* Gallery Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredItems.map((item) => (
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-8 sm:p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">Memuat galeri...</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredItems.map((item) => (
           <Card key={item.id} className="overflow-hidden">
             <div className="aspect-video relative">
               <img 
-                src={item.imageUrl} 
+                src={item.foto_url} 
                 alt={item.title}
                 className="w-full h-full object-cover"
               />
@@ -583,7 +720,7 @@ const AdminGallery = () => {
                   )}
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{item.uploadDate}</span>
+                  <span>{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
                   <span>{item.views} views</span>
                 </div>
               </div>
@@ -622,9 +759,10 @@ const AdminGallery = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
 
-      {filteredItems.length === 0 && (
+      {!isLoading && filteredItems.length === 0 && (
         <Card>
           <CardContent className="p-8 sm:p-12 text-center">
             <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -711,11 +849,27 @@ const AdminGallery = () => {
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditDialogOpen(false)} 
+              className="w-full sm:w-auto order-2 sm:order-1"
+              disabled={isLoading}
+            >
               Batal
             </Button>
-            <Button onClick={handleUpdate} className="w-full sm:w-auto order-1 sm:order-2">
-              Perbarui
+            <Button 
+               onClick={handleSave} 
+               className="w-full sm:w-auto order-1 sm:order-2"
+               disabled={isLoading || !formData.title || !formData.description}
+             >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Menyimpan...
+                </>
+              ) : (
+                'Perbarui'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -820,19 +974,37 @@ const AdminGallery = () => {
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => {
-              setIsUploadDialogOpen(false)
-              setSelectedImage(null)
-              setUploadFormData({ title: '', description: '', category: '', tags: '', status: 'active' })
-              if (fileInputRef.current) {
-                fileInputRef.current.value = ''
-              }
-            }} className="w-full sm:w-auto order-2 sm:order-1">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsUploadDialogOpen(false)
+                setSelectedImage(null)
+                setUploadFormData({ title: '', description: '', category: '', tags: '', status: 'active' })
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = ''
+                }
+              }} 
+              className="w-full sm:w-auto order-2 sm:order-1"
+              disabled={isUploading}
+            >
               Batal
             </Button>
-            <Button onClick={handleQuickUpload} className="w-full sm:w-auto order-1 sm:order-2">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
+            <Button 
+              onClick={handleQuickUpload} 
+              className="w-full sm:w-auto order-1 sm:order-2"
+              disabled={isUploading || !uploadFormData.imageFile || !uploadFormData.title || !uploadFormData.category}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Mengupload...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -851,7 +1023,7 @@ const AdminGallery = () => {
             <div className="space-y-4">
               <div className="aspect-video relative rounded-lg overflow-hidden">
                 <img 
-                  src={selectedItem.imageUrl} 
+                  src={selectedItem.foto_url} 
                   alt={selectedItem.title}
                   className="w-full h-full object-cover"
                 />
@@ -873,7 +1045,7 @@ const AdminGallery = () => {
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Tanggal Upload</Label>
-                  <p className="text-sm">{selectedItem.uploadDate}</p>
+                  <p className="text-sm">{new Date(selectedItem.created_at).toLocaleDateString('id-ID')}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Views</Label>
