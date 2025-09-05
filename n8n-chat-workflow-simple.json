@@ -1,0 +1,195 @@
+{
+  "name": "SERVISOO Chat Workflow - Simple",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c684fd84-12fe-4349-b82f-f2087a78d314/chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "d521f08a-23ef-4c0f-8f99-05e3b470f520",
+      "name": "Webhook - Chat Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -224
+      ],
+      "webhookId": "c684fd84-12fe-4349-b82f-f2087a78d314"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.ai_response }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=utf-8"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "3db417d6-c764-41f2-9be1-d082f13e394c",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4o-mini"
+            },
+            {
+              "name": "messages",
+              "value": "=[{\"role\": \"system\", \"content\": \"Waktu saat ini adalah {{ $now.toLocal('Jakarta').format('yyyy-MM-dd HH:mm:ss') }}\\nKamu adalah seorang Customer Service SERVISOO.\\nKamu bertugas untuk melayani customer yang menanyakan tentang layanan servisoo.\\n\\nServisoo adalah platform digital Renovasi dan Pembangunan Rumah dan Gedung. kami memberikan simulasi RAB agar customer bisa melakukan penghitungan secara mandiri sebelum memutuskan untuk melakukan renovasi atau membangun rumah.\\n\\nLayanan Servisoo\\n1. Renovasi Rumah & Gedung\\n2. Pembangunan Rumah & Gedung\\n3. Desain & Perencanaan\\n4. Konsultasi RAB\\n\\nProfile Perusahaan\\nAlamat : Jl. Pahlawan Gang Selorejo 2, No.248B, Kabupaten Tuban, Jawa Timur\\nTelp. 082336548080 (Brian)\\nWhatsapp. 085808675233 (Admin)\\nemail. servisoo.dev@gmail.com\\n\\nLayanan Sekolah dan Dinas bisa melalui\\n1. Siplah - Toko ladang\\n2. Gratis Ongkir\\n3. eKatalog - LKPP\\n4. Inaproc\\n\\n# GAYA BAHASA\\nKamu harus menggunakan gaya bahasa formal tapi santai dan jangan kaku.\\n\\n# PENTING\\nJangan pernah bahas apapun diluar konteks layanan servisoo. Kalau ada informasi yang kamu tidak tahu, bilang saja tidak tahu, jangan improvisasi atau halusinasi.\\nJika ada pertanyaan terkait Harga arahkan untuk simulasi via website atau menghubungi Bapak Brian nomor telp/WA 082336548080\"}, {\"role\": \"user\", \"content\": \"{{ $json.message }}\"}]"
+            },
+            {
+              "name": "max_tokens",
+              "value": "500"
+            },
+            {
+              "name": "temperature",
+              "value": "0.7"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "openai-request",
+      "name": "OpenAI API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "zlZnaA2GpGJKXzf1",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "extract-response",
+              "name": "ai_response",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-response",
+      "name": "Extract AI Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1176,
+        -224
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Chat Input": {
+      "main": [
+        [
+          {
+            "node": "OpenAI API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI API Request": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "55d10bbf-9def-410a-bad9-9bf2f5267d60",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52a65998504fed6ab40d7c2adebd767d80fc2bb148ce544cefc5a051193b6219"
+  },
+  "id": "oVQtLGDnx48PpePX",
+  "tags": [
+    {
+      "name": "Chat",
+      "id": "E4FieOI5al6Wgk1A",
+      "createdAt": "2025-09-05T13:12:44.148Z",
+      "updatedAt": "2025-09-05T13:12:44.148Z"
+    },
+    {
+      "name": "SERVISOO",
+      "id": "zkZPVixfVo3SFKj5",
+      "createdAt": "2025-09-05T13:12:44.145Z",
+      "updatedAt": "2025-09-05T13:12:44.145Z"
+    }
+  ]
+}

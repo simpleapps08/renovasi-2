@@ -23,7 +23,7 @@
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "={{ $json.response }}",
+        "responseBody": "={{ $json.text || $json.response || $json.output || 'Maaf, terjadi kesalahan dalam memproses pesan Anda.' }}",
         "options": {
           "responseHeaders": {
             "entries": [
