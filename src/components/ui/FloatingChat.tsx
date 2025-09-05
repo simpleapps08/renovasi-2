@@ -19,7 +19,7 @@ const FloatingChat = () => {
   const [isTyping, setIsTyping] = useState(false)
 
   // URL webhook n8n yang benar untuk API
-  const N8N_WEBHOOK_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
+  const N8N_WEBHOOK_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook/updated-webhook-url/chat'
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return
