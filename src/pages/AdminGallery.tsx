@@ -465,9 +465,9 @@ const AdminGallery = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1">
         <div className="container mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -784,7 +784,7 @@ const AdminGallery = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md mx-4 sm:mx-auto">
+        <DialogContent className="max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">Edit Item Galeri</DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
@@ -877,7 +877,7 @@ const AdminGallery = () => {
 
       {/* Upload Dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="max-w-md mx-4 sm:mx-auto">
+        <DialogContent className="max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">Upload Gambar</DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
