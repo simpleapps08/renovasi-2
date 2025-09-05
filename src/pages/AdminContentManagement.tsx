@@ -99,9 +99,10 @@ const initialFooterData = {
     address: "Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318"
   },
   socialMedia: [
-    { name: "Instagram", url: "#", icon: "instagram" },
-    { name: "Facebook", url: "#", icon: "facebook" },
-    { name: "TikTok", url: "#", icon: "tiktok" },
+    { name: "Instagram", url: "https://www.instagram.com/servisoo.official/", icon: "instagram" },
+    { name: "Facebook", url: "https://www.facebook.com/servisoo.official", icon: "facebook" },
+    { name: "TikTok", url: "https://www.tiktok.com/@servisoo.official", icon: "tiktok" },
+    { name: "Twitter/X", url: "https://x.com/servisoo", icon: "x" },
     { name: "YouTube", url: "#", icon: "youtube" }
   ]
 }
@@ -128,6 +129,79 @@ const AdminContentManagement = () => {
   const [editingPortfolio, setEditingPortfolio] = useState(null)
   const [newService, setNewService] = useState({ title: '', description: '', features: [], icon: '' })
   const [newPortfolio, setNewPortfolio] = useState({ title: '', category: '', description: '', image: '' })
+
+  // Fetch footer data from database
+  const fetchFooterData = async () => {
+    try {
+      // Fetch footer content
+      const { data: footerContent } = await supabase
+        .from('footer_content')
+        .select('*')
+        .in('section', ['description', 'services'])
+      
+      // Fetch contact info
+      const { data: contactInfo } = await supabase
+        .from('contact_info')
+        .select('*')
+        .eq('is_active', true)
+      
+      // Fetch social media links
+      const { data: socialLinks } = await supabase
+        .from('social_media_links')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order')
+      
+      if (footerContent || contactInfo || socialLinks) {
+        const updatedFooterData = { ...initialFooterData }
+        
+        // Update description and services
+        if (footerContent) {
+          const descriptionContent = footerContent.find(item => item.section === 'description')
+          const servicesContent = footerContent.find(item => item.section === 'services')
+          
+          if (descriptionContent) {
+            updatedFooterData.description = descriptionContent.content
+          }
+          
+          if (servicesContent) {
+            try {
+              updatedFooterData.services = JSON.parse(servicesContent.content)
+            } catch (e) {
+              console.error('Error parsing services:', e)
+            }
+          }
+        }
+        
+        // Update contact info
+        if (contactInfo && contactInfo.length > 0) {
+          contactInfo.forEach(contact => {
+            if (contact.type === 'email') updatedFooterData.contact.email = contact.value
+            if (contact.type === 'phone') updatedFooterData.contact.phone = contact.value
+            if (contact.type === 'whatsapp') updatedFooterData.contact.whatsapp = contact.value
+            if (contact.type === 'address') updatedFooterData.contact.address = contact.value
+          })
+        }
+        
+        // Update social media links
+        if (socialLinks && socialLinks.length > 0) {
+          updatedFooterData.socialMedia = socialLinks.map(link => ({
+            name: link.name || link.platform,
+            url: link.url,
+            icon: link.icon || link.platform
+          }))
+        }
+        
+        setFooterData(updatedFooterData)
+      }
+    } catch (error) {
+      console.error('Error fetching footer data:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFooterData()
+  }, [])
 
   const handleSaveHeader = () => {
     // Implementasi save header ke database
@@ -199,31 +273,42 @@ const AdminContentManagement = () => {
       setIsLoading(true);
       
       // Save footer content
-      const { error: footerError } = await supabase
+      const { error: footerError1 } = await supabase
         .from('footer_content')
         .upsert({
-          id: 1,
-          description: footerData.description,
-          services: footerData.services
+          section: 'description',
+          content: footerData.description,
+          is_active: true
+        }, {
+          onConflict: 'section'
         });
       
-      if (footerError) throw footerError;
+      if (footerError1) throw footerError1;
+      
+      const { error: footerError2 } = await supabase
+        .from('footer_content')
+        .upsert({
+          section: 'services',
+          content: JSON.stringify(footerData.services),
+          is_active: true
+        }, {
+          onConflict: 'section'
+        });
+      
+      if (footerError2) throw footerError2;
       
       // Save contact info
       const contactUpdates = [
-        { type: 'email', value: footerData.contact.email },
-        { type: 'phone', value: footerData.contact.phone },
-        { type: 'whatsapp', value: footerData.contact.whatsapp },
-        { type: 'address', value: footerData.contact.address }
+        { type: 'email', label: 'Email', value: footerData.contact.email, formatted_value: null, is_active: true },
+        { type: 'phone', label: 'Phone', value: footerData.contact.phone, formatted_value: null, is_active: true },
+        { type: 'whatsapp', label: 'WhatsApp', value: footerData.contact.whatsapp, formatted_value: null, is_active: true },
+        { type: 'address', label: 'Alamat', value: footerData.contact.address, formatted_value: null, is_active: true }
       ];
       
       for (const contact of contactUpdates) {
         const { error: contactError } = await supabase
           .from('contact_info')
-          .upsert({
-            type: contact.type,
-            value: contact.value
-          }, {
+          .upsert(contact, {
             onConflict: 'type'
           });
         
@@ -240,9 +325,12 @@ const AdminContentManagement = () => {
       if (deleteError) throw deleteError;
       
       // Then insert new links
-      const socialLinks = footerData.socialMedia.map(social => ({
-        platform: social.name.toLowerCase(),
+      const socialLinks = footerData.socialMedia.map((social, index) => ({
+        platform: social.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+        name: social.name,
         url: social.url,
+        icon: social.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+        display_order: index + 1,
         is_active: true
       }));
       

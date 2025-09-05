@@ -59,10 +59,11 @@ const Footer = () => {
       // Use fallback data if tables don't exist yet
       if (socialError || !socialData) {
         setSocialLinks([
-          { id: '1', platform: 'instagram', name: 'Instagram', url: '#', icon: 'instagram', display_order: 1 },
-          { id: '2', platform: 'facebook', name: 'Facebook', url: '#', icon: 'facebook', display_order: 2 },
-          { id: '3', platform: 'tiktok', name: 'TikTok', url: '#', icon: 'tiktok', display_order: 3 },
-          { id: '4', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 4 }
+          { id: '1', platform: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/servisoo.official/', icon: 'instagram', display_order: 1 },
+          { id: '2', platform: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/servisoo.official', icon: 'facebook', display_order: 2 },
+          { id: '3', platform: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/@servisoo.official', icon: 'tiktok', display_order: 3 },
+          { id: '4', platform: 'x', name: 'Twitter/X', url: 'https://x.com/servisoo', icon: 'x', display_order: 4 },
+          { id: '5', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 5 }
         ])
       } else {
         setSocialLinks(socialData)
@@ -91,10 +92,11 @@ const Footer = () => {
       console.error('Error fetching footer data:', error)
       // Set fallback data on error
       setSocialLinks([
-        { id: '1', platform: 'instagram', name: 'Instagram', url: '#', icon: 'instagram', display_order: 1 },
-        { id: '2', platform: 'facebook', name: 'Facebook', url: '#', icon: 'facebook', display_order: 2 },
-        { id: '3', platform: 'tiktok', name: 'TikTok', url: '#', icon: 'tiktok', display_order: 3 },
-        { id: '4', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 4 }
+        { id: '1', platform: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/servisoo.official/', icon: 'instagram', display_order: 1 },
+        { id: '2', platform: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/servisoo.official', icon: 'facebook', display_order: 2 },
+        { id: '3', platform: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/@servisoo.official', icon: 'tiktok', display_order: 3 },
+        { id: '4', platform: 'x', name: 'Twitter/X', url: 'https://x.com/servisoo', icon: 'x', display_order: 4 },
+        { id: '5', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 5 }
       ])
       setContactInfo([
         { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
@@ -135,6 +137,13 @@ const Footer = () => {
         return (
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        )
+      case 'twitter':
+      case 'x':
+        return (
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
         )
       default:
