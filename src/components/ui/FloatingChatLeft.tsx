@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MessageCircle, X, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,19 +14,106 @@ interface Message {
 
 const FloatingChatLeft = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Halo! Selamat datang di SERVISOO. Ada yang bisa saya bantu?',
-      sender: 'bot',
-      timestamp: new Date()
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  // URL webhook n8n yang sudah dikonfigurasi
-  const N8N_WEBHOOK_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
+  // URL n8n Chat Trigger untuk workflow Servisoo
+  const N8N_CHAT_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
+  
+  // Session ID untuk memory management
+  const [sessionId] = useState(() => `servisoo-left-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+
+  // Send welcome message when chat opens for the first time
+  useEffect(() => {
+    if (isOpen && !isInitialized) {
+      setIsInitialized(true)
+      setIsTyping(true)
+      
+      // Send welcome message to n8n AI Agent
+      const sendWelcomeMessage = async () => {
+        try {
+          const requestBody = {
+            action: 'sendMessage',
+            chatInput: 'WELCOME_MESSAGE',
+            sessionId: sessionId,
+            metadata: {
+              source: 'floating-chat-left',
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              isWelcome: true
+            }
+          }
+
+          const response = await fetch(N8N_CHAT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+          })
+
+          if (response.ok) {
+            const contentType = response.headers.get('content-type')
+            let botResponse = ''
+            
+            if (contentType && contentType.includes('application/json')) {
+              const data = await response.json()
+              if (data.output) {
+                botResponse = data.output
+              } else if (data.text) {
+                botResponse = data.text
+              } else if (data.response) {
+                botResponse = data.response
+              } else if (typeof data === 'string') {
+                botResponse = data
+              } else {
+                botResponse = 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?'
+              }
+            } else {
+              botResponse = await response.text()
+            }
+            
+            if (botResponse && botResponse.trim()) {
+              const welcomeMessage: Message = {
+                id: Date.now().toString(),
+                text: botResponse.trim(),
+                sender: 'bot',
+                timestamp: new Date()
+              }
+              setMessages([welcomeMessage])
+            } else {
+              const welcomeMessage: Message = {
+                id: Date.now().toString(),
+                text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
+                sender: 'bot',
+                timestamp: new Date()
+              }
+              setMessages([welcomeMessage])
+            }
+          } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+        } catch (error) {
+          console.error('Error sending welcome message to n8n:', error)
+          const welcomeMessage: Message = {
+            id: Date.now().toString(),
+            text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
+            sender: 'bot',
+            timestamp: new Date()
+          }
+          setMessages([welcomeMessage])
+        } finally {
+          setIsTyping(false)
+        }
+      }
+
+      // Delay welcome message slightly for better UX
+      setTimeout(sendWelcomeMessage, 500)
+    }
+  }, [isOpen, isInitialized, sessionId])
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return
@@ -44,47 +131,76 @@ const FloatingChatLeft = () => {
     setIsTyping(true)
 
     try {
-      const response = await fetch(N8N_WEBHOOK_URL, {
+      // Format request untuk n8n Chat Trigger langchain
+      const requestBody = {
+        action: 'sendMessage',
+        chatInput: currentMessage,
+        sessionId: sessionId,
+        metadata: {
+          source: 'floating-chat-left',
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent
+        }
+      }
+
+      const response = await fetch(N8N_CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          message: currentMessage,
-          timestamp: new Date().toISOString(),
-          sessionId: 'left-chat-session-' + Date.now()
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (response.ok) {
-        const data = await response.text()
+        const contentType = response.headers.get('content-type')
+        let botResponse = ''
         
-        if (data && data.trim()) {
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          // Handle berbagai format response dari n8n langchain
+          if (data.output) {
+            botResponse = data.output
+          } else if (data.text) {
+            botResponse = data.text
+          } else if (data.response) {
+            botResponse = data.response
+          } else if (typeof data === 'string') {
+            botResponse = data
+          } else {
+            botResponse = 'Terima kasih atas pesan Anda. Tim customer service SERVISOO akan segera membantu Anda.'
+          }
+        } else {
+          // Handle text response
+          botResponse = await response.text()
+        }
+        
+        if (botResponse && botResponse.trim()) {
           const botMessage: Message = {
             id: (Date.now() + 1).toString(),
-            text: data,
+            text: botResponse.trim(),
             sender: 'bot',
             timestamp: new Date()
           }
           setMessages(prev => [...prev, botMessage])
         } else {
-          // Fallback jika response kosong
+          // Fallback response
           const botMessage: Message = {
             id: (Date.now() + 1).toString(),
-            text: 'Maaf, saya tidak dapat memproses pesan Anda saat ini. Silakan coba lagi.',
+            text: 'Halo! Saya adalah Customer Service SERVISOO. Bagaimana saya bisa membantu Anda hari ini?',
             sender: 'bot',
             timestamp: new Date()
           }
           setMessages(prev => [...prev, botMessage])
         }
       } else {
-        throw new Error('Network response was not ok')
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
     } catch (error) {
-      console.error('Error sending message:', error)
+      console.error('Error sending message to n8n:', error)
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Maaf, terjadi kesalahan. Silakan coba lagi nanti atau hubungi kami di WhatsApp 085808675233.',
+        text: 'Maaf, sistem chat sedang mengalami gangguan. Silakan hubungi kami langsung di WhatsApp 085808675233 atau coba lagi dalam beberapa saat.',
         sender: 'bot',
         timestamp: new Date()
       }
