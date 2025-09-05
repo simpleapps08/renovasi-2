@@ -316,20 +316,22 @@ const AdminUserManagement = () => {
    const exportToCSV = () => {
      const csvContent = "data:text/csv;charset=utf-8," + 
        "Email,Nama,Role,Telepon,Kota,Pekerjaan,Tanggal Dibuat\n" +
-       filteredUsers.map(user => 
-         `${user.email},${user.name},${user.role},${user.phone || ''},${user.city || ''},${user.occupation || ''},${user.created_at}`
-       ).join("\n")
+       filteredUsers.map(user => {
+         return `${user.email},${user.name},${user.role},${user.phone || ''},${user.city || ''},${user.occupation || ''},${user.created_at}`;
+       }).join("\n");
      
-     const encodedUri = encodeURI(csvContent)
-     const link = document.createElement("a")
-     link.setAttribute("href", encodedUri)
-     link.setAttribute("download", "users_data.csv")
-     document.body.appendChild(link)
-     link.click()
-     document.body.removeChild(link)
+     const encodedUri = encodeURI(csvContent);
+     const link = document.createElement("a");
+     link.setAttribute("href", encodedUri);
+     link.setAttribute("download", "users_data.csv");
+     document.body.appendChild(link);
+     link.click();
+     document.body.removeChild(link);
      
+     toast({
+       title: "Ekspor Berhasil",
        description: "Data pengguna berhasil diekspor ke CSV.",
-     })
+     });
    }
 
   const getRoleBadgeVariant = (role: string) => {
