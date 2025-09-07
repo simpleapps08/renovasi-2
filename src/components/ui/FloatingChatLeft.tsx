@@ -269,7 +269,14 @@ const FloatingChatLeft = () => {
                           : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md'
                         }`}
                     >
-                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {message.text.split('\n').map((line, index) => (
+                          <React.Fragment key={index}>
+                            {line}
+                            {index < message.text.split('\n').length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
+                      </div>
                       <p className="text-xs opacity-70 mt-1">
                         {message.timestamp.toLocaleTimeString('id-ID', {
                           hour: '2-digit',
