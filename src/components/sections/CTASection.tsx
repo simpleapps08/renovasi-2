@@ -38,8 +38,10 @@ const CTASection = () => {
                   </Link>
                 </Button>
                 
-                <Button variant="outline" size="xl">
-                  Konsultasi Gratis
+                <Button variant="outline" size="xl" asChild>
+                  <a href="https://linktr.ee/servisoo.official" target="_blank" rel="noopener noreferrer">
+                    Konsultasi Gratis
+                  </a>
                 </Button>
               </div>
               

@@ -71,8 +71,10 @@ const ServicesSection = () => {
         </div>
         
         <div className="text-center mt-16">
-          <Button variant="cta" size="xl">
-            Mulai Konsultasi Gratis
+          <Button variant="cta" size="xl" asChild>
+            <a href="https://linktr.ee/servisoo.official" target="_blank" rel="noopener noreferrer">
+              Mulai Konsultasi Gratis
+            </a>
           </Button>
         </div>
       </div>

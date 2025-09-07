@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/enhanced-button"
 import { Link } from "react-router-dom"
+import { useState } from "react"
+import { Menu, X } from "lucide-react"
 
 const Header = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -37,14 +45,73 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" asChild>
-            <Link to="/auth">Masuk</Link>
-          </Button>
-          <Button variant="hero" asChild>
-            <Link to="/auth">Mulai Simulasi</Link>
+          {/* Desktop Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button variant="ghost" asChild>
+              <Link to="/auth">Masuk</Link>
+            </Button>
+            <Button variant="hero" asChild>
+              <Link to="/auth">Mulai Simulasi</Link>
+            </Button>
+          </div>
+          
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={toggleMobileMenu}
+          >
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
         </div>
       </div>
+      
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t bg-background/95 backdrop-blur">
+          <nav className="container py-4 space-y-4">
+            <Link 
+              to="/" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Beranda
+            </Link>
+            <Link 
+              to="#services" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Layanan
+            </Link>
+            <Link 
+              to="#gallery" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Gallery
+            </Link>
+            <Link 
+              to="#contact" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Kontak
+            </Link>
+            
+            {/* Mobile Action Buttons */}
+            <div className="pt-4 border-t space-y-2">
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Masuk</Link>
+              </Button>
+              <Button variant="hero" className="w-full" asChild>
+                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Mulai Simulasi</Link>
+              </Button>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }
