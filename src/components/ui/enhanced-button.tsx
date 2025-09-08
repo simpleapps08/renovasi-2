@@ -23,6 +23,7 @@ const buttonVariants = cva(
         cta: "gradient-accent text-white font-semibold hover:shadow-accent transition-all duration-300 hover:scale-105",
         service: "bg-card text-card-foreground border-2 border-transparent hover:border-accent hover:shadow-accent transition-all duration-300",
         yellow: "bg-yellow-500 text-white font-semibold hover:bg-yellow-600 hover:shadow-lg transition-all duration-300 hover:scale-105",
+        white: "bg-white text-black font-semibold hover:shadow-accent transition-all duration-300 hover:scale-105",
       },
       size: {
         default: "h-10 px-4 py-2",
