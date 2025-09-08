@@ -25,7 +25,7 @@ const CTASection = () => {
               
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                 Dapatkan estimasi biaya yang akurat dengan simulasi RAB digital kami. 
-                Gratis, cepat, dan tanpa komitmen.
+                Gratis, cepat, dan tanpa syarat.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
