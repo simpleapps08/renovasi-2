@@ -22,6 +22,7 @@ const buttonVariants = cva(
         hero: "bg-accent text-accent-foreground hover:bg-accent-light shadow-accent hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5",
         cta: "gradient-accent text-white font-semibold hover:shadow-accent transition-all duration-300 hover:scale-105",
         service: "bg-card text-card-foreground border-2 border-transparent hover:border-accent hover:shadow-accent transition-all duration-300",
+        yellow: "bg-yellow-500 text-white font-semibold hover:bg-yellow-600 hover:shadow-lg transition-all duration-300 hover:scale-105",
       },
       size: {
         default: "h-10 px-4 py-2",
