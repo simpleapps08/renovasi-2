@@ -39,7 +39,7 @@ const HeroSection = () => {
                 </Link>
               </Button>
               
-              <Button variant="outline" size="xl" className="border-white/30 text-black bg-white hover:bg-black hover:text-white transition-all duration-300">
+              <Button variant="outline" size="xl" className="border-white/30 text-black hover:text-white hover:bg-white/10">
                 Lihat Portofolio
               </Button>
             </div>
