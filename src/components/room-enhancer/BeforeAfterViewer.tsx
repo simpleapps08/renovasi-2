@@ -16,6 +16,13 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
 }) => {
   const [showComparison, setShowComparison] = useState(true);
   const [sliderPosition, setSliderPosition] = useState(50);
+  
+  console.log('BeforeAfterViewer props:', { 
+    beforeImage: beforeImage ? 'File object present' : 'null/undefined', 
+    afterImage: afterImage ? afterImage : 'null/undefined', 
+    afterImageType: typeof afterImage,
+    isLoading 
+  });
 
   if (!beforeImage && !afterImage) {
     return null;
@@ -99,6 +106,13 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                     src={afterImage} 
                     alt="After renovation" 
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('Error loading after image:', afterImage);
+                      console.error('Image error event:', e);
+                    }}
+                    onLoad={() => {
+                      console.log('After image loaded successfully:', afterImage);
+                    }}
                   />
                   <div className="absolute top-4 right-4">
                     <Badge variant="default" className="bg-green-600">Sesudah</Badge>
@@ -131,32 +145,49 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
               </div>
             ) : (
               /* Single Image View */
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {beforeImage && (
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-                    <img 
-                      src={URL.createObjectURL(beforeImage)} 
-                      alt="Before renovation" 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge variant="secondary">Sebelum</Badge>
+              <div className="space-y-4">
+                {/* Always show both images if available, even in single view */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {beforeImage && (
+                    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                      <img 
+                        src={URL.createObjectURL(beforeImage)} 
+                        alt="Before renovation" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge variant="secondary">Sebelum</Badge>
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {afterImage && (
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-                    <img 
-                      src={afterImage} 
-                      alt="After renovation" 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge variant="default" className="bg-green-600">Sesudah</Badge>
+                  )}
+                  
+                  {afterImage ? (
+                    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                      <img 
+                        src={afterImage} 
+                        alt="After renovation" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Error loading after image (single view):', afterImage);
+                          console.error('Image error event:', e);
+                        }}
+                        onLoad={() => {
+                          console.log('After image loaded successfully (single view):', afterImage);
+                        }}
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge variant="default" className="bg-green-600">Sesudah</Badge>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : beforeImage && (
+                    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                      <div className="text-center space-y-2">
+                        <div className="text-muted-foreground">Gambar hasil renovasi akan muncul di sini</div>
+                        <div className="text-sm text-muted-foreground">Klik "Generate Renovasi AI" untuk memulai</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             

@@ -98,6 +98,7 @@ const RoomEnhancer = () => {
         );
 
         console.log('Generation result:', result);
+        console.log('Enhanced image URL:', result.enhancedImageUrl);
         setState(prev => ({ 
           ...prev, 
           generatedImage: result.enhancedImageUrl,
