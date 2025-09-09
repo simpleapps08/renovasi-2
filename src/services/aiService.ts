@@ -13,6 +13,7 @@ interface GenerateImageResponse {
   enhancedImageUrl?: string;
   error?: string;
   processingTime?: number;
+  aiAnalysis?: string;
 }
 
 class AIService {
@@ -20,10 +21,15 @@ class AIService {
   private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_GOOGLE_AI_STUDIO_API_KEY;
-    if (!this.apiKey) {
-      throw new Error('Google AI Studio API key not found in environment variables');
-    }
+    this.apiKey = import.meta.env.VITE_GOOGLE_AI_STUDIO_API_KEY || '';
+    console.log('AI Service initialized. API Key available:', this.hasApiKey());
+  }
+
+  /**
+   * Check if API key is available
+   */
+  private hasApiKey(): boolean {
+    return !!this.apiKey && this.apiKey.trim() !== '';
   }
 
   /**
@@ -49,12 +55,23 @@ class AIService {
   async generateEnhancedRoom(request: GenerateImageRequest): Promise<GenerateImageResponse> {
     const startTime = Date.now();
 
+    // Check if API key is available
+    if (!this.hasApiKey()) {
+      return {
+        success: false,
+        error: 'Google AI Studio API key tidak ditemukan. Periksa file .env Anda.',
+        processingTime: Date.now() - startTime
+      };
+    }
+
     try {
       // Convert image to base64
       const base64Image = await this.fileToBase64(request.imageFile);
 
       // Create enhanced prompt based on style preset
       const enhancedPrompt = this.createEnhancedPrompt(request.prompt, request.stylePreset);
+
+      console.log('Sending request to Google AI Studio...');
 
       // Prepare the request payload for Google AI Studio
       const payload = {
@@ -93,25 +110,24 @@ class AIService {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Google AI Studio API Error:', errorData);
         throw new Error(`API Error: ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const result = await response.json();
-      
-      // For now, we'll simulate image generation since Gemini primarily generates text
-      // In a real implementation, you might use a different AI service for image generation
-      // or process the text response to create visual modifications
+      console.log('Google AI Studio Response:', result);
       
       const processingTime = Date.now() - startTime;
       
-      // Simulate successful image generation with a mock URL
-      // In production, this would be the actual generated image URL
-      const mockEnhancedUrl = this.generateMockEnhancedImage(request.stylePreset);
+      // Since Google AI Studio doesn't generate images directly, we'll use the analysis
+      // and return a mock enhanced image URL for now
+      const enhancedImageUrl = this.generateMockEnhancedImage(request.stylePreset);
 
       return {
         success: true,
-        enhancedImageUrl: mockEnhancedUrl,
-        processingTime
+        enhancedImageUrl,
+        processingTime,
+        aiAnalysis: result.candidates?.[0]?.content?.parts?.[0]?.text || 'No analysis available'
       };
 
     } catch (error) {
@@ -180,6 +196,11 @@ class AIService {
    * Validate API key
    */
   async validateApiKey(): Promise<boolean> {
+    if (!this.hasApiKey()) {
+      console.warn('API key not found in environment variables');
+      return false;
+    }
+
     try {
       const response = await fetch(
         `${this.baseUrl}/models?key=${this.apiKey}`,

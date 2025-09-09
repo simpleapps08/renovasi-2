@@ -9,6 +9,7 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
   beforeImage,
   afterImage,
   isLoading = false,
+  aiAnalysis,
   onRegenerate,
   onDownload,
   onShare
@@ -156,6 +157,14 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* AI Analysis */}
+            {aiAnalysis && (
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h4 className="font-semibold mb-2">Analisis AI</h4>
+                <p className="text-sm text-muted-foreground">{aiAnalysis}</p>
               </div>
             )}
             

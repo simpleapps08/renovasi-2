@@ -8,18 +8,19 @@ import { Link } from 'react-router-dom';
 import FileUpload from '@/components/room-enhancer/FileUpload';
 import PromptInput from '@/components/room-enhancer/PromptInput';
 import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
-import { RoomEnhancerState, STYLE_PRESETS } from '@/types/roomEnhancer';
+import { RoomEnhancerState, STYLE_PRESETS, GenerationHistoryItem } from '@/types/roomEnhancer';
 import { aiService } from '@/services/aiService';
 
 const RoomEnhancer = () => {
   const [state, setState] = useState<RoomEnhancerState>({
     selectedFile: null,
     prompt: '',
-    selectedStyle: '',
-    isLoading: false,
+    selectedStyle: 'modern-minimalis',
     generatedImage: null,
+    isLoading: false,
     error: null,
-    generationHistory: []
+    generationHistory: [],
+    aiAnalysis: null
   });
   
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
@@ -64,7 +65,13 @@ const RoomEnhancer = () => {
   };
 
   const handleGenerate = async () => {
+    console.log('Generate button clicked');
+    console.log('Selected file:', state.selectedFile);
+    console.log('Prompt:', state.prompt);
+    console.log('Style:', state.selectedStyle);
+    
     if (!state.selectedFile) {
+      console.log('No file selected, returning');
       setState(prev => ({ ...prev, error: 'Silakan pilih file gambar terlebih dahulu.' }));
       return;
     }
@@ -82,32 +89,32 @@ const RoomEnhancer = () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Use Google AI Studio API through aiService
-      const result = await aiService.generateEnhancedRoom({
-        imageFile: state.selectedFile,
-        prompt: state.prompt,
-        stylePreset: state.selectedStyle
-      });
+        console.log('Calling aiService.generateEnhancedRoom...');
+        // Use Google AI Studio API through aiService
+        const result = await aiService.generateEnhancedRoom(
+          state.selectedFile,
+          state.prompt,
+          state.selectedStyle
+        );
 
-      if (result.success && result.enhancedImageUrl) {
+        console.log('Generation result:', result);
         setState(prev => ({ 
           ...prev, 
-          generatedImage: result.enhancedImageUrl!,
+          generatedImage: result.imageUrl,
+          aiAnalysis: result.aiAnalysis || null,
           generationHistory: [...prev.generationHistory, {
             id: Date.now().toString(),
             originalImage: prev.selectedFile!,
-            generatedImage: result.enhancedImageUrl!,
+            generatedImage: result.imageUrl,
             prompt: prev.prompt,
             style: prev.selectedStyle,
             timestamp: new Date()
           }]
         }));
         
-        toast.success(`Renovasi berhasil dibuat! (${result.processingTime}ms)`);
-      } else {
-        throw new Error(result.error || 'Gagal menghasilkan gambar');
-      }
+        toast.success('Renovasi berhasil dibuat!');
     } catch (error) {
+      console.error('Generation error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses gambar.';
       setState(prev => ({ ...prev, error: errorMessage }));
       toast.error('Gagal memproses gambar: ' + errorMessage);
@@ -286,14 +293,17 @@ const RoomEnhancer = () => {
         </div>
 
         {/* Results Section */}
-        <BeforeAfterViewer
-          beforeImage={state.selectedFile}
-          afterImage={state.generatedImage}
-          isLoading={state.isLoading}
-          onRegenerate={handleRegenerate}
-          onDownload={handleDownload}
-          onShare={handleShare}
-        />
+        {(state.selectedFile || state.generatedImage) && (
+          <BeforeAfterViewer
+            beforeImage={state.selectedFile}
+            afterImage={state.generatedImage}
+            isLoading={state.isLoading}
+            aiAnalysis={state.aiAnalysis}
+            onRegenerate={handleRegenerate}
+            onDownload={handleDownload}
+            onShare={handleShare}
+          />
+        )}
       </div>
     </div>
   );
