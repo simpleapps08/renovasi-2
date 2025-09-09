@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/enhanced-button';
@@ -9,6 +9,7 @@ import FileUpload from '@/components/room-enhancer/FileUpload';
 import PromptInput from '@/components/room-enhancer/PromptInput';
 import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
 import { RoomEnhancerState, STYLE_PRESETS } from '@/types/roomEnhancer';
+import { aiService } from '@/services/aiService';
 
 const RoomEnhancer = () => {
   const [state, setState] = useState<RoomEnhancerState>({
@@ -20,6 +21,26 @@ const RoomEnhancer = () => {
     error: null,
     generationHistory: []
   });
+  
+  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+
+  // Validate API key on component mount
+  useEffect(() => {
+    const validateApi = async () => {
+      try {
+        const isValid = await aiService.validateApiKey();
+        setApiStatus(isValid ? 'connected' : 'error');
+        if (!isValid) {
+          setState(prev => ({ ...prev, error: 'Google AI Studio API key tidak valid atau tidak ditemukan.' }));
+        }
+      } catch (error) {
+        setApiStatus('error');
+        setState(prev => ({ ...prev, error: 'Gagal memvalidasi API key.' }));
+      }
+    };
+    
+    validateApi();
+  }, []);
 
   const handleFileSelect = (file: File) => {
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
@@ -53,41 +74,43 @@ const RoomEnhancer = () => {
       return;
     }
 
+    if (apiStatus !== 'connected') {
+      setState(prev => ({ ...prev, error: 'Google AI Studio tidak terhubung. Periksa API key Anda.' }));
+      return;
+    }
+
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Mock API call - simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 4000));
-      
-      // Mock generated image URLs (different for each style)
-      const mockImages = {
-        modern: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
-        minimalist: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
-        scandinavian: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&h=600&fit=crop',
-        industrial: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
-        bohemian: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
-        traditional: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&h=600&fit=crop'
-      };
-      
-      const generatedImage = mockImages[state.selectedStyle as keyof typeof mockImages] || mockImages.modern;
-      
-      setState(prev => ({ 
-        ...prev, 
-        generatedImage,
-        generationHistory: [...prev.generationHistory, {
-          id: Date.now().toString(),
-          originalImage: prev.selectedFile!,
-          generatedImage,
-          prompt: prev.prompt,
-          style: prev.selectedStyle,
-          timestamp: new Date()
-        }]
-      }));
-      
-      toast.success('Renovasi berhasil dibuat!');
+      // Use Google AI Studio API through aiService
+      const result = await aiService.generateEnhancedRoom({
+        imageFile: state.selectedFile,
+        prompt: state.prompt,
+        stylePreset: state.selectedStyle
+      });
+
+      if (result.success && result.enhancedImageUrl) {
+        setState(prev => ({ 
+          ...prev, 
+          generatedImage: result.enhancedImageUrl!,
+          generationHistory: [...prev.generationHistory, {
+            id: Date.now().toString(),
+            originalImage: prev.selectedFile!,
+            generatedImage: result.enhancedImageUrl!,
+            prompt: prev.prompt,
+            style: prev.selectedStyle,
+            timestamp: new Date()
+          }]
+        }));
+        
+        toast.success(`Renovasi berhasil dibuat! (${result.processingTime}ms)`);
+      } else {
+        throw new Error(result.error || 'Gagal menghasilkan gambar');
+      }
     } catch (error) {
-      setState(prev => ({ ...prev, error: 'Terjadi kesalahan saat memproses gambar.' }));
-      toast.error('Gagal memproses gambar');
+      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses gambar.';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      toast.error('Gagal memproses gambar: ' + errorMessage);
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
@@ -131,13 +154,27 @@ const RoomEnhancer = () => {
       {/* Header */}
       <div className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-accent/10 rounded-lg">
-              <Wand2 className="h-6 w-6 text-accent" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-accent/10 rounded-lg">
+                <Wand2 className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Room Enhancer</h1>
+                <p className="text-muted-foreground">Transform ruangan Anda dengan AI</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Room Enhancer</h1>
-              <p className="text-muted-foreground">Transform ruangan Anda dengan AI</p>
+            
+            {/* API Status Indicator */}
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${
+                apiStatus === 'connected' ? 'bg-green-500' :
+                apiStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+              }`} />
+              <span className="text-sm text-muted-foreground">
+                {apiStatus === 'connected' ? 'Google AI Connected' :
+                 apiStatus === 'error' ? 'AI Disconnected' : 'Checking AI...'}
+              </span>
             </div>
           </div>
         </div>
