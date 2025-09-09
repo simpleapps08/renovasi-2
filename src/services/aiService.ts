@@ -171,25 +171,68 @@ class AIService {
   }
 
   /**
-   * Generate mock enhanced image URL for demonstration
-   * In production, this would be replaced with actual AI-generated image
+   * Generate mock enhanced image for demonstration
+   * Creates a canvas-based mock image that can be downloaded
    */
   private generateMockEnhancedImage(stylePreset: string): string {
-    // Mock URLs for different styles - in production these would be actual generated images
-    const mockImages = {
-      'modern-minimalis': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
-      'skandinavia': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop',
-      'industrial': 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&h=600&fit=crop',
-      'modern-tropis': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
-      'japandi': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
-      'klasik-eropa': 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&h=600&fit=crop',
-      'kontemporer': 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&h=600&fit=crop',
-      'rustic': 'https://images.unsplash.com/photo-1560185008-b033106af5c3?w=800&h=600&fit=crop',
-      'mediterranean': 'https://images.unsplash.com/photo-1560185009-5bf9f2849488?w=800&h=600&fit=crop',
-      'futuristik': 'https://images.unsplash.com/photo-1560185009-5d4d0d3c3c3c?w=800&h=600&fit=crop'
+    // Create a canvas to generate a mock enhanced image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      // Fallback to a simple data URL
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkVuaGFuY2VkIFJvb20gKE1vY2spPC90ZXh0Pjwvc3ZnPg==';
+    }
+    
+    canvas.width = 800;
+    canvas.height = 600;
+    
+    // Style-specific colors and patterns
+    const styleColors = {
+      'modern-minimalis': { bg: '#f8f9fa', accent: '#6c757d', text: '#212529' },
+      'skandinavia': { bg: '#ffffff', accent: '#d4a574', text: '#2c3e50' },
+      'industrial': { bg: '#2c3e50', accent: '#e74c3c', text: '#ecf0f1' },
+      'modern-tropis': { bg: '#27ae60', accent: '#f39c12', text: '#ffffff' },
+      'japandi': { bg: '#f5f5dc', accent: '#8b4513', text: '#2f4f4f' },
+      'klasik-eropa': { bg: '#daa520', accent: '#8b0000', text: '#ffffff' },
+      'kontemporer': { bg: '#34495e', accent: '#3498db', text: '#ffffff' },
+      'rustic': { bg: '#8b4513', accent: '#daa520', text: '#ffffff' },
+      'mediterranean': { bg: '#4682b4', accent: '#ffd700', text: '#ffffff' },
+      'futuristik': { bg: '#000000', accent: '#00ffff', text: '#ffffff' }
     };
-
-    return mockImages[stylePreset as keyof typeof mockImages] || mockImages['modern-minimalis'];
+    
+    const colors = styleColors[stylePreset as keyof typeof styleColors] || styleColors['modern-minimalis'];
+    
+    // Draw background
+    ctx.fillStyle = colors.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw some geometric shapes to simulate room elements
+    ctx.fillStyle = colors.accent;
+    
+    // Floor
+    ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+    
+    // Wall accent
+    ctx.fillRect(50, 50, canvas.width - 100, 20);
+    
+    // Furniture shapes
+    ctx.fillRect(100, 300, 200, 150); // Sofa
+    ctx.fillRect(500, 350, 100, 100); // Table
+    
+    // Add text
+    ctx.fillStyle = colors.text;
+    ctx.font = 'bold 32px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Enhanced Room (AI Generated)', canvas.width / 2, 200);
+    
+    ctx.font = '24px Arial';
+    ctx.fillText(`Style: ${stylePreset}`, canvas.width / 2, 250);
+    
+    ctx.font = '16px Arial';
+    ctx.fillText('This is a mock enhanced image for demonstration', canvas.width / 2, canvas.height - 30);
+    
+    return canvas.toDataURL('image/png');
   }
 
   /**

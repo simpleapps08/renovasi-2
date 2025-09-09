@@ -100,12 +100,12 @@ const RoomEnhancer = () => {
         console.log('Generation result:', result);
         setState(prev => ({ 
           ...prev, 
-          generatedImage: result.imageUrl,
+          generatedImage: result.enhancedImageUrl,
           aiAnalysis: result.aiAnalysis || null,
           generationHistory: [...prev.generationHistory, {
             id: Date.now().toString(),
             originalImage: prev.selectedFile!,
-            generatedImage: result.imageUrl,
+            generatedImage: result.enhancedImageUrl,
             prompt: prev.prompt,
             style: prev.selectedStyle,
             timestamp: new Date()
@@ -129,11 +129,27 @@ const RoomEnhancer = () => {
 
   const handleDownload = () => {
     if (state.generatedImage) {
-      const link = document.createElement('a');
-      link.href = state.generatedImage;
-      link.download = `room-renovation-${Date.now()}.jpg`;
-      link.click();
-      toast.success('Gambar berhasil didownload!');
+      try {
+        const link = document.createElement('a');
+        link.href = state.generatedImage;
+        
+        // Create descriptive filename
+        const styleName = state.selectedStyle.replace('-', '_');
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+        link.download = `room_renovation_${styleName}_${timestamp}.png`;
+        
+        // Append to body, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast.success('Gambar berhasil didownload!');
+      } catch (error) {
+        console.error('Download error:', error);
+        toast.error('Gagal mendownload gambar. Silakan coba lagi.');
+      }
+    } else {
+      toast.error('Tidak ada gambar untuk didownload.');
     }
   };
 
