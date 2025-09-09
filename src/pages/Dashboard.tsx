@@ -1,7 +1,7 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
-import { Calculator, History, CreditCard, TrendingUp } from "lucide-react"
+import { Calculator, History, CreditCard, TrendingUp, Sparkles } from "lucide-react"
 import { Link } from "react-router-dom"
 
 
@@ -54,7 +54,7 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="gradient-card border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -68,6 +68,23 @@ const Dashboard = () => {
               <CardContent>
                 <Button asChild variant="hero" className="w-full">
                   <Link to="/dashboard/simulate">Mulai Simulasi</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-accent" />
+                  Room Enhancer
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Transform ruangan dengan AI visual enhancement
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/room-enhancer">Coba Sekarang</Link>
                 </Button>
               </CardContent>
             </Card>

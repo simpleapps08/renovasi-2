@@ -21,6 +21,7 @@ import SimulasiRAB from "./pages/SimulasiRAB";
 import HistoriProyek from "./pages/HistoriProyek";
 import BillingDeposit from "./pages/BillingDeposit";
 import Profil from "./pages/Profil";
+import RoomEnhancer from "./pages/RoomEnhancer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -121,6 +122,7 @@ const App = () => (
                 <AdminContentManagement />
               </ProtectedRoute>
             } />
+            <Route path="/room-enhancer" element={<RoomEnhancer />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -42,6 +42,12 @@ const Header = () => {
           >
             Kontak
           </Link>
+          <Link 
+            to="/room-enhancer" 
+            className="text-sm font-medium transition-colors hover:text-accent"
+          >
+            Room Enhancer
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -98,6 +104,13 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Kontak
+            </Link>
+            <Link 
+              to="/room-enhancer" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Room Enhancer
             </Link>
             
             {/* Mobile Action Buttons */}
