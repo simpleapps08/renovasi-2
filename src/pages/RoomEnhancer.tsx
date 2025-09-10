@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/enhanced-button';
-import { Sparkles, Wand2, Upload } from 'lucide-react';
+import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import FileUpload from '@/components/room-enhancer/FileUpload';
 import PromptInput from '@/components/room-enhancer/PromptInput';
 import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
 import { RoomEnhancerState, STYLE_PRESETS, GenerationHistoryItem } from '@/types/roomEnhancer';
-import { aiService } from '@/services/aiService';
+import { realAiService } from '../services/realAiService';
+import { storageService } from '../services/storageService';
+import ErrorBoundary, { useErrorHandler } from '../components/ErrorBoundary';
 
 const RoomEnhancer = () => {
+  const { handleError } = useErrorHandler();
+  
   const [state, setState] = useState<RoomEnhancerState>({
     selectedFile: null,
     prompt: '',
@@ -24,23 +28,35 @@ const RoomEnhancer = () => {
   });
   
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [processingTime, setProcessingTime] = useState<number>(0);
+  const [retryCount, setRetryCount] = useState<number>(0);
 
-  // Validate API key on component mount
+  // Validate services on component mount
   useEffect(() => {
-    const validateApi = async () => {
+    const validateServices = async () => {
       try {
-        const isValid = await aiService.validateApiKey();
-        setApiStatus(isValid ? 'connected' : 'error');
-        if (!isValid) {
-          setState(prev => ({ ...prev, error: 'Google AI Studio API key tidak valid atau tidak ditemukan.' }));
+        // Check AI service health
+        const healthCheck = await realAiService.checkHealth();
+        
+        // Initialize storage service
+        await storageService.initializeBucket();
+        
+        setApiStatus(healthCheck.healthy ? 'connected' : 'error');
+        
+        if (!healthCheck.healthy) {
+          console.warn('AI Service issues:', healthCheck.errors);
+          toast('Beberapa layanan AI tidak tersedia, menggunakan mode demo');
         }
       } catch (error) {
+        console.error('Service validation error:', error);
+        handleError(error as Error, 'service initialization');
         setApiStatus('error');
-        setState(prev => ({ ...prev, error: 'Gagal memvalidasi API key.' }));
+        setState(prev => ({ ...prev, error: 'Gagal menginisialisasi layanan' }));
       }
     };
     
-    validateApi();
+    validateServices();
   }, []);
 
   const handleFileSelect = (file: File) => {
@@ -81,58 +97,93 @@ const RoomEnhancer = () => {
       return;
     }
 
-    if (apiStatus !== 'connected') {
-      setState(prev => ({ ...prev, error: 'Google AI Studio tidak terhubung. Periksa API key Anda.' }));
-      return;
-    }
-
     setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setAiAnalysis('');
+    setProcessingTime(0);
 
     try {
-        console.log('Calling aiService.generateEnhancedRoom...');
-        // Use Google AI Studio API through aiService
-        const result = await aiService.generateEnhancedRoom(
-          state.selectedFile,
-          state.prompt,
-          state.selectedStyle
-        );
+        console.log('Starting AI enhancement with real AI service...');
+        toast.loading('Memproses gambar dengan AI...', { id: 'ai-processing' });
 
-        console.log('Generation result:', result);
-        console.log('Enhanced image URL:', result.enhancedImageUrl);
-        setState(prev => ({ 
-          ...prev, 
-          generatedImage: result.enhancedImageUrl,
-          aiAnalysis: result.aiAnalysis || null,
-          generationHistory: [...prev.generationHistory, {
-            id: Date.now().toString(),
-            originalImage: prev.selectedFile!,
+        const result = await realAiService.generateEnhancedRoom({
+          imageFile: state.selectedFile,
+          prompt: state.prompt,
+          stylePreset: state.selectedStyle,
+          userId: 'demo-user' // In production, use actual user ID
+        });
+
+        console.log('AI Enhancement result:', result);
+        toast.dismiss('ai-processing');
+
+        if (result.success && result.enhancedImageUrl) {
+          setState(prev => ({ 
+            ...prev, 
             generatedImage: result.enhancedImageUrl,
-            prompt: prev.prompt,
-            style: prev.selectedStyle,
-            timestamp: new Date()
-          }]
-        }));
-        
-        toast.success('Renovasi berhasil dibuat!');
+            aiAnalysis: result.aiAnalysis || null,
+            generationHistory: [...prev.generationHistory, {
+              id: Date.now().toString(),
+              originalImage: prev.selectedFile!,
+              generatedImage: result.enhancedImageUrl,
+              prompt: prev.prompt,
+              style: prev.selectedStyle,
+              timestamp: new Date()
+            }]
+          }));
+          
+          // Set additional data
+          if (result.aiAnalysis) setAiAnalysis(result.aiAnalysis);
+          if (result.processingTime) setProcessingTime(result.processingTime);
+          
+          toast.success(`Renovasi berhasil dibuat! (${result.processingTime || 0}ms)`);
+        } else {
+          throw new Error(result.error || 'Gagal menghasilkan gambar yang ditingkatkan');
+        }
     } catch (error) {
-      console.error('Generation error:', error);
+      console.error('AI Enhancement error:', error);
+      toast.dismiss('ai-processing');
+      handleError(error as Error, 'AI image generation');
+      
       const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses gambar.';
       setState(prev => ({ ...prev, error: errorMessage }));
-      toast.error('Gagal memproses gambar: ' + errorMessage);
+      
+      // Retry logic for transient errors
+      if (retryCount < 2 && (errorMessage.includes('network') || errorMessage.includes('timeout'))) {
+        setRetryCount(prev => prev + 1);
+        toast.error(`Gagal memproses gambar, mencoba lagi... (${retryCount + 1}/3)`);
+        setTimeout(() => handleGenerate(), 2000);
+      } else {
+        toast.error('Gagal memproses gambar: ' + errorMessage);
+        setRetryCount(0);
+      }
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
-  const handleRegenerate = () => {
-    handleGenerate();
+  const handleRegenerate = async () => {
+    if (!state.selectedFile || !state.selectedStyle) return;
+    
+    setState(prev => ({ ...prev, generatedImage: null }));
+    setAiAnalysis('');
+    setProcessingTime(0);
+    await handleGenerate();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (state.generatedImage) {
       try {
+        toast.loading('Mempersiapkan download...', { id: 'download' });
+        
+        const response = await fetch(state.generatedImage);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = state.generatedImage;
+        link.style.display = 'none';
+        link.href = url;
         
         // Create descriptive filename
         const styleName = state.selectedStyle.replace('-', '_');
@@ -142,11 +193,19 @@ const RoomEnhancer = () => {
         // Append to body, click, and remove
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
         
+        // Cleanup
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(link);
+        }, 100);
+        
+        toast.dismiss('download');
         toast.success('Gambar berhasil didownload!');
       } catch (error) {
         console.error('Download error:', error);
+        toast.dismiss('download');
+        handleError(error as Error, 'image download');
         toast.error('Gagal mendownload gambar. Silakan coba lagi.');
       }
     } else {
@@ -174,7 +233,8 @@ const RoomEnhancer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -321,8 +381,9 @@ const RoomEnhancer = () => {
             onShare={handleShare}
           />
         )}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
