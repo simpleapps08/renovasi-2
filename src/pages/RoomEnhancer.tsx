@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/enhanced-button';
-import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock } from 'lucide-react';
+import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import FileUpload from '@/components/room-enhancer/FileUpload';
@@ -145,6 +145,16 @@ const RoomEnhancer = () => {
       
       const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses gambar.';
       setState(prev => ({ ...prev, error: errorMessage }));
+      
+      // Handle specific bucket error with detailed instructions
+      if (errorMessage.includes('Storage bucket tidak ditemukan') || errorMessage.includes('Bucket not found')) {
+        toast.error('❌ Setup Storage Diperlukan', {
+          duration: 8000,
+          description: 'Buka SUPABASE_STORAGE_SETUP_GUIDE.md untuk panduan lengkap'
+        });
+        setRetryCount(0);
+        return;
+      }
       
       // Retry logic for transient errors
       if (retryCount < 2 && (errorMessage.includes('network') || errorMessage.includes('timeout'))) {
@@ -324,7 +334,29 @@ const RoomEnhancer = () => {
 
         {state.error && (
           <div className="bg-destructive/15 border border-destructive/20 rounded-lg p-4 mb-6">
-            <p className="text-destructive text-sm">{state.error}</p>
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-destructive font-medium mb-1">Error</h4>
+                <div className="text-destructive text-sm whitespace-pre-line">{state.error}</div>
+                {(state.error.includes('Storage bucket tidak ditemukan') || state.error.includes('Bucket not found')) && (
+                  <div className="mt-3 p-3 bg-card rounded border border-border">
+                    <p className="text-sm font-medium text-foreground mb-2">🔧 Cara Mengatasi:</p>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>Buka Supabase Dashboard → Storage</li>
+                      <li>Buat bucket baru: <code className="bg-muted px-1 rounded">room-enhancer-images</code></li>
+                      <li>Set sebagai Public bucket</li>
+                      <li>Atau jalankan file: <code className="bg-muted px-1 rounded">setup_storage_bucket.sql</code></li>
+                    </ol>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      📖 Panduan lengkap: <code className="bg-muted px-1 rounded">SUPABASE_STORAGE_SETUP_GUIDE.md</code>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

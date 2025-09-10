@@ -39,13 +39,21 @@ class StorageService {
       
       if (error) {
         console.error('Error listing buckets:', error);
+        console.warn('⚠️ Bucket check failed. Please ensure the bucket exists in Supabase Dashboard.');
+        console.warn('📋 Run the SQL script: setup_storage_bucket.sql in Supabase SQL Editor');
         return;
       }
 
       const bucketExists = buckets?.some(bucket => bucket.name === this.config.bucketName);
       
       if (!bucketExists) {
-        // Create bucket if it doesn't exist
+        console.warn(`❌ Bucket '${this.config.bucketName}' not found!`);
+        console.warn('📋 Please create the bucket manually using one of these methods:');
+        console.warn('1. Run setup_storage_bucket.sql in Supabase SQL Editor');
+        console.warn('2. Create bucket in Supabase Dashboard > Storage');
+        console.warn('3. Bucket settings: Public=true, File size limit=10MB');
+        
+        // Try to create bucket programmatically
         const { error: createError } = await supabase.storage.createBucket(
           this.config.bucketName,
           {
@@ -56,13 +64,17 @@ class StorageService {
         );
         
         if (createError) {
-          console.error('Error creating bucket:', createError);
+          console.error('❌ Failed to create bucket automatically:', createError);
+          console.error('🔧 Manual setup required - see console warnings above');
         } else {
-          console.log(`Storage bucket '${this.config.bucketName}' created successfully`);
+          console.log(`✅ Storage bucket '${this.config.bucketName}' created successfully`);
         }
+      } else {
+        console.log(`✅ Storage bucket '${this.config.bucketName}' found and ready`);
       }
     } catch (error) {
-      console.error('Error initializing storage bucket:', error);
+      console.error('❌ Error initializing storage bucket:', error);
+      console.warn('🔧 Please check Supabase connection and bucket configuration');
     }
   }
 
@@ -129,6 +141,15 @@ class StorageService {
 
       if (error) {
         console.error('Upload error:', error);
+        
+        // Handle specific bucket not found error
+        if (error.message?.includes('Bucket not found') || error.message?.includes('bucket does not exist')) {
+          return {
+            success: false,
+            error: `❌ Storage bucket tidak ditemukan!\n\n🔧 Solusi:\n1. Buka Supabase Dashboard > Storage\n2. Buat bucket baru: '${this.config.bucketName}'\n3. Set sebagai Public bucket\n4. Atau jalankan file: setup_storage_bucket.sql`
+          };
+        }
+        
         return {
           success: false,
           error: `Gagal upload gambar: ${error.message}`
@@ -175,6 +196,15 @@ class StorageService {
 
       if (error) {
         console.error('Enhanced image upload error:', error);
+        
+        // Handle specific bucket not found error
+        if (error.message?.includes('Bucket not found') || error.message?.includes('bucket does not exist')) {
+          return {
+            success: false,
+            error: `❌ Storage bucket tidak ditemukan!\n\n🔧 Solusi:\n1. Buka Supabase Dashboard > Storage\n2. Buat bucket baru: '${this.config.bucketName}'\n3. Set sebagai Public bucket\n4. Atau jalankan file: setup_storage_bucket.sql`
+          };
+        }
+        
         return {
           success: false,
           error: `Gagal upload gambar hasil: ${error.message}`
