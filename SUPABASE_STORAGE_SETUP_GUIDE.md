@@ -44,34 +44,80 @@ Error ini terjadi karena storage bucket `room-enhancer-images` belum dibuat di S
 Jika masih ada error setelah membuat bucket, jalankan SQL berikut:
 
 ```sql
--- Enable RLS
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
--- Policy untuk read public
-CREATE POLICY "Public read access" ON storage.objects
-FOR SELECT USING (bucket_id = 'room-enhancer-images');
-
--- Policy untuk upload authenticated
-CREATE POLICY "Authenticated upload" ON storage.objects
-FOR INSERT WITH CHECK (bucket_id = 'room-enhancer-images');
-
--- Policy untuk delete authenticated
-CREATE POLICY "Authenticated delete" ON storage.objects
-FOR DELETE USING (bucket_id = 'room-enhancer-images');
-```
 
 ## ✅ Verifikasi Setup
 
-1. **Cek di Dashboard**
-   - Bucket `room-enhancer-images` muncul di Storage
-   - Status: Public ✅
+Setelah menjalankan script, verifikasi bahwa:
 
-2. **Test Upload**
-   - Buka Room Enhancer
-   - Coba upload gambar
-   - Tidak ada error "Bucket not found"
+1. **Bucket tersedia**: Buka Supabase Dashboard > Storage, pastikan bucket `room-enhancer-images` terlihat
+2. **Bucket bersifat Public**: Klik bucket, pastikan toggle "Public bucket" aktif
+3. **RLS Policies aktif**: Di tab "Policies", pastikan 4 policy terlihat:
+   - Public read access for room enhancer images
+   - Public upload for room enhancer images  
+   - Public delete for room enhancer images
+   - Public update for room enhancer images
+
+## 🧪 Test Upload
+
+Untuk test apakah setup berhasil:
+
+1. Buka aplikasi Room Enhancer
+2. Upload gambar ruangan
+3. Jika berhasil, gambar akan tersimpan dan bisa diproses AI
+4. Periksa di Supabase Dashboard > Storage > room-enhancer-images apakah file terupload
+
+## 🗑️ Auto-Cleanup Setup (Opsional)
+
+Untuk mencegah storage penuh, setup auto-cleanup:
+
+1. **Jalankan script auto-cleanup**:
+   ```bash
+   # Di Supabase SQL Editor
+   # Jalankan file: setup_auto_cleanup.sql
+   ```
+
+2. **Fitur auto-cleanup**:
+   - Gambar otomatis terhapus setelah 24 jam
+   - Cleanup berjalan setiap kali ada upload baru
+   - Manual cleanup tersedia via aplikasi
+
+3. **Enable pg_cron (Opsional)**:
+   - Buka Supabase Dashboard > Database > Extensions
+   - Enable "pg_cron" untuk scheduled cleanup
+   - Uncomment bagian cron job di `setup_auto_cleanup.sql`
 
 ## 🚨 Troubleshooting
+
+### Error: "new row violates row-level security policy"
+Jika Anda mendapat error RLS policy, jalankan script berikut untuk memperbaiki:
+
+```sql
+-- Jalankan di Supabase SQL Editor
+-- Drop existing policies yang mungkin terlalu ketat
+DROP POLICY IF EXISTS "Public read access for room enhancer images" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated upload for room enhancer images" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated delete for room enhancer images" ON storage.objects;
+DROP POLICY IF EXISTS "Public upload for room enhancer images" ON storage.objects;
+DROP POLICY IF EXISTS "Public delete for room enhancer images" ON storage.objects;
+
+-- Buat policies yang mengizinkan akses publik
+CREATE POLICY "Public read access for room enhancer images" ON storage.objects
+FOR SELECT USING (bucket_id = 'room-enhancer-images');
+
+CREATE POLICY "Public upload for room enhancer images" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'room-enhancer-images');
+
+CREATE POLICY "Public delete for room enhancer images" ON storage.objects
+FOR DELETE USING (bucket_id = 'room-enhancer-images');
+
+CREATE POLICY "Public update for room enhancer images" ON storage.objects
+FOR UPDATE USING (bucket_id = 'room-enhancer-images');
+```
+
+### Error: "Bucket not found"
+- Pastikan bucket sudah dibuat dengan nama yang benar: `room-enhancer-images`
+- Periksa di Supabase Dashboard > Storage apakah bucket terlihat
+- Coba refresh halaman dan cek kembali
 
 ### Error: "Insufficient permissions"
 - Pastikan bucket di-set sebagai **Public**

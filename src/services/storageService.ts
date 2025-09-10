@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { CleanupService } from './cleanupService';
 
 interface UploadImageResponse {
   success: boolean;
@@ -131,12 +132,18 @@ class StorageService {
       const fileName = this.generateFileName(file.name, 'original');
       const filePath = userId ? `${userId}/${fileName}` : `public/${fileName}`;
 
-      // Upload file to Supabase Storage
+      // Upload file to Supabase Storage with temporary metadata
       const { data, error } = await supabase.storage
         .from(this.config.bucketName)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          metadata: {
+            'temporary': 'true',
+            'type': 'original',
+            'uploaded_at': new Date().toISOString(),
+            'user_id': userId || 'anonymous'
+          }
         });
 
       if (error) {
@@ -185,13 +192,20 @@ class StorageService {
       const fileName = this.generateFileName(originalFileName, 'enhanced');
       const filePath = userId ? `${userId}/${fileName}` : `public/${fileName}`;
 
-      // Upload blob to Supabase Storage
+      // Upload blob to Supabase Storage with temporary metadata
       const { data, error } = await supabase.storage
         .from(this.config.bucketName)
         .upload(filePath, imageBlob, {
           cacheControl: '3600',
           upsert: false,
-          contentType: 'image/png'
+          contentType: 'image/png',
+          metadata: {
+            'temporary': 'true',
+            'type': 'enhanced',
+            'uploaded_at': new Date().toISOString(),
+            'user_id': userId || 'anonymous',
+            'original_file': originalFileName
+          }
         });
 
       if (error) {
@@ -298,6 +312,38 @@ class StorageService {
       console.error('Error getting storage stats:', error);
       return { totalSize: 0, fileCount: 0 };
     }
+  }
+
+  /**
+   * Cleanup old temporary images
+   */
+  async cleanupOldImages(hoursOld: number = 24): Promise<{ success: boolean; deletedCount: number; error?: string }> {
+    return await CleanupService.cleanupOldImages(hoursOld);
+  }
+
+  /**
+   * Get detailed storage statistics including cleanup info
+   */
+  async getDetailedStorageStats(): Promise<{
+    success: boolean;
+    totalFiles: number;
+    totalSize: number;
+    oldFiles: number;
+    formattedSize: string;
+    error?: string;
+  }> {
+    const stats = await CleanupService.getStorageStats();
+    return {
+      ...stats,
+      formattedSize: CleanupService.formatFileSize(stats.totalSize)
+    };
+  }
+
+  /**
+   * Auto cleanup that runs periodically
+   */
+  async performAutoCleanup(): Promise<void> {
+    await CleanupService.autoCleanup();
   }
 }
 

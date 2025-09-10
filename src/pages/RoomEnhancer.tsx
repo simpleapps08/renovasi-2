@@ -12,6 +12,7 @@ import { RoomEnhancerState, STYLE_PRESETS, GenerationHistoryItem } from '@/types
 import { realAiService } from '../services/realAiService';
 import { storageService } from '../services/storageService';
 import ErrorBoundary, { useErrorHandler } from '../components/ErrorBoundary';
+import StorageManager from '../components/StorageManager';
 
 const RoomEnhancer = () => {
   const { handleError } = useErrorHandler();
@@ -413,6 +414,9 @@ const RoomEnhancer = () => {
             onShare={handleShare}
           />
         )}
+
+        {/* Storage Management Section */}
+        <StorageManager />
         </div>
       </div>
     </ErrorBoundary>
