@@ -42,12 +42,6 @@ const Header = () => {
           >
             Kontak
           </Link>
-          <Link 
-            to="/room-enhancer" 
-            className="text-sm font-medium transition-colors hover:text-accent"
-          >
-            Room Enhancer
-          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -58,6 +52,12 @@ const Header = () => {
             </Button>
             <Button variant="hero" asChild>
               <Link to="/auth">Mulai Simulasi</Link>
+            </Button>
+            <Button 
+              className="bg-green-400 hover:bg-green-500 text-black font-semibold shadow-lg hover:shadow-green-400/25 transition-all duration-300"
+              asChild
+            >
+              <Link to="/room-enhancer">Desain dengan AI</Link>
             </Button>
           </div>
           
@@ -105,13 +105,6 @@ const Header = () => {
             >
               Kontak
             </Link>
-            <Link 
-              to="/room-enhancer" 
-              className="block text-sm font-medium transition-colors hover:text-accent py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Room Enhancer
-            </Link>
             
             {/* Mobile Action Buttons */}
             <div className="pt-4 border-t space-y-2">
@@ -120,6 +113,12 @@ const Header = () => {
               </Button>
               <Button variant="hero" className="w-full" asChild>
                 <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Mulai Simulasi</Link>
+              </Button>
+              <Button 
+                className="w-full bg-green-400 hover:bg-green-500 text-black font-semibold shadow-lg hover:shadow-green-400/25 transition-all duration-300"
+                asChild
+              >
+                <Link to="/room-enhancer" onClick={() => setIsMobileMenuOpen(false)}>Desain dengan AI</Link>
               </Button>
             </div>
           </nav>

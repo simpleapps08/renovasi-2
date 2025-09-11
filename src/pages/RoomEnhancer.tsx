@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/enhanced-button';
-import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle } from 'lucide-react';
+import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle, Lock } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import FileUpload from '@/components/room-enhancer/FileUpload';
 import PromptInput from '@/components/room-enhancer/PromptInput';
 import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
@@ -13,9 +13,27 @@ import { realAiService } from '../services/realAiService';
 import { storageService } from '../services/storageService';
 import ErrorBoundary, { useErrorHandler } from '../components/ErrorBoundary';
 import StorageManager from '../components/StorageManager';
+import { useAuth } from '../contexts/AuthContext';
 
 const RoomEnhancer = () => {
   const { handleError } = useErrorHandler();
+  const { user, loading } = useAuth();
+  
+  // Redirect to login if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
   
   const [state, setState] = useState<RoomEnhancerState>({
     selectedFile: null,
