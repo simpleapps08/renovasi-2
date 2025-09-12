@@ -11,6 +11,7 @@ import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
 import { RoomEnhancerState, STYLE_PRESETS, GenerationHistoryItem } from '@/types/roomEnhancer';
 import { realAiService } from '../services/realAiService';
 import { storageService } from '../services/storageService';
+import { geminiFlashService } from '../services/geminiFlashService';
 import ErrorBoundary, { useErrorHandler } from '../components/ErrorBoundary';
 import StorageManager from '../components/StorageManager';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,6 +49,7 @@ const RoomEnhancer = () => {
   
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<'realai' | 'gemini-flash'>('realai');
   const [processingTime, setProcessingTime] = useState<number>(0);
   const [retryCount, setRetryCount] = useState<number>(0);
 
@@ -121,15 +123,35 @@ const RoomEnhancer = () => {
     setProcessingTime(0);
 
     try {
-        console.log('Starting AI enhancement with real AI service...');
-        toast.loading('Memproses gambar dengan AI...', { id: 'ai-processing' });
+        const modelName = selectedModel === 'gemini-flash' ? 'Gemini Flash 2.5' : 'Real AI';
+        console.log(`Starting AI enhancement with ${modelName} service...`);
+        toast.loading(`Memproses gambar dengan ${modelName}...`, { id: 'ai-processing' });
 
-        const result = await realAiService.generateEnhancedRoom({
-          imageFile: state.selectedFile,
-          prompt: state.prompt,
-          stylePreset: state.selectedStyle,
-          userId: 'demo-user' // In production, use actual user ID
-        });
+        let result;
+        if (selectedModel === 'gemini-flash') {
+          // Use Gemini Flash service
+          const enhancedResult = await geminiFlashService.generateContent({
+            imageFile: state.selectedFile,
+            prompt: state.prompt || `Enhance this room with ${state.selectedStyle} style`,
+            model: 'gemini-2.5-flash-image-preview'
+          });
+          
+          result = {
+            success: enhancedResult.success,
+            enhancedImageUrl: enhancedResult.imageUrl,
+            aiAnalysis: enhancedResult.analysis,
+            processingTime: enhancedResult.processingTime,
+            error: enhancedResult.error
+          };
+        } else {
+          // Use existing Real AI service
+          result = await realAiService.generateEnhancedRoom({
+            imageFile: state.selectedFile,
+            prompt: state.prompt,
+            stylePreset: state.selectedStyle,
+            userId: 'demo-user' // In production, use actual user ID
+          });
+        }
 
         console.log('AI Enhancement result:', result);
         toast.dismiss('ai-processing');
@@ -396,6 +418,56 @@ const RoomEnhancer = () => {
             onStyleChange={(style) => setState(prev => ({ ...prev, selectedStyle: style }))}
             isLoading={state.isLoading}
           />
+        </div>
+
+        {/* AI Model Selection */}
+        <div className="flex justify-center mb-6">
+          <Card className="w-full max-w-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Wand2 className="h-5 w-5 text-accent" />
+                Model AI
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="realai"
+                    name="aiModel"
+                    value="realai"
+                    checked={selectedModel === 'realai'}
+                    onChange={(e) => setSelectedModel(e.target.value as 'realai' | 'gemini-flash')}
+                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
+                  />
+                  <label htmlFor="realai" className="text-sm font-medium text-foreground">
+                    Real AI Service
+                  </label>
+                  <Badge variant="secondary" className="text-xs">
+                    Default
+                  </Badge>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="gemini-flash"
+                    name="aiModel"
+                    value="gemini-flash"
+                    checked={selectedModel === 'gemini-flash'}
+                    onChange={(e) => setSelectedModel(e.target.value as 'realai' | 'gemini-flash')}
+                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
+                  />
+                  <label htmlFor="gemini-flash" className="text-sm font-medium text-foreground">
+                    Gemini Flash 2.5 Image Preview
+                  </label>
+                  <Badge variant="outline" className="text-xs border-accent/30 text-accent">
+                    New
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Generate Button */}
