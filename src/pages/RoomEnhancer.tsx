@@ -49,7 +49,7 @@ const RoomEnhancer = () => {
   
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<'realai' | 'gemini-flash'>('realai');
+  const [selectedModel, setSelectedModel] = useState<'realai' | 'gemini-flash'>('gemini-flash');
   const [processingTime, setProcessingTime] = useState<number>(0);
   const [retryCount, setRetryCount] = useState<number>(0);
 
