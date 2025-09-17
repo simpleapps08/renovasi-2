@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
+  // const [isGoogleLoading, setIsGoogleLoading] = useState(false) //untuk google loading
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const [registerData, setRegisterData] = useState({ 
     nama: '', 
@@ -177,6 +178,18 @@ const Auth = () => {
                   >
                     {isLoading ? "Memproses..." : "Masuk"}
                   </Button>
+
+                
+                  <Button 
+                    type="submit" 
+                    variant="white" 
+                    className="w-full" 
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Memproses..." : "Google"}
+                  </Button>
+
+
                 </form>
               </TabsContent>
               
@@ -238,6 +251,16 @@ const Auth = () => {
                   >
                     {isLoading ? "Memproses..." : "Daftar Sekarang"}
                   </Button>
+
+                  <Button 
+                    type="submit" 
+                    variant="white" 
+                    className="w-full" 
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Memproses..." : "Google"}
+                  </Button>
+
                 </form>
               </TabsContent>
             </Tabs>
