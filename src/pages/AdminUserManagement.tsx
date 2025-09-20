@@ -50,44 +50,78 @@ const AdminUserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      
+      // First get user profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from('user_profiles')
         .select(`
-          *,
-          users:user_id (
-            email
-          )
+          id,
+          user_id,
+          full_name,
+          role,
+          phone,
+          address,
+          city,
+          province,
+          postal_code,
+          date_of_birth,
+          gender,
+          occupation,
+          bio,
+          created_at,
+          updated_at
         `)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching users:', error)
+      if (profilesError) {
+        console.error('Error fetching user profiles:', profilesError)
         toast({
           title: "Error",
-          description: "Gagal memuat data pengguna",
+          description: "Gagal memuat data pengguna: " + profilesError.message,
           variant: "destructive",
         })
-      } else {
-        const transformedData = (data || []).map(profile => ({
-          id: profile.id,
-          user_id: profile.user_id,
-          email: profile.users?.email || '',
-          name: profile.full_name || '',
-          role: profile.role,
-          phone: profile.phone,
-          address: profile.address,
-          city: profile.city,
-          province: profile.province,
-          postal_code: profile.postal_code,
-          date_of_birth: profile.date_of_birth,
-          gender: profile.gender,
-          occupation: profile.occupation,
-          bio: profile.bio,
-          created_at: profile.created_at,
-          updated_at: profile.updated_at
-        }))
-        setUsers(transformedData)
+        return
       }
+
+      // Get auth users to get email addresses
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+      
+      if (authError) {
+        console.error('Error fetching auth users:', authError)
+        toast({
+          title: "Error",
+          description: "Gagal memuat data autentikasi: " + authError.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Create a map of user_id to email
+      const emailMap = new Map()
+      authUsers.users.forEach(user => {
+        emailMap.set(user.id, user.email)
+      })
+
+      // Transform data to match UserData interface
+      const transformedData = (profilesData || []).map(profile => ({
+        id: profile.id,
+        user_id: profile.user_id,
+        email: emailMap.get(profile.user_id) || '',
+        name: profile.full_name || '',
+        role: profile.role,
+        phone: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        province: profile.province,
+        postal_code: profile.postal_code,
+        date_of_birth: profile.date_of_birth,
+        gender: profile.gender,
+        occupation: profile.occupation,
+        bio: profile.bio,
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      }))
+      setUsers(transformedData)
     } catch (error) {
       console.error('Error:', error)
       toast({
@@ -187,12 +221,49 @@ const AdminUserManagement = () => {
           description: "Data pengguna berhasil diperbarui.",
         })
       } else {
-        // Note: Creating new users requires auth.users entry first
-        // This is typically handled by user registration
-        toast({
-          title: "Info",
-          description: "Pembuatan pengguna baru harus melalui proses registrasi.",
+        // Create new user using Supabase Auth Admin API
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: formData.email,
+          password: 'TempPassword123!', // Temporary password, user should change it
+          email_confirm: true
         })
+
+        if (authError) {
+          console.error('Error creating auth user:', authError)
+          toast({
+            title: "Error",
+            description: "Gagal membuat akun pengguna: " + authError.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        if (authData.user) {
+          // Create profile entry
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: authData.user.id,
+              ...profileData
+            })
+
+          if (profileError) {
+            console.error('Error creating user profile:', profileError)
+            // Clean up auth user if profile creation fails
+            await supabase.auth.admin.deleteUser(authData.user.id)
+            toast({
+              title: "Error",
+              description: "Gagal membuat profil pengguna: " + profileError.message,
+              variant: "destructive",
+            })
+            return
+          }
+
+          toast({
+            title: "Berhasil",
+            description: "Pengguna baru berhasil dibuat. Password sementara: TempPassword123!",
+          })
+        }
       }
 
       await fetchUsers() // Refresh data
