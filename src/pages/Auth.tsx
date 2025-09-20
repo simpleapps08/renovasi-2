@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
-  // const [isGoogleLoading, setIsGoogleLoading] = useState(false) //untuk google loading
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const [registerData, setRegisterData] = useState({ 
     nama: '', 
@@ -80,6 +80,39 @@ const Auth = () => {
       }
     }
     setIsLoading(false)
+  }
+
+  const handleGoogleAuth = async () => {
+    setIsGoogleLoading(true)
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+
+      if (error) {
+        toast({
+          title: "Login Google Gagal",
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Login Google Gagal",
+        description: "Terjadi kesalahan saat login dengan Google",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGoogleLoading(false)
+    }
   }
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -181,12 +214,13 @@ const Auth = () => {
 
                 
                   <Button 
-                    type="submit" 
+                    type="button" 
                     variant="white" 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={isGoogleLoading}
+                    onClick={handleGoogleAuth}
                   >
-                    {isLoading ? "Memproses..." : "Google"}
+                    {isGoogleLoading ? "Menghubungkan..." : "Masuk dengan Google"}
                   </Button>
 
 
@@ -253,12 +287,13 @@ const Auth = () => {
                   </Button>
 
                   <Button 
-                    type="submit" 
+                    type="button" 
                     variant="white" 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={isGoogleLoading}
+                    onClick={handleGoogleAuth}
                   >
-                    {isLoading ? "Memproses..." : "Google"}
+                    {isGoogleLoading ? "Menghubungkan..." : "Daftar dengan Google"}
                   </Button>
 
                 </form>
