@@ -76,8 +76,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (!error) {
+    try {
+      // Clear local storage first as a precaution
+      localStorage.removeItem('supabase.auth.token')
+      sessionStorage.removeItem('supabase.auth.token')
+      
+      // Attempt Supabase logout with local scope to avoid network issues
+      const { error } = await supabase.auth.signOut({
+        scope: 'local'
+      })
+      
+      if (error) {
+        console.warn('Supabase logout error:', error)
+        // Continue with local cleanup even if remote logout fails
+      }
+      
+      // Always clear local state regardless of remote logout result
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Force local cleanup on any error
+      localStorage.clear()
+      sessionStorage.clear()
       setUser(null)
       setSession(null)
       setProfile(null)
