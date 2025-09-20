@@ -35,7 +35,7 @@ const Auth = () => {
           
           // Ensure profile exists
           const { data: existingProfile } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('*')
             .eq('user_id', session.user.id)
             .single()
@@ -43,10 +43,9 @@ const Auth = () => {
           if (!existingProfile) {
             console.log('Creating new profile for OAuth user...')
             const { error: profileError } = await supabase
-              .from('profiles')
+              .from('user_profiles')
               .insert({
                 user_id: session.user.id,
-                email: session.user.email,
                 full_name: session.user.user_metadata?.full_name || session.user.email,
                 role: 'user'
               })
@@ -75,7 +74,7 @@ const Auth = () => {
           }, 1000)
         } else {
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('role')
             .eq('user_id', session.user.id)
             .single()
@@ -112,7 +111,7 @@ const Auth = () => {
 
     if (data.user) {
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('role')
         .eq('user_id', data.user.id)
         .single()
