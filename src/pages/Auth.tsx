@@ -216,7 +216,7 @@ const Auth = () => {
                   <Button 
                     type="button" 
                     variant="white" 
-                    className="w-full" 
+                    className="w-full border-2 border-green-500" 
                     disabled={isGoogleLoading}
                     onClick={handleGoogleAuth}
                   >
@@ -289,7 +289,7 @@ const Auth = () => {
                   <Button 
                     type="button" 
                     variant="white" 
-                    className="w-full" 
+                    className="w-full border-2 border-green-500" 
                     disabled={isGoogleLoading}
                     onClick={handleGoogleAuth}
                   >
