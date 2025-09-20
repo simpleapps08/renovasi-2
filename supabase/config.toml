@@ -35,7 +35,13 @@ image_transformation = {
 enabled = true
 port = 54328
 site_url = "http://localhost:8080"
-additional_redirect_urls = ["https://localhost:8080", "http://localhost:3000", "https://localhost:3000"]
+additional_redirect_urls = [
+  "https://localhost:8080", 
+  "http://localhost:3000", 
+  "https://localhost:3000",
+  "https://servisoo.com",
+  "https://tkqvozgorpapofejphyn.supabase.co"
+]
 jwt_expiry = 3600
 enable_signup = true
 enable_email_confirmations = false
@@ -48,7 +54,7 @@ enable_manual_linking = false
 enabled = true
 client_id = "env(GOOGLE_CLIENT_ID)"
 secret = "env(GOOGLE_CLIENT_SECRET)"
-redirect_uri = "http://localhost:54328/auth/v1/callback"
+redirect_uri = "https://tkqvozgorpapofejphyn.supabase.co/auth/v1/callback"
 url = "https://accounts.google.com/oauth/authorize"
 
 [edge_runtime]
