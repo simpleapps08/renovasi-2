@@ -86,10 +86,14 @@ const Auth = () => {
     setIsGoogleLoading(true)
     
     try {
+      // Log untuk debugging
+      console.log('Starting Google OAuth...')
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          scopes: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -98,16 +102,25 @@ const Auth = () => {
       })
 
       if (error) {
+        console.error('Supabase OAuth Error:', {
+          message: error.message,
+          status: error.status,
+          details: error
+        })
+        
         toast({
           title: "Login Google Gagal",
-          description: error.message,
+          description: `Error: ${error.message}`,
           variant: "destructive",
         })
+      } else {
+        console.log('OAuth initiated successfully:', data)
       }
     } catch (error) {
+      console.error('Unexpected OAuth error:', error)
       toast({
         title: "Login Google Gagal",
-        description: "Terjadi kesalahan saat login dengan Google",
+        description: "Terjadi kesalahan saat login dengan Google. Silakan coba lagi.",
         variant: "destructive",
       })
     } finally {
