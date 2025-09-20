@@ -26,21 +26,70 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single()
+        // Check if this is an OAuth callback
+        const urlParams = new URLSearchParams(window.location.search)
+        const isCallback = urlParams.get('callback') === 'true'
         
-        if (profile?.role === 'admin') {
-          navigate('/admin')
+        if (isCallback) {
+          console.log('OAuth callback detected, ensuring profile exists...')
+          
+          // Ensure profile exists
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single()
+          
+          if (!existingProfile) {
+            console.log('Creating new profile for OAuth user...')
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                user_id: session.user.id,
+                email: session.user.email,
+                full_name: session.user.user_metadata?.full_name || session.user.email,
+                role: 'user'
+              })
+            
+            if (profileError) {
+              console.error('Error creating profile:', profileError)
+              toast({
+                title: "Error",
+                description: "Gagal membuat profil. Silakan coba lagi.",
+                variant: "destructive",
+              })
+              return
+            }
+          }
+          
+          // Clear callback parameter and redirect
+          window.history.replaceState({}, document.title, '/auth')
+          
+          toast({
+            title: "Login Berhasil",
+            description: "Selamat datang di SERVISOO!",
+          })
+          
+          setTimeout(() => {
+            navigate('/dashboard')
+          }, 1000)
         } else {
-          navigate('/dashboard')
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .single()
+          
+          if (profile?.role === 'admin') {
+            navigate('/admin')
+          } else {
+            navigate('/dashboard')
+          }
         }
       }
     }
     checkUser()
-  }, [navigate])
+  }, [navigate, toast])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,7 +141,7 @@ const Auth = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth?callback=true`,
           scopes: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
           queryParams: {
             access_type: 'offline',
