@@ -22,6 +22,7 @@ import HistoriProyek from "./pages/HistoriProyek";
 import BillingDeposit from "./pages/BillingDeposit";
 import Profil from "./pages/Profil";
 import RoomEnhancer from "./pages/RoomEnhancer";
+import Toko from "./pages/Toko";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -123,6 +124,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
+            <Route path="/toko" element={<Toko />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

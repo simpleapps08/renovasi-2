@@ -37,6 +37,12 @@ const Header = () => {
             Galeri
           </Link>
           <Link 
+            to="/toko" 
+            className="text-sm font-medium transition-colors hover:text-accent"
+          >
+            Toko
+          </Link>
+          <Link 
             to="#contact" 
             className="text-sm font-medium transition-colors hover:text-accent"
           >
@@ -97,6 +103,13 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Gallery
+            </Link>
+            <Link 
+              to="/toko" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Toko
             </Link>
             <Link 
               to="#contact" 
