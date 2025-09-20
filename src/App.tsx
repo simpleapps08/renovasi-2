@@ -23,6 +23,8 @@ import BillingDeposit from "./pages/BillingDeposit";
 import Profil from "./pages/Profil";
 import RoomEnhancer from "./pages/RoomEnhancer";
 import Toko from "./pages/Toko";
+import AdminToko from "./pages/AdminToko";
+import ProtectedAdminTokoRoute from "./components/ProtectedAdminTokoRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -125,6 +127,7 @@ const App = () => (
             } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
             <Route path="/toko" element={<Toko />} />
+          <Route path="/admin/toko" element={<ProtectedAdminTokoRoute><AdminToko /></ProtectedAdminTokoRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
