@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const [registerData, setRegisterData] = useState({ 
     nama: '', 
@@ -83,51 +83,7 @@ const Auth = () => {
     setIsLoading(false)
   }
 
-  const handleGoogleAuth = async () => {
-    setIsGoogleLoading(true)
-    
-    try {
-      // Log untuk debugging
-      console.log('Starting Google OAuth...')
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      })
 
-      if (error) {
-        console.error('Supabase OAuth Error:', {
-          message: error.message,
-          status: error.status,
-          details: error
-        })
-        
-        toast({
-          title: "Login Google Gagal",
-          description: `Error: ${error.message}`,
-          variant: "destructive",
-        })
-      } else {
-        console.log('OAuth initiated successfully:', data)
-      }
-    } catch (error) {
-      console.error('Unexpected OAuth error:', error)
-      toast({
-        title: "Login Google Gagal",
-        description: "Terjadi kesalahan saat login dengan Google. Silakan coba lagi.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsGoogleLoading(false)
-    }
-  }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -156,10 +112,19 @@ const Auth = () => {
     }
 
     if (data.user) {
-      toast({
-        title: "Registrasi Berhasil",
-        description: "Akun berhasil dibuat! Silakan login.",
-      })
+      // Check if user needs email confirmation
+      if (!data.session) {
+        toast({
+          title: "Registrasi Berhasil!",
+          description: "Silakan cek email Anda dan konfirmasi via link yang telah dikirim.",
+          duration: 6000,
+        })
+      } else {
+        toast({
+          title: "Registrasi Berhasil",
+          description: "Akun berhasil dibuat! Silakan login.",
+        })
+      }
       setRegisterData({ nama: '', email: '', lokasi: '', password: '' })
     }
     setIsLoading(false)
@@ -227,15 +192,7 @@ const Auth = () => {
                   </Button>
 
                 
-                  <Button 
-                    type="button" 
-                    variant="white" 
-                    className="w-full border-2 border-green-500" 
-                    disabled={isGoogleLoading}
-                    onClick={handleGoogleAuth}
-                  >
-                    {isGoogleLoading ? "Menghubungkan..." : "Masuk dengan Google"}
-                  </Button>
+
 
 
                 </form>
@@ -300,15 +257,7 @@ const Auth = () => {
                     {isLoading ? "Memproses..." : "Daftar Sekarang"}
                   </Button>
 
-                  <Button 
-                    type="button" 
-                    variant="white" 
-                    className="w-full border-2 border-green-500" 
-                    disabled={isGoogleLoading}
-                    onClick={handleGoogleAuth}
-                  >
-                    {isGoogleLoading ? "Menghubungkan..." : "Daftar dengan Google"}
-                  </Button>
+
 
                 </form>
               </TabsContent>
