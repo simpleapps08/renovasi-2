@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AuthConfirm from "./pages/AuthConfirm";
 
 import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
@@ -59,6 +60,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/confirm" element={<AuthConfirm />} />
     
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/test-dashboard" element={<TestDashboard />} />

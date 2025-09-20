@@ -97,7 +97,7 @@ const Auth = () => {
           nama: registerData.nama,
           lokasi: registerData.lokasi,
         },
-        emailRedirectTo: `${window.location.origin}/dashboard`
+        emailRedirectTo: `${window.location.origin}/auth/confirm`
       }
     })
 
