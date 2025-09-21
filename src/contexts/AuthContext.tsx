@@ -9,8 +9,8 @@ interface Profile {
   created_at?: string
   updated_at?: string
   user_roles?: {
-    name: string
-    level: number
+    role_name: string
+    role_level: number
   }
 }
 
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .from('user_profiles')
               .select(`
                 *,
-                user_roles!inner(name, level)
+                user_roles!inner(role_name, role_level)
               `)
               .eq('id', session.user.id)
               .single()
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('user_profiles')
           .select(`
             *,
-            user_roles!inner(name, level)
+            user_roles!inner(role_name, role_level)
           `)
           .eq('id', session.user.id)
           .single()

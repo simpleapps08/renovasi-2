@@ -53,7 +53,7 @@
 
 ```sql
 -- 1. Cek apakah user sudah ada
-SELECT id, email FROM auth.users WHERE email = 'admin1@servisoo.com';
+LECT id,SE email FROM auth.users WHERE email = 'admin1@servisoo.com';
 
 -- 2. Jika user belum ada, buat user baru (PERLU SERVICE ROLE KEY)
 -- INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)

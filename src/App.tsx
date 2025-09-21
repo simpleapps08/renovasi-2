@@ -43,7 +43,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/auth" replace />;
   }
   
-  if (adminOnly && profile?.user_roles?.name !== 'admin') {
+  if (adminOnly && profile?.user_roles?.role_name !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
   

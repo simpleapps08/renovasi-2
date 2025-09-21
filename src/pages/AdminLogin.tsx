@@ -21,11 +21,14 @@ const AdminLogin = () => {
       if (session) {
         const { data: profile } = await supabase
         .from('user_profiles')
-        .select('role')
-        .eq('user_id', session.user.id)
+        .select(`
+          role_id,
+          user_roles!inner(role_name, role_level)
+        `)
+        .eq('id', session.user.id)
         .single()
         
-        if (profile?.role === 'admin') {
+        if (profile?.user_roles?.role_name === 'admin') {
           navigate('/admin')
         } else {
           toast({
@@ -64,12 +67,12 @@ const AdminLogin = () => {
         .from('user_profiles')
         .select(`
           role_id,
-          user_roles!inner(name, level)
+          user_roles!inner(role_name, role_level)
         `)
         .eq('id', data.user.id)
         .single()
       
-      if (profile?.user_roles?.name === 'admin') {
+      if (profile?.user_roles?.role_name === 'admin') {
         toast({
           title: "Login Berhasil",
           description: "Selamat datang, Administrator!",
