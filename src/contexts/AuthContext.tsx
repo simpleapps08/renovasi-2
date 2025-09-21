@@ -4,11 +4,14 @@ import { supabase } from '@/integrations/supabase/client'
 
 interface Profile {
   id: string
-  user_id: string
-  nama: string
-  lokasi: string | null
-  role: string
-  saldo_deposit: number
+  full_name: string
+  role_id: string
+  created_at?: string
+  updated_at?: string
+  user_roles?: {
+    name: string
+    level: number
+  }
 }
 
 interface AuthContextType {
@@ -39,8 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(async () => {
             const { data: profileData } = await supabase
               .from('user_profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
+              .select(`
+                *,
+                user_roles!inner(name, level)
+              `)
+              .eq('id', session.user.id)
               .single()
             
             setProfile(profileData)
@@ -60,8 +66,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         supabase
           .from('user_profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
+          .select(`
+            *,
+            user_roles!inner(name, level)
+          `)
+          .eq('id', session.user.id)
           .single()
           .then(({ data: profileData }) => {
             setProfile(profileData)

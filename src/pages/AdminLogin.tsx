@@ -62,11 +62,14 @@ const AdminLogin = () => {
     if (data.user) {
       const { data: profile } = await supabase
         .from('user_profiles')
-        .select('role')
-        .eq('user_id', data.user.id)
+        .select(`
+          role_id,
+          user_roles!inner(name, level)
+        `)
+        .eq('id', data.user.id)
         .single()
       
-      if (profile?.role === 'admin') {
+      if (profile?.user_roles?.name === 'admin') {
         toast({
           title: "Login Berhasil",
           description: "Selamat datang, Administrator!",
