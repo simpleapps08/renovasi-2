@@ -13,13 +13,15 @@ import { ArrowLeft, Search, Edit, Trash2, Download, UserPlus, Shield, User } fro
 import { useNavigate } from "react-router-dom"
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
 import { supabase } from "@/integrations/supabase/client"
+import { getRoleBadgeVariant, formatRoleName, getAllRoles, getEditableRoles, hasPermission } from "@/utils/roleUtils"
 
 interface UserData {
   id: string
   user_id: string
   email: string
   name: string
-  role: 'user' | 'admin'
+  role: string
+  role_id?: string
   phone?: string
   address?: string
   city?: string
@@ -46,34 +48,79 @@ const AdminUserManagement = () => {
 
   const [users, setUsers] = useState<UserData[]>([])
 
-  // Fetch users from Supabase
+  // Fetch users from Supabase using the new user management view
   const fetchUsers = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select(`
-          *,
-          users:user_id (
-            email
-          )
-        `)
+      
+      // Use the user_management_view for comprehensive user data
+      const { data: usersData, error: usersError } = await supabase
+        .from('user_management_view')
+        .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching users:', error)
-        toast({
-          title: "Error",
-          description: "Gagal memuat data pengguna",
-          variant: "destructive",
+      if (usersError) {
+        console.error('Error fetching users from view:', usersError)
+        // Fallback to manual join if view doesn't exist yet
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('user_profiles')
+          .select(`
+            id,
+            user_id,
+            full_name,
+            role,
+            role_id,
+            phone,
+            address,
+            city,
+            province,
+            postal_code,
+            date_of_birth,
+            gender,
+            occupation,
+            bio,
+            created_at,
+            updated_at
+          `)
+          .order('created_at', { ascending: false })
+
+        if (profilesError) {
+          console.error('Error fetching user profiles:', profilesError)
+          toast({
+            title: "Error",
+            description: "Gagal memuat data pengguna: " + profilesError.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        // Get auth users to get email addresses
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+        
+        if (authError) {
+          console.error('Error fetching auth users:', authError)
+          toast({
+            title: "Error",
+            description: "Gagal memuat data autentikasi: " + authError.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        // Create a map of user_id to email
+        const emailMap = new Map()
+        authUsers.users.forEach(user => {
+          emailMap.set(user.id, user.email)
         })
-      } else {
-        const transformedData = (data || []).map(profile => ({
+
+        // Transform data to match UserData interface
+        const transformedData = (profilesData || []).map(profile => ({
           id: profile.id,
           user_id: profile.user_id,
-          email: profile.users?.email || '',
+          email: emailMap.get(profile.user_id) || '',
           name: profile.full_name || '',
-          role: profile.role,
+          role: profile.role || 'user',
+          role_id: profile.role_id,
           phone: profile.phone,
           address: profile.address,
           city: profile.city,
@@ -85,6 +132,28 @@ const AdminUserManagement = () => {
           bio: profile.bio,
           created_at: profile.created_at,
           updated_at: profile.updated_at
+        }))
+        setUsers(transformedData)
+      } else {
+        // Transform data from view
+        const transformedData = (usersData || []).map(user => ({
+          id: user.profile_id,
+          user_id: user.user_id,
+          email: user.email || '',
+          name: user.full_name || '',
+          role: user.role_name || 'user',
+          role_id: user.role_id,
+          phone: user.phone,
+          address: user.address,
+          city: user.city,
+          province: user.province,
+          postal_code: user.postal_code,
+          date_of_birth: user.date_of_birth,
+          gender: user.gender,
+          occupation: user.occupation,
+          bio: user.bio,
+          created_at: user.created_at,
+          updated_at: user.updated_at
         }))
         setUsers(transformedData)
       }
@@ -107,7 +176,7 @@ const AdminUserManagement = () => {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
-    role: 'user' as 'user' | 'admin',
+    role: 'user',
     phone: '',
     address: '',
     city: '',
@@ -119,7 +188,8 @@ const AdminUserManagement = () => {
     bio: ''
   })
 
-  const roleOptions = ['user', 'admin']
+  // Get available roles from roleUtils
+  const availableRoles = getAllRoles()
   const genderOptions = ['male', 'female']
 
   // Filter dan search
@@ -187,12 +257,49 @@ const AdminUserManagement = () => {
           description: "Data pengguna berhasil diperbarui.",
         })
       } else {
-        // Note: Creating new users requires auth.users entry first
-        // This is typically handled by user registration
-        toast({
-          title: "Info",
-          description: "Pembuatan pengguna baru harus melalui proses registrasi.",
+        // Create new user using Supabase Auth Admin API
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: formData.email,
+          password: 'TempPassword123!', // Temporary password, user should change it
+          email_confirm: true
         })
+
+        if (authError) {
+          console.error('Error creating auth user:', authError)
+          toast({
+            title: "Error",
+            description: "Gagal membuat akun pengguna: " + authError.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        if (authData.user) {
+          // Create profile entry
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: authData.user.id,
+              ...profileData
+            })
+
+          if (profileError) {
+            console.error('Error creating user profile:', profileError)
+            // Clean up auth user if profile creation fails
+            await supabase.auth.admin.deleteUser(authData.user.id)
+            toast({
+              title: "Error",
+              description: "Gagal membuat profil pengguna: " + profileError.message,
+              variant: "destructive",
+            })
+            return
+          }
+
+          toast({
+            title: "Berhasil",
+            description: "Pengguna baru berhasil dibuat. Password sementara: TempPassword123!",
+          })
+        }
       }
 
       await fetchUsers() // Refresh data
@@ -262,18 +369,19 @@ const AdminUserManagement = () => {
     }
   }
 
-  const handleChangeRole = async (userId: string, newRole: 'user' | 'admin') => {
+  const handleChangeRole = async (userId: string, newRole: string) => {
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ role: newRole })
-        .eq('id', userId)
+      // Use the update_user_role function from the database
+      const { data, error } = await supabase.rpc('update_user_role', {
+        target_user_id: userId,
+        new_role_name: newRole
+      })
 
       if (error) {
         console.error('Error updating role:', error)
         toast({
           title: "Error",
-          description: "Gagal mengubah role pengguna",
+          description: "Gagal mengubah role pengguna: " + error.message,
           variant: "destructive",
         })
         return
@@ -333,12 +441,6 @@ const AdminUserManagement = () => {
        description: "Data pengguna berhasil diekspor ke CSV.",
      });
    }
-
-  const getRoleBadgeVariant = (role: string) => {
-    return role === 'admin' ? 'destructive' : 'default'
-  }
-
-
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID')
@@ -443,9 +545,9 @@ const AdminUserManagement = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="semua">Semua Role</SelectItem>
-                        {roleOptions.map(role => (
-                          <SelectItem key={role} value={role}>
-                            {role.charAt(0).toUpperCase() + role.slice(1)}
+                        {availableRoles.map(role => (
+                          <SelectItem key={role.id} value={role.id}>
+                            {role.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -507,14 +609,14 @@ const AdminUserManagement = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="role" className="text-sm">Role *</Label>
-                          <Select value={formData.role} onValueChange={(value: 'user' | 'admin') => setFormData({...formData, role: value})}>
+                          <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
                             <SelectTrigger className="text-sm">
-                              <SelectValue />
+                              <SelectValue placeholder="Pilih role" />
                             </SelectTrigger>
                             <SelectContent>
-                              {roleOptions.map(role => (
-                                <SelectItem key={role} value={role}>
-                                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                              {availableRoles.map(role => (
+                                <SelectItem key={role.id} value={role.id}>
+                                  {role.name} (Level {role.level})
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -628,28 +730,23 @@ const AdminUserManagement = () => {
                       <TableCell>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
                           <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
-                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                            {formatRoleName(user.role)}
                           </Badge>
-                          {user.role === 'user' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleChangeRole(user.id, 'admin')}
-                              className="text-xs h-6 px-2 hidden sm:inline-flex"
-                            >
-                              Jadikan Admin
-                            </Button>
-                          )}
-                          {user.role === 'admin' && user.id !== '1' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleChangeRole(user.id, 'user')}
-                              className="text-xs h-6 px-2 hidden sm:inline-flex"
-                            >
-                              Jadikan User
-                            </Button>
-                          )}
+                          <Select value={user.role} onValueChange={(newRole) => handleChangeRole(user.id, newRole)}>
+                            <SelectTrigger className="text-xs h-6 w-auto min-w-[100px] hidden sm:inline-flex">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getEditableRoles('admin').map(roleId => {
+                                const roleData = availableRoles.find(r => r.id === roleId)
+                                return roleData ? (
+                                  <SelectItem key={roleId} value={roleId}>
+                                    {roleData.name}
+                                  </SelectItem>
+                                ) : null
+                              })}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-sm">

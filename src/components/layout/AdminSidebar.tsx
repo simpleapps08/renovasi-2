@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Images, DollarSign, Users, CreditCard, LogOut, Menu, X, Hammer, Calculator, ImageIcon, Settings } from "lucide-react"
+import { Images, DollarSign, Users, CreditCard, LogOut, Menu, X, Hammer, Calculator, ImageIcon, Settings, Store } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/enhanced-button"
@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Manajemen Galeri', href: '/admin/gallery', icon: ImageIcon },
   { name: 'Manajemen Konten', href: '/admin/content', icon: Settings },
   { name: 'Deposit & Billing', href: '/admin/deposit-billing', icon: CreditCard },
+  { name: 'Admin Toko', href: '/admin/toko', icon: Store },
 ]
 
 export function AdminSidebar() {

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase OAuth</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Test Supabase Google OAuth</h1>
+    <button id="testOAuth">Test Google OAuth</button>
+    <button id="testEndpoint">Test OAuth Endpoint</button>
+    
+    <div id="results" style="margin-top: 20px; padding: 10px; background: #f5f5f5; white-space: pre-wrap;"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://tkqvozgorpapofejphyn.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrcXZvemdvcnBhcG9mZWpwaHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNzM2OTMsImV4cCI6MjA3MTY0OTY5M30.QYvC-M1aBSnGKChfnb49Di7EJCM7TGPMtChG7iMx_o8';
+        
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const results = document.getElementById('results');
+        
+        function log(message) {
+            console.log(message);
+            results.textContent += new Date().toLocaleTimeString() + ': ' + JSON.stringify(message, null, 2) + '\n\n';
+        }
+        
+        document.getElementById('testOAuth').addEventListener('click', async () => {
+            results.textContent = '';
+            log('Testing Google OAuth...');
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin,
+                        scopes: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
+                    }
+                });
+                
+                if (error) {
+                    log('OAuth Error:');
+                    log({
+                        message: error.message,
+                        status: error.status,
+                        details: error
+                    });
+                } else {
+                    log('OAuth Success:');
+                    log(data);
+                }
+            } catch (err) {
+                log('Unexpected Error:');
+                log(err);
+            }
+        });
+        
+        document.getElementById('testEndpoint').addEventListener('click', async () => {
+            results.textContent = '';
+            log('Testing OAuth endpoint directly...');
+            
+            try {
+                const url = `${SUPABASE_URL}/auth/v1/authorize?provider=google`;
+                log('Testing URL: ' + url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                
+                log('Response Status: ' + response.status);
+                log('Response Headers:');
+                log(Object.fromEntries(response.headers.entries()));
+                
+                const text = await response.text();
+                log('Response Body:');
+                log(text);
+                
+            } catch (err) {
+                log('Fetch Error:');
+                log(err);
+            }
+        });
+    </script>
+</body>
+</html>

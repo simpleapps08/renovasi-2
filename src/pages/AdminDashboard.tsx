@@ -1,6 +1,6 @@
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Images, DollarSign, Users, CreditCard, Activity, Wrench } from "lucide-react"
+import { Images, DollarSign, Users, CreditCard, Activity, Wrench, Store } from "lucide-react"
 import { Link } from "react-router-dom"
 
 const AdminDashboard = () => {
@@ -152,6 +152,25 @@ const AdminDashboard = () => {
                 <CardContent>
                   <p className="text-xs text-muted-foreground">
                     Review dan konfirmasi transaksi deposit yang masuk
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin/toko">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Store className="h-5 w-5 text-accent" />
+                    Admin Toko
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Kelola produk, harga, dan pengaturan toko bahan bangunan
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-muted-foreground">
+                    Tambah, edit, dan hapus produk serta atur informasi toko
                   </p>
                 </CardContent>
               </Card>

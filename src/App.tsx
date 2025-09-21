@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AuthConfirm from "./pages/AuthConfirm";
+
 import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
 import TestDashboard from "./pages/TestDashboard";
@@ -22,6 +24,9 @@ import HistoriProyek from "./pages/HistoriProyek";
 import BillingDeposit from "./pages/BillingDeposit";
 import Profil from "./pages/Profil";
 import RoomEnhancer from "./pages/RoomEnhancer";
+import Toko from "./pages/Toko";
+import AdminToko from "./pages/AdminToko";
+import ProtectedAdminTokoRoute from "./components/ProtectedAdminTokoRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,7 +43,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/auth" replace />;
   }
   
-  if (adminOnly && profile?.role !== 'admin') {
+  if (adminOnly && profile?.user_roles?.role_name !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -55,6 +60,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/confirm" element={<AuthConfirm />} />
+    
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/test-dashboard" element={<TestDashboard />} />
             <Route path="/dashboard" element={
@@ -123,6 +130,8 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
+            <Route path="/toko" element={<Toko />} />
+          <Route path="/admin/toko" element={<ProtectedAdminTokoRoute><AdminToko /></ProtectedAdminTokoRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

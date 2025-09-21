@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
+
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const [registerData, setRegisterData] = useState({ 
     nama: '', 
@@ -25,8 +26,9 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        // Check user profile and redirect
         const { data: profile } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('role')
           .eq('user_id', session.user.id)
           .single()
@@ -39,7 +41,7 @@ const Auth = () => {
       }
     }
     checkUser()
-  }, [navigate])
+  }, [navigate, toast])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,7 +64,7 @@ const Auth = () => {
 
     if (data.user) {
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('role')
         .eq('user_id', data.user.id)
         .single()
@@ -81,6 +83,8 @@ const Auth = () => {
     setIsLoading(false)
   }
 
+
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -93,7 +97,7 @@ const Auth = () => {
           nama: registerData.nama,
           lokasi: registerData.lokasi,
         },
-        emailRedirectTo: `${window.location.origin}/dashboard`
+        emailRedirectTo: `${window.location.origin}/auth/confirm`
       }
     })
 
@@ -108,10 +112,19 @@ const Auth = () => {
     }
 
     if (data.user) {
-      toast({
-        title: "Registrasi Berhasil",
-        description: "Akun berhasil dibuat! Silakan login.",
-      })
+      // Check if user needs email confirmation
+      if (!data.session) {
+        toast({
+          title: "Registrasi Berhasil!",
+          description: "Silakan cek email Anda dan konfirmasi via link yang telah dikirim.",
+          duration: 6000,
+        })
+      } else {
+        toast({
+          title: "Registrasi Berhasil",
+          description: "Akun berhasil dibuat! Silakan login.",
+        })
+      }
       setRegisterData({ nama: '', email: '', lokasi: '', password: '' })
     }
     setIsLoading(false)
@@ -177,6 +190,11 @@ const Auth = () => {
                   >
                     {isLoading ? "Memproses..." : "Masuk"}
                   </Button>
+
+                
+
+
+
                 </form>
               </TabsContent>
               
@@ -238,6 +256,9 @@ const Auth = () => {
                   >
                     {isLoading ? "Memproses..." : "Daftar Sekarang"}
                   </Button>
+
+
+
                 </form>
               </TabsContent>
             </Tabs>

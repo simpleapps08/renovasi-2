@@ -4,11 +4,14 @@ import { supabase } from '@/integrations/supabase/client'
 
 interface Profile {
   id: string
-  user_id: string
-  nama: string
-  lokasi: string | null
-  role: string
-  saldo_deposit: number
+  full_name: string
+  role_id: string
+  created_at?: string
+  updated_at?: string
+  user_roles?: {
+    role_name: string
+    role_level: number
+  }
 }
 
 interface AuthContextType {
@@ -38,9 +41,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fetch user profile
           setTimeout(async () => {
             const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
+              .from('user_profiles')
+              .select(`
+                *,
+                user_roles!inner(role_name, role_level)
+              `)
+              .eq('id', session.user.id)
               .single()
             
             setProfile(profileData)
@@ -59,9 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (session?.user) {
         supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
+          .from('user_profiles')
+          .select(`
+            *,
+            user_roles!inner(role_name, role_level)
+          `)
+          .eq('id', session.user.id)
           .single()
           .then(({ data: profileData }) => {
             setProfile(profileData)
@@ -76,8 +85,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (!error) {
+    try {
+      // Clear local storage first as a precaution
+      localStorage.removeItem('supabase.auth.token')
+      sessionStorage.removeItem('supabase.auth.token')
+      
+      // Attempt Supabase logout with local scope to avoid network issues
+      const { error } = await supabase.auth.signOut({
+        scope: 'local'
+      })
+      
+      if (error) {
+        console.warn('Supabase logout error:', error)
+        // Continue with local cleanup even if remote logout fails
+      }
+      
+      // Always clear local state regardless of remote logout result
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Force local cleanup on any error
+      localStorage.clear()
+      sessionStorage.clear()
       setUser(null)
       setSession(null)
       setProfile(null)

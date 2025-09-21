@@ -177,13 +177,13 @@ const Profil = () => {
       
       if (profileError) throw profileError
       
-      // Update profiles table (for nama)
+      // Update user_profiles table (for nama)
       const fullName = `${profileData.firstName} ${profileData.lastName}`.trim()
       const { error: nameError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .upsert({
-          id: user.id,
-          nama: fullName,
+          user_id: user.id,
+          full_name: fullName,
           updated_at: new Date().toISOString()
         })
       
