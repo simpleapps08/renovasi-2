@@ -202,20 +202,20 @@ const Toko = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-green-400 shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Mobile Layout */}
           <div className="block md:hidden">
             {/* Title Row */}
             <div className="flex justify-center py-2">
-              <h1 className="text-xl font-bold text-black">Toko Bahan Bangunan</h1>
+              <h1 className="text-xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
             </div>
             {/* Navigation Row */}
             <div className="flex items-center justify-between pb-2">
               <Button
                 variant="outline"
                 onClick={() => window.location.href = '/'}
-                className="flex items-center space-x-2 border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
+                className="flex items-center space-x-2 border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
               >
                 <Home className="h-4 w-4" />
                 <span>Beranda</span>
@@ -223,7 +223,7 @@ const Toko = () => {
               <Button
                 variant="outline"
                 onClick={() => setShowCart(!showCart)}
-                className="relative flex items-center space-x-2 border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
+                className="relative flex items-center space-x-2 border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
               >
                 <ShoppingCart className="h-4 w-4" />
                 <span>Keranjang</span>
@@ -242,17 +242,17 @@ const Toko = () => {
               <Button
                 variant="outline"
                 onClick={() => window.location.href = '/'}
-                className="flex items-center space-x-2 border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
+                className="flex items-center space-x-2 border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
               >
                 <Home className="h-4 w-4" />
                 <span>Beranda</span>
               </Button>
-              <h1 className="text-2xl font-bold text-black">Toko Bahan Bangunan</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
             </div>
             <Button
               variant="outline"
               onClick={() => setShowCart(!showCart)}
-              className="relative border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
+              className="relative border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
               Keranjang
@@ -269,9 +269,9 @@ const Toko = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <div className="lg:w-64 space-y-6">
+          <div className="lg:w-64 space-y-3">
             {/* Search */}
-            <div className="bg-white p-4 rounded-lg shadow-sm">
+            <div className="bg-white p-3 rounded-lg shadow-sm">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -284,8 +284,8 @@ const Toko = () => {
             </div>
 
             {/* Category Filter */}
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-3 flex items-center">
+            <div className="bg-white p-3 rounded-lg shadow-sm">
+              <h3 className="font-semibold mb-2 flex items-center">
                 <Filter className="h-4 w-4 mr-2" />
                 Kategori
               </h3>
@@ -304,8 +304,8 @@ const Toko = () => {
             </div>
 
             {/* Sort */}
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-3">Urutkan</h3>
+            <div className="bg-white p-3 rounded-lg shadow-sm">
+              <h3 className="font-semibold mb-2">Urutkan</h3>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger>
                   <SelectValue />
