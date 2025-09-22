@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, Filter, Star, Plus, Minus, Home } from 'lucide-react';
+import { ShoppingCart, Search, Filter, Star, Plus, Minus, Home, Menu, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Product {
@@ -199,98 +199,134 @@ const Toko = () => {
     }).format(price);
   };
 
+  // Scrolling categories text
+  const scrollingCategories = [
+    'Semen & Beton', 'Bata & Batako', 'Keramik & Granit', 'Cat & Pelapis', 
+    'Pipa & Fitting', 'Genteng & Atap', 'Kayu & Triplek', 'Besi & Baja',
+    'Kaca & Aluminium', 'Listrik & Lampu', 'Sanitair & Plumbing', 'Tools & Hardware'
+  ];
+
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentCategoryIndex((prev) => (prev + 1) % scrollingCategories.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [scrollingCategories.length]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200">
+      {/* Amazon-style Header */}
+      <div className="bg-gradient-to-r from-green-800 via-green-700 to-green-600 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Mobile Layout */}
-          <div className="block md:hidden">
-            {/* Title Row */}
-            <div className="flex justify-center py-2">
-              <h1 className="text-xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
-            </div>
-            {/* Navigation Row */}
-            <div className="flex items-center justify-between pb-2">
+          {/* Top Header */}
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Menu */}
+            <div className="flex items-center space-x-4">
               <Button
-                variant="outline"
-                onClick={() => window.location.href = '/'}
-                className="flex items-center space-x-2 border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-green-600 md:hidden"
               >
-                <Home className="h-4 w-4" />
-                <span>Beranda</span>
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center space-x-2">
+                <div className="bg-white text-green-800 px-3 py-1 rounded font-bold text-lg">
+                  SERVISOO
+                </div>
+                <span className="text-sm hidden md:block">Toko Bangunan</span>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex-1 max-w-2xl mx-4">
+              <div className="relative">
+                <Input
+                  placeholder="Cari produk bahan bangunan..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-4 pr-12 py-2 rounded-md border-0 focus:ring-2 focus:ring-yellow-400"
+                />
+                <Button
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-4 bg-yellow-400 hover:bg-yellow-500 text-black rounded-l-none"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Side */}
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-green-600 hidden md:flex items-center space-x-1"
+              >
+                <User className="h-4 w-4" />
+                <span className="text-sm">Masuk</span>
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setShowCart(!showCart)}
-                className="relative flex items-center space-x-2 border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
+                className="relative text-white hover:bg-green-600 flex items-center space-x-1"
               >
-                <ShoppingCart className="h-4 w-4" />
-                <span>Keranjang</span>
+                <ShoppingCart className="h-5 w-5" />
+                <span className="text-sm hidden md:block">Keranjang</span>
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-yellow-400 text-black">
                     {getTotalItems()}
                   </Badge>
                 )}
               </Button>
             </div>
           </div>
-          
-          {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between h-14">
-            <div className="flex items-center space-x-4">
+
+          {/* Navigation Bar */}
+          <div className="border-t border-green-600 py-2">
+            <div className="flex items-center space-x-6 text-sm">
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 onClick={() => window.location.href = '/'}
-                className="flex items-center space-x-2 border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
+                className="text-white hover:bg-green-600 flex items-center space-x-1"
               >
                 <Home className="h-4 w-4" />
                 <span>Beranda</span>
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
+              <span className="text-green-200">|</span>
+              <span className="font-medium">Toko Bahan Bangunan</span>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowCart(!showCart)}
-              className="relative border-[#FFF3F] bg-white text-gray-900 hover:bg-green-400 hover:text-black active:bg-green-500"
-            >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Keranjang
-              {getTotalItems() > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
-                  {getTotalItems()}
-                </Badge>
-              )}
-            </Button>
           </div>
         </div>
       </div>
+
+      {/* Scrolling Categories */}
+      <div className="bg-gradient-to-r from-green-600 to-green-500 text-white py-2 overflow-hidden">
+        <div className="animate-pulse">
+          <div className="whitespace-nowrap animate-marquee">
+            <span className="inline-block px-8 text-sm font-medium">
+              🏗️ Kategori Populer: {scrollingCategories.join(' • ')}
+            </span>
+          </div>
+        </div>
+      </div>
+
+
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <div className="lg:w-64 space-y-3">
-            {/* Search */}
-            <div className="bg-white p-3 rounded-lg shadow-sm">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Cari produk..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
             {/* Category Filter */}
-            <div className="bg-white p-3 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-2 flex items-center">
+            <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
+              <h3 className="font-semibold mb-2 flex items-center text-green-800">
                 <Filter className="h-4 w-4 mr-2" />
                 Kategori
               </h3>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="border-green-300 focus:ring-green-500">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -304,10 +340,10 @@ const Toko = () => {
             </div>
 
             {/* Sort */}
-            <div className="bg-white p-3 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-2">Urutkan</h3>
+            <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
+              <h3 className="font-semibold mb-2 text-green-800">Urutkan</h3>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
+                <SelectTrigger className="border-green-300 focus:ring-green-500">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,8 +359,8 @@ const Toko = () => {
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Header */}
-            <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-              <p className="text-gray-600">
+            <div className="bg-white p-4 rounded-lg shadow-md border border-green-200 mb-6">
+              <p className="text-green-700 font-medium">
                 Menampilkan {filteredProducts.length} produk
                 {searchTerm && ` untuk "${searchTerm}"`}
               </p>
@@ -333,7 +369,7 @@ const Toko = () => {
             {/* Products Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map(product => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow">
+                <Card key={product.id} className="hover:shadow-xl transition-all duration-300 border border-green-200 hover:border-green-400 bg-white">
                   <CardHeader className="p-0">
                     <div className="aspect-square bg-gray-100 rounded-t-lg flex items-center justify-center">
                       <img
@@ -385,7 +421,7 @@ const Toko = () => {
                       <Button
                         onClick={() => addToCart(product)}
                         disabled={!product.inStock}
-                        className="w-full"
+                        className={`w-full ${product.inStock ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-600'}`}
                         size="sm"
                       >
                         {product.inStock ? 'Tambah ke Keranjang' : 'Stok Habis'}
@@ -397,8 +433,8 @@ const Toko = () => {
             </div>
 
             {filteredProducts.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Tidak ada produk yang ditemukan</p>
+              <div className="text-center py-12 bg-white rounded-lg shadow-md border border-green-200">
+                <p className="text-green-600 font-medium">Tidak ada produk yang ditemukan</p>
               </div>
             )}
           </div>
@@ -409,7 +445,7 @@ const Toko = () => {
       {showCart && (
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowCart(false)} />
-          <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl">
+          <div className="absolute right-0 top-0 h-full w-96 bg-gradient-to-b from-white to-green-50 shadow-2xl border-l border-green-200">
             <div className="flex flex-col h-full">
               <div className="p-4 border-b">
                 <h2 className="text-lg font-semibold">Keranjang Belanja</h2>
@@ -455,15 +491,15 @@ const Toko = () => {
                 )}
               </div>
               {cart.length > 0 && (
-                <div className="p-4 border-t">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-semibold">Total:</span>
-                    <span className="font-bold text-lg">{formatPrice(getTotalPrice())}</span>
-                  </div>
-                  <Button className="w-full" size="lg">
-                    Checkout ({getTotalItems()} item)
-                  </Button>
+                <div className="p-4 border-t border-green-200 bg-green-50">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-semibold text-green-800">Total:</span>
+                  <span className="font-bold text-lg text-green-800">{formatPrice(getTotalPrice())}</span>
                 </div>
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
+                  Checkout ({getTotalItems()} item)
+                </Button>
+              </div>
               )}
             </div>
           </div>
