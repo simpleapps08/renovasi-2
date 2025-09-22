@@ -32,6 +32,7 @@ const Toko = () => {
   const [sortBy, setSortBy] = useState('name');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Sample products data
   const products: Product[] = [
@@ -227,6 +228,7 @@ const Toko = () => {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="text-white hover:bg-green-600 md:hidden"
               >
                 <Menu className="h-5 w-5" />
@@ -246,7 +248,7 @@ const Toko = () => {
                   placeholder="Cari produk bahan bangunan..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-4 pr-12 py-2 rounded-md border-0 focus:ring-2 focus:ring-yellow-400"
+                  className="w-full pl-4 pr-12 py-2 rounded-md border-0 focus:ring-2 focus:ring-yellow-400 text-black placeholder:text-gray-500"
                 />
                 <Button
                   size="sm"
@@ -272,10 +274,10 @@ const Toko = () => {
                 onClick={() => setShowCart(!showCart)}
                 className="relative text-white hover:bg-green-600 flex items-center space-x-1"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-7 w-7" />
                 <span className="text-sm hidden md:block">Keranjang</span>
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-yellow-400 text-black">
+                  <Badge className="absolute -top-1 -right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs bg-yellow-400 text-black font-bold">
                     {getTotalItems()}
                   </Badge>
                 )}
@@ -302,6 +304,60 @@ const Toko = () => {
         </div>
       </div>
 
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="md:hidden bg-white border-b border-green-200 shadow-lg">
+          <div className="px-4 py-3 space-y-3">
+            <div className="font-semibold text-green-800 text-lg border-b border-green-200 pb-2">
+              SERVISOO - Toko Bangunan
+            </div>
+            
+            {/* Navigation Menu */}
+            <div className="space-y-2">
+              <Button
+                 variant="ghost"
+                 onClick={() => {
+                   window.location.href = '/';
+                   setShowMobileMenu(false);
+                 }}
+                 className="w-full justify-start text-green-700 hover:bg-green-50"
+               >
+                 <Home className="h-4 w-4 mr-2" />
+                 Beranda
+               </Button>
+               <Button
+                 variant="ghost"
+                 onClick={() => setShowMobileMenu(false)}
+                 className="w-full justify-start text-green-700 hover:bg-green-50"
+               >
+                 <User className="h-4 w-4 mr-2" />
+                 Masuk / Daftar
+               </Button>
+            </div>
+
+            {/* Categories in Mobile Menu */}
+             <div className="border-t border-green-200 pt-3">
+               <h3 className="font-semibold mb-2 text-green-800">Kategori Produk</h3>
+               <Select value={selectedCategory} onValueChange={(value) => {
+                 setSelectedCategory(value);
+                 setShowMobileMenu(false);
+               }}>
+                 <SelectTrigger className="border-green-300 focus:ring-green-500">
+                   <SelectValue />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {categories.map(category => (
+                     <SelectItem key={category.value} value={category.value}>
+                       {category.label}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+          </div>
+        </div>
+      )}
+
       {/* Scrolling Categories */}
       <div className="bg-gradient-to-r from-green-600 to-green-500 text-white py-2 overflow-hidden">
         <div className="animate-pulse">
@@ -317,10 +373,10 @@ const Toko = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters */}
-          <div className="lg:w-64 space-y-3">
+          {/* Sidebar Filters - Hidden on mobile */}
+          <div className="hidden lg:block w-64 bg-white p-6 border-r border-green-200">
             {/* Category Filter */}
-            <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
+            <div className="bg-white p-3 rounded-lg shadow-md border border-green-200 mb-4">
               <h3 className="font-semibold mb-2 flex items-center text-green-800">
                 <Filter className="h-4 w-4 mr-2" />
                 Kategori
