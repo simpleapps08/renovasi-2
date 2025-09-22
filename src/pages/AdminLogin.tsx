@@ -19,11 +19,21 @@ const AdminLogin = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('user_id', session.user.id)
           .single()
+        
+        if (error) {
+          console.log('Profile fetch error:', error.message)
+          toast({
+            title: "Error",
+            description: "Gagal mengambil data profil pengguna.",
+            variant: "destructive",
+          })
+          return
+        }
         
         if (profile?.role === 'super_admin') {
           navigate('/super-admin/dashboard')
@@ -62,32 +72,44 @@ const AdminLogin = () => {
     }
 
     if (data.user) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('user_id', data.user.id)
           .single()
       
-      if (profile?.role === 'super_admin') {
-        toast({
-          title: "Login Berhasil",
-          description: "Selamat datang di Super Admin Portal!",
-        })
-        navigate('/super-admin/dashboard')
-      } else if (profile?.role === 'admin') {
-        toast({
-          title: "Login Berhasil",
-          description: "Selamat datang, Administrator!",
-        })
-        navigate('/admin')
-      } else {
-        toast({
-          title: "Akses Ditolak",
-          description: "Akun ini tidak memiliki akses administrator.",
-          variant: "destructive",
-        })
-        await supabase.auth.signOut()
-      }
+        if (error) {
+          console.log('Profile fetch error during login:', error.message)
+          toast({
+            title: "Error",
+            description: "Gagal mengambil data profil pengguna.",
+            variant: "destructive",
+          })
+          await supabase.auth.signOut()
+          setIsLoading(false)
+          return
+        }
+      
+        if (profile?.role === 'super_admin') {
+          toast({
+            title: "Login Berhasil",
+            description: "Selamat datang di Super Admin Portal!",
+          })
+          navigate('/super-admin/dashboard')
+        } else if (profile?.role === 'admin') {
+          toast({
+            title: "Login Berhasil",
+            description: "Selamat datang, Administrator!",
+          })
+          navigate('/admin')
+        } else {
+          toast({
+            title: "Akses Ditolak",
+            description: "Akun ini tidak memiliki akses administrator.",
+            variant: "destructive",
+          })
+          await supabase.auth.signOut()
+        }
     }
     setIsLoading(false)
   }
