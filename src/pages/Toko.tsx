@@ -202,62 +202,62 @@ const Toko = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-green-400 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Mobile Layout */}
           <div className="block md:hidden">
             {/* Title Row */}
-            <div className="flex justify-center py-3">
-              <h1 className="text-xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
+            <div className="flex justify-center py-2">
+              <h1 className="text-xl font-bold text-black">Toko Bahan Bangunan</h1>
             </div>
             {/* Navigation Row */}
-            <div className="flex items-center justify-between pb-3">
+            <div className="flex items-center justify-between pb-2">
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = '/'}
+                className="flex items-center space-x-2 border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
+              >
+                <Home className="h-4 w-4" />
+                <span>Beranda</span>
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowCart(!showCart)}
-                className="relative flex items-center space-x-2"
+                className="relative flex items-center space-x-2 border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
               >
                 <ShoppingCart className="h-4 w-4" />
                 <span>Keranjang</span>
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
                     {getTotalItems()}
                   </Badge>
                 )}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => window.location.href = '/'}
-                className="flex items-center space-x-2"
-              >
-                <Home className="h-4 w-4" />
-                <span>Beranda</span>
               </Button>
             </div>
           </div>
           
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between h-16">
+          <div className="hidden md:flex items-center justify-between h-14">
             <div className="flex items-center space-x-4">
               <Button
                 variant="outline"
                 onClick={() => window.location.href = '/'}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
               >
                 <Home className="h-4 w-4" />
                 <span>Beranda</span>
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
+              <h1 className="text-2xl font-bold text-black">Toko Bahan Bangunan</h1>
             </div>
             <Button
               variant="outline"
               onClick={() => setShowCart(!showCart)}
-              className="relative"
+              className="relative border-[#FFF3F] bg-transparent text-black hover:bg-black/10"
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
               Keranjang
               {getTotalItems() > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
                   {getTotalItems()}
                 </Badge>
               )}
