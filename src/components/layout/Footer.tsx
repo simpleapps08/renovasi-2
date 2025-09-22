@@ -37,60 +37,7 @@ const Footer = () => {
 
   const fetchFooterData = async () => {
     try {
-      // Fetch social media links
-      const { data: socialData, error: socialError } = await supabase
-        .from('social_media_links')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order')
-
-      // Fetch contact info
-      const { data: contactData, error: contactError } = await supabase
-        .from('contact_info')
-        .select('*')
-        .eq('is_active', true)
-
-      // Fetch footer content
-      const { data: contentData, error: contentError } = await supabase
-        .from('footer_content')
-        .select('*')
-        .eq('is_active', true)
-
-      // Use fallback data if tables don't exist yet
-      if (socialError || !socialData) {
-        setSocialLinks([
-          { id: '1', platform: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/servisoo.official/', icon: 'instagram', display_order: 1 },
-          { id: '2', platform: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/servisoo.official', icon: 'facebook', display_order: 2 },
-          { id: '3', platform: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/@servisoo.official', icon: 'tiktok', display_order: 3 },
-          { id: '4', platform: 'x', name: 'Twitter/X', url: 'https://x.com/servisoo', icon: 'x', display_order: 4 },
-          { id: '5', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 5 }
-        ])
-      } else {
-        setSocialLinks(socialData)
-      }
-
-      if (contactError || !contactData) {
-        setContactInfo([
-          { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
-          { id: '2', type: 'phone', label: 'Phone', value: '+6282336548080', formatted_value: '+62 823-3654-8080' },
-          { id: '3', type: 'whatsapp', label: 'WhatsApp', value: '+6285808675233', formatted_value: '+62 858-0867-5233' },
-          { id: '4', type: 'address', label: 'Alamat', value: 'Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318', formatted_value: null }
-        ])
-      } else {
-        setContactInfo(contactData)
-      }
-
-      if (contentError || !contentData) {
-        setFooterContent([
-          { id: '1', section: 'description', content: 'Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.' },
-          { id: '2', section: 'services', content: 'Renovasi Rumah,Pembangunan Gedung,Desain & Perencanaan,Konsultasi RAB' }
-        ])
-      } else {
-        setFooterContent(contentData)
-      }
-    } catch (error) {
-      console.error('Error fetching footer data:', error)
-      // Set fallback data on error
+      // Set fallback data immediately since tables don't exist yet
       setSocialLinks([
         { id: '1', platform: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/servisoo.official/', icon: 'instagram', display_order: 1 },
         { id: '2', platform: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/servisoo.official', icon: 'facebook', display_order: 2 },
@@ -98,16 +45,55 @@ const Footer = () => {
         { id: '4', platform: 'x', name: 'Twitter/X', url: 'https://x.com/servisoo', icon: 'x', display_order: 4 },
         { id: '5', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 5 }
       ])
+      
       setContactInfo([
         { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
         { id: '2', type: 'phone', label: 'Phone', value: '+6282336548080', formatted_value: '+62 823-3654-8080' },
         { id: '3', type: 'whatsapp', label: 'WhatsApp', value: '+6285808675233', formatted_value: '+62 858-0867-5233' },
         { id: '4', type: 'address', label: 'Alamat', value: 'Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318', formatted_value: null }
       ])
+      
       setFooterContent([
         { id: '1', section: 'description', content: 'Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.' },
         { id: '2', section: 'services', content: 'Renovasi Rumah,Pembangunan Gedung,Desain & Perencanaan,Konsultasi RAB' }
       ])
+      
+      // Try to fetch from database if tables exist (for future use)
+      try {
+        const { data: socialData, error: socialError } = await supabase
+          .from('social_media_links')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order')
+        
+        if (!socialError && socialData && socialData.length > 0) {
+          setSocialLinks(socialData)
+        }
+        
+        const { data: contactData, error: contactError } = await supabase
+          .from('contact_info')
+          .select('*')
+          .eq('is_active', true)
+        
+        if (!contactError && contactData && contactData.length > 0) {
+          setContactInfo(contactData)
+        }
+        
+        const { data: contentData, error: contentError } = await supabase
+          .from('footer_content')
+          .select('*')
+          .eq('is_active', true)
+        
+        if (!contentError && contentData && contentData.length > 0) {
+          setFooterContent(contentData)
+        }
+      } catch (dbError) {
+        // Silently ignore database errors and use fallback data
+        console.log('Database tables not available, using fallback data')
+      }
+      
+    } catch (error) {
+      console.error('Error in fetchFooterData:', error)
     } finally {
       setLoading(false)
     }
