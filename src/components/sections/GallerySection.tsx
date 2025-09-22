@@ -15,7 +15,7 @@ const galleryItems = [
     image: "https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=600&h=400&fit=crop",
     title: "Gedung Perkantoran",
     category: "Komersial",
-    description: "Pembangunan gedung perkantoran 5 lantai dengan desain kontemporer"
+    description: "Toko bangunan lengkap dengan berbagai material konstruksi berkualitas"
   },
   {
     id: 3,

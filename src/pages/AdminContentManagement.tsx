@@ -39,10 +39,10 @@ const initialServicesData = [
   },
   {
     id: 2,
-    title: "Pembangunan Gedung",
-    description: "Konstruksi gedung komersial dan perkantoran dengan standar internasional",
-    features: ["Gedung Perkantoran", "Ruko & Toko", "Warehouse", "Fasilitas Umum"],
-    icon: "🏢"
+    title: "Toko Bangunan",
+    description: "Penyedia material dan peralatan konstruksi berkualitas dengan harga terjangkau",
+    features: ["Material Bangunan", "Alat Konstruksi", "Cat & Finishing", "Konsultasi Material"],
+    icon: "🏪"
   },
   {
     id: 3,
@@ -73,7 +73,7 @@ const initialPortfolioData = [
     image: "https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=600&h=400&fit=crop",
     title: "Gedung Perkantoran",
     category: "Komersial",
-    description: "Pembangunan gedung perkantoran 5 lantai dengan desain kontemporer"
+    description: "Toko bangunan lengkap dengan berbagai material konstruksi berkualitas"
   },
   {
     id: 3,
@@ -88,7 +88,7 @@ const initialFooterData = {
   description: "Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.",
   services: [
     "Renovasi Rumah",
-    "Pembangunan Gedung",
+    "Toko Bangunan",
     "Desain & Perencanaan",
     "Konsultasi RAB"
   ],

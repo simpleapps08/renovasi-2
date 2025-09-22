@@ -9,10 +9,10 @@ const services = [
     icon: "🏠"
   },
   {
-    title: "Pembangunan Gedung",
-    description: "Konstruksi gedung komersial dan perkantoran dengan standar internasional",
-    features: ["Gedung Perkantoran", "Ruko & Toko", "Warehouse", "Fasilitas Umum"],
-    icon: "🏢"
+    title: "Toko Bangunan",
+    description: "Penyedia material dan peralatan konstruksi berkualitas dengan harga terjangkau",
+    features: ["Material Bangunan", "Alat Konstruksi", "Cat & Finishing", "Konsultasi Material"],
+    icon: "🏪"
   },
   {
     title: "Desain & Perencanaan",
@@ -62,8 +62,20 @@ const ServicesSection = () => {
                   ))}
                 </ul>
                 
-                <Button variant="service" className="w-full">
-                  Pelajari Lebih Lanjut
+                <Button 
+                  variant="service" 
+                  className={`w-full ${
+                    service.title === "Toko Bangunan" 
+                      ? "bg-yellow-500 hover:bg-yellow-600 text-black" 
+                      : ""
+                  }`}
+                  onClick={() => {
+                    if (service.title === "Toko Bangunan") {
+                      window.location.href = "/toko";
+                    }
+                  }}
+                >
+                  {service.title === "Toko Bangunan" ? "Kunjungi" : "Pelajari Lebih Lanjut"}
                 </Button>
               </CardContent>
             </Card>

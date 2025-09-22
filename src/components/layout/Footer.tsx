@@ -55,7 +55,7 @@ const Footer = () => {
       
       setFooterContent([
         { id: '1', section: 'description', content: 'Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.' },
-        { id: '2', section: 'services', content: 'Renovasi Rumah,Pembangunan Gedung,Desain & Perencanaan,Konsultasi RAB' }
+        { id: '2', section: 'services', content: 'Renovasi Rumah,Toko Bangunan,Desain & Perencanaan,Konsultasi RAB' }
       ])
       
       // Try to fetch from database if tables exist (for future use)
@@ -174,10 +174,10 @@ const Footer = () => {
       try {
         return JSON.parse(services.content)
       } catch {
-        return ['Renovasi Rumah', 'Pembangunan Gedung', 'Desain & Perencanaan', 'Konsultasi RAB']
+        return ['Renovasi Rumah', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
       }
     }
-    return ['Renovasi Rumah', 'Pembangunan Gedung', 'Desain & Perencanaan', 'Konsultasi RAB']
+    return ['Renovasi Rumah', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
   }
 
   if (loading) {
