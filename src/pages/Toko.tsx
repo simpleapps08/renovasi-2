@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, Filter, Star, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Search, Filter, Star, Plus, Minus, Home } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Product {
@@ -206,6 +206,14 @@ const Toko = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = '/'}
+                className="flex items-center space-x-2"
+              >
+                <Home className="h-4 w-4" />
+                <span>Beranda</span>
+              </Button>
               <h1 className="text-2xl font-bold text-gray-900">Toko Bahan Bangunan</h1>
             </div>
             <Button

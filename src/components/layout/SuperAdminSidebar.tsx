@@ -21,7 +21,8 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 
 const navigation = [
-  { name: 'Dashboard', href: '/super-admin/dashboard', icon: Home },
+  { name: 'Beranda', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/super-admin/dashboard', icon: Shield },
   { name: 'User Management', href: '/admin/users', icon: Users },
   { name: 'Admin Management', href: '/super-admin/admins', icon: UserCheck },
   { name: 'System Monitor', href: '/super-admin/system', icon: Server },

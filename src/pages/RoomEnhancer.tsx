@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/enhanced-button';
-import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle, Lock } from 'lucide-react';
+import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle, Lock, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, Navigate } from 'react-router-dom';
 import FileUpload from '@/components/room-enhancer/FileUpload';
@@ -317,14 +317,12 @@ const RoomEnhancer = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back to Dashboard Button */}
+        {/* Home Button */}
         <div className="mb-6">
           <Button asChild variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
-            <Link to="/dashboard">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Kembali ke Dashboard
+            <Link to="/">
+              <Home className="w-4 h-4 mr-2" />
+              Beranda
             </Link>
           </Button>
         </div>

@@ -1,11 +1,12 @@
 import { useState } from "react"
-import { Images, DollarSign, Users, CreditCard, LogOut, Menu, X, Hammer, Calculator, ImageIcon, Settings, Store } from "lucide-react"
+import { Images, DollarSign, Users, CreditCard, LogOut, Menu, X, Hammer, Calculator, ImageIcon, Settings, Store, Home } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/enhanced-button"
 import { useToast } from "@/hooks/use-toast"
 
 const navigation = [
+  { name: 'Beranda', href: '/', icon: Home },
   { name: 'Dashboard', href: '/admin', icon: Images },
   { name: 'Admin RAB', href: '/admin/rab', icon: Calculator },
   { name: 'Harga Material', href: '/admin/material', icon: DollarSign },

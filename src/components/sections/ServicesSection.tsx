@@ -66,7 +66,7 @@ const ServicesSection = () => {
                   variant="service" 
                   className={`w-full ${
                     service.title === "Toko Bangunan" 
-                      ? "bg-yellow-500 hover:bg-yellow-600 text-black" 
+                      ? "bg-[#FFFF3F] hover:bg-[#E6E639] text-black" 
                       : ""
                   }`}
                   onClick={() => {

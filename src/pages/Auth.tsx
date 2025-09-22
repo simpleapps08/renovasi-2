@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Link, useNavigate } from "react-router-dom"
+import { Home } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -138,6 +139,14 @@ const Auth = () => {
     <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/">
+                <Home className="h-4 w-4 mr-2" />
+                Beranda
+              </Link>
+            </Button>
+          </div>
           <Link to="/" className="inline-flex items-center">
             <span className="text-3xl font-bold text-primary">SERVISOO</span>
             <div className="ml-2 h-3 w-3 rounded-full bg-accent"></div>

@@ -1,11 +1,12 @@
 import { useState } from "react"
-import { Calculator, History, CreditCard, User, LogOut, Menu, X } from "lucide-react"
+import { Calculator, History, CreditCard, User, LogOut, Menu, X, Home } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/enhanced-button"
 import { useToast } from "@/hooks/use-toast"
 
 const navigation = [
+  { name: 'Beranda', href: '/', icon: Home },
   { name: 'Simulasi RAB', href: '/dashboard', icon: Calculator },
   { name: 'Histori Proyek', href: '/dashboard/history', icon: History },
   { name: 'Billing & Deposit', href: '/dashboard/billing', icon: CreditCard },
