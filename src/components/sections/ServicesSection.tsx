@@ -71,7 +71,7 @@ const ServicesSection = () => {
                   }`}
                   onClick={() => {
                     if (service.title === "Toko Bangunan") {
-                      window.location.href = "/toko";
+                      window.location.href = "https://www.servisoo.com/toko";
                     }
                   }}
                 >
