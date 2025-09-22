@@ -50,7 +50,7 @@ const AuthConfirm = () => {
           
           // Check if profile exists, create if not
           const { data: existingProfile } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('*')
             .eq('user_id', data.user.id)
             .single()
@@ -58,7 +58,7 @@ const AuthConfirm = () => {
           if (!existingProfile) {
             console.log('Creating profile for confirmed user...')
             const { error: profileError } = await supabase
-              .from('user_profiles')
+              .from('profiles')
               .insert({
                 user_id: data.user.id,
                 nama: data.user.user_metadata?.nama || data.user.email?.split('@')[0] || 'User',

@@ -77,9 +77,9 @@ const Profil = () => {
       try {
         setLoading(true)
         
-        // Get additional profile data from user_profiles table
+        // Get additional profile data from profiles table
         const { data: profileDetails, error } = await supabase
-          .from('user_profiles')
+          .from('profiles')
           .select('*')
           .eq('user_id', user.id)
           .single()
@@ -158,9 +158,9 @@ const Profil = () => {
     try {
       setSaving(true)
       
-      // Update user profile in user_profiles table
+      // Update user profile in profiles table
       const { error: profileError } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .upsert({
           user_id: user.id,
           phone: profileData.phone,
@@ -177,10 +177,10 @@ const Profil = () => {
       
       if (profileError) throw profileError
       
-      // Update user_profiles table (for nama)
+      // Update profiles table (for nama)
       const fullName = `${profileData.firstName} ${profileData.lastName}`.trim()
       const { error: nameError } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .upsert({
           user_id: user.id,
           full_name: fullName,

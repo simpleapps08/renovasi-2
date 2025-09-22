@@ -28,12 +28,14 @@ const Auth = () => {
       if (session) {
         // Check user profile and redirect
         const { data: profile } = await supabase
-          .from('user_profiles')
+          .from('profiles')
           .select('role')
           .eq('user_id', session.user.id)
           .single()
         
-        if (profile?.role === 'admin') {
+        if (profile?.role === 'super_admin') {
+          navigate('/super-admin/dashboard')
+        } else if (profile?.role === 'admin') {
           navigate('/admin')
         } else {
           navigate('/dashboard')
@@ -64,7 +66,7 @@ const Auth = () => {
 
     if (data.user) {
       const { data: profile } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('role')
         .eq('user_id', data.user.id)
         .single()
@@ -74,7 +76,9 @@ const Auth = () => {
         description: "Selamat datang di SERVISOO!",
       })
 
-      if (profile?.role === 'admin') {
+      if (profile?.role === 'super_admin') {
+        navigate('/super-admin/dashboard')
+      } else if (profile?.role === 'admin') {
         navigate('/admin')
       } else {
         navigate('/dashboard')

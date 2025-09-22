@@ -78,7 +78,7 @@ const BillingDeposit = () => {
 
         // Fetch user balance
         const { data: userData, error: userError } = await supabase
-          .from('user_profiles')
+          .from('profiles')
           .select('saldo_deposit')
           .eq('user_id', user.id)
           .single()

@@ -12,6 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
 import TestDashboard from "./pages/TestDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import AdminRAB from "./pages/AdminRAB";
 import AdminMaterial from "./pages/AdminMaterial";
 import AdminUpah from "./pages/AdminUpah";
@@ -27,6 +28,7 @@ import RoomEnhancer from "./pages/RoomEnhancer";
 import Toko from "./pages/Toko";
 import AdminToko from "./pages/AdminToko";
 import ProtectedAdminTokoRoute from "./components/ProtectedAdminTokoRoute";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,7 +45,11 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/auth" replace />;
   }
   
-  if (adminOnly && profile?.user_roles?.role_name !== 'admin') {
+  if (adminOnly && !profile?.role) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  if (adminOnly && !['admin', 'super_admin'].includes(profile?.role || '')) {
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -127,6 +133,11 @@ const App = () => (
             <Route path="/admin/content" element={
               <ProtectedRoute adminOnly>
                 <AdminContentManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/super-admin/dashboard" element={
+              <ProtectedRoute adminOnly>
+                <SuperAdminDashboard />
               </ProtectedRoute>
             } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />

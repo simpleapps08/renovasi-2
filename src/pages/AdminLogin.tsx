@@ -20,15 +20,14 @@ const AdminLogin = () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         const { data: profile } = await supabase
-        .from('user_profiles')
-        .select(`
-          role_id,
-          user_roles!inner(role_name, role_level)
-        `)
-        .eq('id', session.user.id)
-        .single()
+          .from('profiles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single()
         
-        if (profile?.user_roles?.role_name === 'admin') {
+        if (profile?.role === 'super_admin') {
+          navigate('/super-admin/dashboard')
+        } else if (profile?.role === 'admin') {
           navigate('/admin')
         } else {
           toast({
@@ -64,15 +63,18 @@ const AdminLogin = () => {
 
     if (data.user) {
       const { data: profile } = await supabase
-        .from('user_profiles')
-        .select(`
-          role_id,
-          user_roles!inner(role_name, role_level)
-        `)
-        .eq('id', data.user.id)
+        .from('profiles')
+        .select('role')
+        .eq('user_id', data.user.id)
         .single()
       
-      if (profile?.user_roles?.role_name === 'admin') {
+      if (profile?.role === 'super_admin') {
+        toast({
+          title: "Login Berhasil",
+          description: "Selamat datang di Super Admin Portal!",
+        })
+        navigate('/super-admin/dashboard')
+      } else if (profile?.role === 'admin') {
         toast({
           title: "Login Berhasil",
           description: "Selamat datang, Administrator!",
