@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
+import { Link } from "react-router-dom"
 
 const services = [
   {
@@ -69,13 +70,13 @@ const ServicesSection = () => {
                       ? "bg-[#FFFF3F] hover:bg-[#E6E639] text-black" 
                       : ""
                   }`}
-                  onClick={() => {
-                    if (service.title === "Toko Bangunan") {
-                      window.location.href = "https://www.servisoo.com/toko";
-                    }
-                  }}
+                  asChild={service.title === "Toko Bangunan"}
                 >
-                  {service.title === "Toko Bangunan" ? "Kunjungi" : "Pelajari Lebih Lanjut"}
+                  {service.title === "Toko Bangunan" ? (
+                    <Link to="/toko">Kunjungi</Link>
+                  ) : (
+                    "Pelajari Lebih Lanjut"
+                  )}
                 </Button>
               </CardContent>
             </Card>
