@@ -79,7 +79,7 @@ const FloatingChatLeft = () => {
               } else if (typeof data === 'string') {
                 botResponse = data
               } else {
-                botResponse = 'Selamat datang di servisoo, saya adalah CS yang siap melayani anda 24 jam'
+                botResponse = 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?'
               }
             } else {
               botResponse = await response.text()
@@ -96,7 +96,7 @@ const FloatingChatLeft = () => {
             } else {
               const welcomeMessage: Message = {
                 id: Date.now().toString(),
-                text: 'Selamat datang di servisoo, saya adalah CS yang siap melayani anda 24 jam',
+                text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
                 sender: 'bot',
                 timestamp: new Date()
               }
@@ -117,7 +117,7 @@ const FloatingChatLeft = () => {
           // Always show welcome message even if N8N fails
           const welcomeMessage: Message = {
             id: Date.now().toString(),
-            text: 'Selamat datang di servisoo, saya adalah CS yang siap melayani anda 24 jam',
+            text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
             sender: 'bot',
             timestamp: new Date()
           }
