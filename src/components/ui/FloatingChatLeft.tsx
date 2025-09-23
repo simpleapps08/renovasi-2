@@ -46,13 +46,22 @@ const FloatingChatLeft = () => {
             }
           }
 
+          console.log('Sending welcome message to N8N:', {
+            url: N8N_CHAT_URL,
+            body: requestBody
+          })
+
           const response = await fetch(N8N_CHAT_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              'Accept': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Accept'
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
+            mode: 'cors'
           })
 
           if (response.ok) {
@@ -98,6 +107,14 @@ const FloatingChatLeft = () => {
           }
         } catch (error) {
           console.error('Error sending welcome message to n8n:', error)
+          console.error('N8N URL (Welcome):', N8N_CHAT_URL)
+          console.error('Welcome error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          })
+          
+          // Always show welcome message even if N8N fails
           const welcomeMessage: Message = {
             id: Date.now().toString(),
             text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
@@ -143,13 +160,22 @@ const FloatingChatLeft = () => {
         }
       }
 
+      console.log('Sending request to N8N:', {
+        url: N8N_CHAT_URL,
+        body: requestBody
+      })
+
       const response = await fetch(N8N_CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Accept'
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        mode: 'cors'
       })
 
       if (response.ok) {
@@ -198,9 +224,25 @@ const FloatingChatLeft = () => {
       }
     } catch (error) {
       console.error('Error sending message to n8n:', error)
+      console.error('N8N URL:', N8N_CHAT_URL)
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+      
+      let errorText = 'Maaf, sistem chat sedang mengalami gangguan. Silakan hubungi kami langsung di WhatsApp 085808675233 atau coba lagi dalam beberapa saat.'
+      
+      // Specific error handling for different types of errors
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        errorText = 'Koneksi ke server chat terputus. Pastikan Anda terhubung ke internet dan coba lagi. Atau hubungi kami di WhatsApp 085808675233.'
+      } else if (error.message.includes('CORS')) {
+        errorText = 'Terjadi masalah konfigurasi server. Tim teknis sedang memperbaiki. Sementara itu, hubungi kami di WhatsApp 085808675233.'
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Maaf, sistem chat sedang mengalami gangguan. Silakan hubungi kami langsung di WhatsApp 085808675233 atau coba lagi dalam beberapa saat.',
+        text: errorText,
         sender: 'bot',
         timestamp: new Date()
       }
