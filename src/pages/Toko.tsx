@@ -373,31 +373,14 @@ const Toko = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters - Hidden on mobile */}
-          <div className="hidden lg:block w-64 bg-white p-6 border-r border-green-200">
-            {/* Category Filter */}
-            <div className="bg-white p-3 rounded-lg shadow-md border border-green-200 mb-4">
-              <h3 className="font-semibold mb-2 flex items-center text-green-800">
-                <Filter className="h-4 w-4 mr-2" />
-                Kategori
-              </h3>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="border-green-300 focus:ring-green-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+          {/* Sidebar Filters - Visible on desktop, only sorting */}
+          <div className="w-64 bg-white p-6 border-r border-green-200 hidden md:block">
             {/* Sort */}
             <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
-              <h3 className="font-semibold mb-2 text-green-800">Urutkan</h3>
+              <h3 className="font-semibold mb-2 flex items-center text-green-800">
+                <Filter className="h-4 w-4 mr-2" />
+                Urutkan
+              </h3>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="border-green-300 focus:ring-green-500">
                   <SelectValue />

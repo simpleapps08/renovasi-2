@@ -20,7 +20,7 @@ const FloatingChatLeft = () => {
   const [isInitialized, setIsInitialized] = useState(false)
 
   // URL n8n Chat Trigger untuk workflow Servisoo
-  const N8N_CHAT_URL = 'https://n8n-5g0tjrr8.n8x.biz.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
+  const N8N_CHAT_URL = 'https://n8n-djgsdd49u07h.siomay.sumopod.my.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
   
   // Session ID untuk memory management
   const [sessionId] = useState(() => `servisoo-left-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
