@@ -79,7 +79,7 @@ const FloatingChatLeft = () => {
               } else if (typeof data === 'string') {
                 botResponse = data
               } else {
-                botResponse = 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?'
+                botResponse = 'Selamat datang di servisoo, saya adalah CS yang siap melayani anda 24 jam'
               }
             } else {
               botResponse = await response.text()
@@ -96,7 +96,7 @@ const FloatingChatLeft = () => {
             } else {
               const welcomeMessage: Message = {
                 id: Date.now().toString(),
-                text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
+                text: 'Selamat datang di servisoo, saya adalah CS yang siap melayani anda 24 jam',
                 sender: 'bot',
                 timestamp: new Date()
               }
@@ -117,7 +117,7 @@ const FloatingChatLeft = () => {
           // Always show welcome message even if N8N fails
           const welcomeMessage: Message = {
             id: Date.now().toString(),
-            text: 'Halo! Selamat datang di SERVISOO. Saya adalah AI Assistant yang siap membantu Anda 24/7. Bagaimana saya bisa membantu Anda hari ini?',
+            text: 'Selamat datang di servisoo, saya adalah CS yang siap melayani anda 24 jam',
             sender: 'bot',
             timestamp: new Date()
           }
@@ -231,14 +231,7 @@ const FloatingChatLeft = () => {
         stack: error.stack
       })
       
-      let errorText = 'Maaf, sistem chat sedang mengalami gangguan. Silakan hubungi kami langsung di WhatsApp 085808675233 atau coba lagi dalam beberapa saat.'
-      
-      // Specific error handling for different types of errors
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        errorText = 'Koneksi ke server chat terputus. Pastikan Anda terhubung ke internet dan coba lagi. Atau hubungi kami di WhatsApp 085808675233.'
-      } else if (error.message.includes('CORS')) {
-        errorText = 'Terjadi masalah konfigurasi server. Tim teknis sedang memperbaiki. Sementara itu, hubungi kami di WhatsApp 085808675233.'
-      }
+      let errorText = 'Chat sedang gangguan. Hubungi WhatsApp: 085808675233'
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
