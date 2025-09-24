@@ -48,14 +48,23 @@ const Header = () => {
           >
             Kontak
           </Link>
+          <Link 
+            to="/admin-login" 
+            className="text-sm font-medium transition-colors hover:text-accent"
+          >
+            Login Admin Toko
+          </Link>
+          <Link 
+            to="/auth" 
+            className="text-sm font-medium transition-colors hover:text-accent"
+          >
+            Login User
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
           {/* Desktop Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link to="/auth">Masuk</Link>
-            </Button>
             <Button variant="hero" asChild>
               <Link to="/auth">Mulai Simulasi</Link>
             </Button>
@@ -118,12 +127,23 @@ const Header = () => {
             >
               Kontak
             </Link>
+            <Link 
+              to="/admin-login" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Login Admin Toko
+            </Link>
+            <Link 
+              to="/auth" 
+              className="block text-sm font-medium transition-colors hover:text-accent py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Login User
+            </Link>
             
             {/* Mobile Action Buttons */}
             <div className="pt-4 border-t space-y-2">
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Masuk</Link>
-              </Button>
               <Button variant="hero" className="w-full" asChild>
                 <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Mulai Simulasi</Link>
               </Button>
