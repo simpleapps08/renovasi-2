@@ -76,11 +76,12 @@ const AdminUserManagement = () => {
   const fetchRoles = async () => {
     try {
       // Set roles that actually exist in the database
-      // Berdasarkan pengecekan database: user, admin, super_admin
+      // Berdasarkan pengecekan database: user, admin, admin_store, super_admin
       setAvailableRoles([
         { id: 'super_admin', name: 'Super Admin', level: 1 },
         { id: 'admin', name: 'Admin', level: 2 },
-        { id: 'user', name: 'User', level: 3 }
+        { id: 'admin_store', name: 'Admin Store', level: 3 },
+        { id: 'user', name: 'User', level: 4 }
       ])
     } catch (error) {
       console.error('Error fetching roles:', error)
@@ -88,7 +89,8 @@ const AdminUserManagement = () => {
       setAvailableRoles([
         { id: 'super_admin', name: 'Super Admin', level: 1 },
         { id: 'admin', name: 'Admin', level: 2 },
-        { id: 'user', name: 'User', level: 3 }
+        { id: 'admin_store', name: 'Admin Store', level: 3 },
+        { id: 'user', name: 'User', level: 4 }
       ])
     }
   }
