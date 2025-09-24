@@ -75,21 +75,23 @@ const AdminUserManagement = () => {
   // Set available roles (static list)
   const fetchRoles = async () => {
     try {
-      // Use static roles since we're not using user_roles table anymore
+      // Set roles that match the database structure
       setAvailableRoles([
         { id: 'super_admin', name: 'Super Admin', level: 1 },
         { id: 'admin', name: 'Admin', level: 2 },
+        { id: 'toko_owner', name: 'Toko Owner', level: 3 },
+        { id: 'supplier', name: 'Supplier', level: 4 },
         { id: 'user', name: 'User', level: 5 }
       ])
     } catch (error) {
       console.error('Error fetching roles:', error)
       // Fallback to default roles
       setAvailableRoles([
-        { id: 'super_admin', name: 'Super Admin', level: 100 },
-        { id: 'admin', name: 'Admin', level: 80 },
-        { id: 'moderator', name: 'Moderator', level: 60 },
-        { id: 'premium_user', name: 'Premium User', level: 40 },
-        { id: 'user', name: 'User', level: 20 }
+        { id: 'super_admin', name: 'Super Admin', level: 1 },
+        { id: 'admin', name: 'Admin', level: 2 },
+        { id: 'toko_owner', name: 'Toko Owner', level: 3 },
+        { id: 'supplier', name: 'Supplier', level: 4 },
+        { id: 'user', name: 'User', level: 5 }
       ])
     }
   }
@@ -463,8 +465,8 @@ const AdminUserManagement = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Kota</p>
-                  <p className="text-2xl font-bold">{new Set(users.map(u => u.city).filter(Boolean)).size}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Lokasi</p>
+                  <p className="text-2xl font-bold">{new Set(users.map(u => u.lokasi).filter(Boolean)).size}</p>
                 </div>
                 <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
                   <div className="h-4 w-4 bg-green-600 rounded-full"></div>
@@ -477,7 +479,7 @@ const AdminUserManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Dengan Profil Lengkap</p>
-                  <p className="text-2xl font-bold">{users.filter(u => u.phone && u.address && u.city).length}</p>
+                  <p className="text-2xl font-bold">{users.filter(u => u.email && u.nama && u.lokasi).length}</p>
                 </div>
                 <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
                   <div className="h-4 w-4 bg-blue-600 rounded-full"></div>
@@ -553,16 +555,15 @@ const AdminUserManagement = () => {
                             value={formData.email}
                             onChange={(e) => setFormData({...formData, email: e.target.value})}
                             placeholder="user@example.com"
-                            disabled={!!editingUser}
                             className="text-sm"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="name" className="text-sm">Nama Lengkap *</Label>
+                          <Label htmlFor="nama" className="text-sm">Nama Lengkap *</Label>
                           <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            id="nama"
+                            value={formData.nama}
+                            onChange={(e) => setFormData({...formData, nama: e.target.value})}
                             placeholder="Nama lengkap"
                             required
                             className="text-sm"
@@ -570,7 +571,7 @@ const AdminUserManagement = () => {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <div>
                           <Label htmlFor="role" className="text-sm">Role *</Label>
                           <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
@@ -585,16 +586,6 @@ const AdminUserManagement = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="phone" className="text-sm">Nomor Telepon</Label>
-                          <Input
-                            id="phone"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                            placeholder="08xxxxxxxxxx"
-                            className="text-sm"
-                          />
                         </div>
                       </div>
                       
