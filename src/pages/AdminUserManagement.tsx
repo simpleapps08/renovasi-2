@@ -18,18 +18,11 @@ import { getRoleBadgeVariant, formatRoleName, getAllRoles, getEditableRoles, has
 interface UserData {
   id: string
   user_id: string
-  email: string
-  name: string
+  email?: string
+  nama: string
   role: string
-  phone?: string
-  address?: string
-  city?: string
-  province?: string
-  postal_code?: string
-  date_of_birth?: string
-  gender?: 'male' | 'female'
-  occupation?: string
-  bio?: string
+  lokasi?: string
+  saldo_deposit?: number
   created_at: string
   updated_at: string
 }
@@ -112,18 +105,11 @@ const AdminUserManagement = () => {
         .select(`
           id,
           user_id,
-          full_name,
+          nama,
           email,
           role,
-          phone,
-          address,
-          city,
-          province,
-          postal_code,
-          date_of_birth,
-          gender,
-          occupation,
-          bio,
+          lokasi,
+          saldo_deposit,
           created_at,
           updated_at
         `)
@@ -144,17 +130,10 @@ const AdminUserManagement = () => {
         id: profile.id,
         user_id: profile.user_id,
         email: profile.email || 'No email',
-        name: profile.full_name || 'No name',
+        nama: profile.nama || 'No name',
         role: profile.role || 'user',
-        phone: profile.phone,
-        address: profile.address,
-        city: profile.city,
-        province: profile.province,
-        postal_code: profile.postal_code,
-        date_of_birth: profile.date_of_birth,
-        gender: profile.gender,
-        occupation: profile.occupation,
-        bio: profile.bio,
+        lokasi: profile.lokasi,
+        saldo_deposit: profile.saldo_deposit || 0,
         created_at: profile.created_at,
         updated_at: profile.updated_at
       }))
@@ -181,17 +160,10 @@ const AdminUserManagement = () => {
 
   const [formData, setFormData] = useState({
     email: '',
-    name: '',
+    nama: '',
     role: 'user',
-    phone: '',
-    address: '',
-    city: '',
-    province: '',
-    postal_code: '',
-    date_of_birth: '',
-    gender: '' as 'male' | 'female' | '',
-    occupation: '',
-    bio: ''
+    lokasi: '',
+    saldo_deposit: 0
   })
 
   const [availableRoles, setAvailableRoles] = useState([])
@@ -229,9 +201,8 @@ const AdminUserManagement = () => {
   // Filter dan search
   const filteredUsers = users.filter(user => {
     const matchesSearch = (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.city || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.occupation || '').toLowerCase().includes(searchTerm.toLowerCase())
+                         (user.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.lokasi || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = filterRole === 'semua' || user.role === filterRole
     return matchesSearch && matchesRole
   })
@@ -244,7 +215,7 @@ const AdminUserManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name) {
+    if (!formData.nama) {
       toast({
         title: "Error",
         description: "Nama wajib diisi.",
@@ -257,18 +228,11 @@ const AdminUserManagement = () => {
       setLoading(true)
       
       const profileData = {
-        full_name: formData.name,
-        email: formData.email,
+        nama: formData.nama,
+        email: formData.email || null,
         role: formData.role,
-        phone: formData.phone || null,
-        address: formData.address || null,
-        city: formData.city || null,
-        province: formData.province || null,
-        postal_code: formData.postal_code || null,
-        date_of_birth: formData.date_of_birth || null,
-        gender: formData.gender || null,
-        occupation: formData.occupation || null,
-        bio: formData.bio || null,
+        lokasi: formData.lokasi || null,
+        saldo_deposit: formData.saldo_deposit || 0,
         updated_at: new Date().toISOString()
       }
 
@@ -325,18 +289,11 @@ const AdminUserManagement = () => {
   const handleEdit = (user: UserData) => {
     setEditingUser(user)
     setFormData({
-      email: user.email,
-      name: user.name,
+      email: user.email || '',
+      nama: user.nama,
       role: user.role,
-      phone: user.phone || '',
-      address: user.address || '',
-      city: user.city || '',
-      province: user.province || '',
-      postal_code: user.postal_code || '',
-      date_of_birth: user.date_of_birth || '',
-      gender: user.gender || '',
-      occupation: user.occupation || '',
-      bio: user.bio || ''
+      lokasi: user.lokasi || '',
+      saldo_deposit: user.saldo_deposit || 0
     })
     setIsDialogOpen(true)
   }
@@ -419,26 +376,19 @@ const AdminUserManagement = () => {
    const resetForm = () => {
      setFormData({
        email: '',
-       name: '',
+       nama: '',
        role: 'user',
-       phone: '',
-       address: '',
-       city: '',
-       province: '',
-       postal_code: '',
-       date_of_birth: '',
-       gender: '',
-       occupation: '',
-       bio: ''
+       lokasi: '',
+       saldo_deposit: 0
      })
      setEditingUser(null)
    }
 
    const exportToCSV = () => {
      const csvContent = "data:text/csv;charset=utf-8," + 
-       "Email,Nama,Role,Telepon,Kota,Pekerjaan,Tanggal Dibuat\n" +
+       "Email,Nama,Role,Lokasi,Saldo Deposit,Tanggal Dibuat\n" +
        filteredUsers.map(user => {
-         return `${user.email},${user.name},${user.role},${user.phone || ''},${user.city || ''},${user.occupation || ''},${user.created_at}`;
+         return `${user.email || ''},${user.nama},${user.role},${user.lokasi || ''},${user.saldo_deposit || 0},${user.created_at}`;
        }).join("\n");
      
      const encodedUri = encodeURI(csvContent);
@@ -650,45 +600,23 @@ const AdminUserManagement = () => {
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="address" className="text-sm">Alamat</Label>
+                          <Label htmlFor="lokasi" className="text-sm">Lokasi</Label>
                           <Input
-                            id="address"
-                            value={formData.address}
-                            onChange={(e) => setFormData({...formData, address: e.target.value})}
-                            placeholder="Alamat lengkap"
+                            id="lokasi"
+                            value={formData.lokasi}
+                            onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
+                            placeholder="Lokasi pengguna"
                             className="text-sm"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="city" className="text-sm">Kota</Label>
+                          <Label htmlFor="saldo_deposit" className="text-sm">Saldo Deposit</Label>
                           <Input
-                            id="city"
-                            value={formData.city}
-                            onChange={(e) => setFormData({...formData, city: e.target.value})}
-                            placeholder="Nama kota"
-                            className="text-sm"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="province" className="text-sm">Provinsi</Label>
-                          <Input
-                            id="province"
-                            value={formData.province}
-                            onChange={(e) => setFormData({...formData, province: e.target.value})}
-                            placeholder="Nama provinsi"
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="occupation" className="text-sm">Pekerjaan</Label>
-                          <Input
-                            id="occupation"
-                            value={formData.occupation}
-                            onChange={(e) => setFormData({...formData, occupation: e.target.value})}
-                            placeholder="Pekerjaan"
+                            id="saldo_deposit"
+                            type="number"
+                            value={formData.saldo_deposit}
+                            onChange={(e) => setFormData({...formData, saldo_deposit: parseFloat(e.target.value) || 0})}
+                            placeholder="0"
                             className="text-sm"
                           />
                         </div>
@@ -735,9 +663,8 @@ const AdminUserManagement = () => {
                     <TableHead className="min-w-[200px] sm:min-w-0">Email</TableHead>
                     <TableHead className="min-w-[150px] sm:min-w-0">Nama</TableHead>
                     <TableHead className="min-w-[100px] sm:min-w-0">Role</TableHead>
-                    <TableHead className="min-w-[150px] sm:min-w-0 hidden md:table-cell">Kota</TableHead>
-                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Telepon</TableHead>
-                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Pekerjaan</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden md:table-cell">Lokasi</TableHead>
+                    <TableHead className="min-w-[150px] sm:min-w-0 hidden lg:table-cell">Saldo Deposit</TableHead>
                     <TableHead className="min-w-[120px] sm:min-w-0">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -748,7 +675,7 @@ const AdminUserManagement = () => {
                         <div className="truncate max-w-[180px] sm:max-w-none">{user.email || 'No email'}</div>
                       </TableCell>
                       <TableCell className="text-sm">
-                        <div className="truncate max-w-[120px] sm:max-w-none">{user.name || 'No name'}</div>
+                        <div className="truncate max-w-[120px] sm:max-w-none">{user.nama || 'No name'}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
@@ -772,13 +699,10 @@ const AdminUserManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-sm">
-                        <div className="truncate max-w-[120px]">{user.city || '-'}</div>
+                        <div className="truncate max-w-[120px]">{user.lokasi || '-'}</div>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-sm">
-                        <div className="truncate max-w-[120px]">{user.phone || '-'}</div>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm">
-                        <div className="truncate max-w-[120px]">{user.occupation || '-'}</div>
+                        <div className="truncate max-w-[120px]">Rp {user.saldo_deposit?.toLocaleString('id-ID') || '0'}</div>
                       </TableCell>
 
                       <TableCell>
@@ -806,7 +730,7 @@ const AdminUserManagement = () => {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Hapus User</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Apakah Anda yakin ingin menghapus user "{user.name}"? 
+                                    Apakah Anda yakin ingin menghapus user "{user.nama}"? 
                                     Tindakan ini tidak dapat dibatalkan.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
