@@ -75,23 +75,20 @@ const AdminUserManagement = () => {
   // Set available roles (static list)
   const fetchRoles = async () => {
     try {
-      // Set roles that match the database structure
+      // Set roles that actually exist in the database
+      // Berdasarkan pengecekan database: user, admin, super_admin
       setAvailableRoles([
         { id: 'super_admin', name: 'Super Admin', level: 1 },
         { id: 'admin', name: 'Admin', level: 2 },
-        { id: 'toko_owner', name: 'Toko Owner', level: 3 },
-        { id: 'supplier', name: 'Supplier', level: 4 },
-        { id: 'user', name: 'User', level: 5 }
+        { id: 'user', name: 'User', level: 3 }
       ])
     } catch (error) {
       console.error('Error fetching roles:', error)
-      // Fallback to default roles
+      // Fallback to default roles that exist in database
       setAvailableRoles([
         { id: 'super_admin', name: 'Super Admin', level: 1 },
         { id: 'admin', name: 'Admin', level: 2 },
-        { id: 'toko_owner', name: 'Toko Owner', level: 3 },
-        { id: 'supplier', name: 'Supplier', level: 4 },
-        { id: 'user', name: 'User', level: 5 }
+        { id: 'user', name: 'User', level: 3 }
       ])
     }
   }
