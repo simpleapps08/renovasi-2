@@ -49,7 +49,7 @@ const Header = () => {
             Kontak
           </Link>
           <Link 
-            to="/admin-login" 
+            to="/admin/login" 
             className="text-sm font-medium transition-colors hover:text-accent"
           >
             Login Admin Toko
@@ -128,7 +128,7 @@ const Header = () => {
               Kontak
             </Link>
             <Link 
-              to="/admin-login" 
+              to="/admin/login" 
               className="block text-sm font-medium transition-colors hover:text-accent py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >

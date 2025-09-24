@@ -21,8 +21,8 @@ const ProtectedAdminTokoRoute = ({ children }: ProtectedAdminTokoRouteProps) => 
     return <Navigate to="/auth" replace />
   }
 
-  // Check if user has admin_toko role
-  if (profile?.role !== 'admin_toko' && profile?.role !== 'admin') {
+  // Check if user has admin_store, admin_toko, or admin role
+  if (profile?.role !== 'admin_store' && profile?.role !== 'admin_toko' && profile?.role !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

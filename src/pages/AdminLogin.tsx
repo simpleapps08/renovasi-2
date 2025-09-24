@@ -39,6 +39,8 @@ const AdminLogin = () => {
           navigate('/super-admin/dashboard')
         } else if (profile?.role === 'admin') {
           navigate('/admin')
+        } else if (profile?.role === 'admin_store') {
+          navigate('/admin/toko')
         } else {
           toast({
             title: "Akses Ditolak",
@@ -102,6 +104,12 @@ const AdminLogin = () => {
             description: "Selamat datang, Administrator!",
           })
           navigate('/admin')
+        } else if (profile?.role === 'admin_store') {
+          toast({
+            title: "Login Berhasil",
+            description: "Selamat datang, Admin Toko!",
+          })
+          navigate('/admin/toko')
         } else {
           toast({
             title: "Akses Ditolak",

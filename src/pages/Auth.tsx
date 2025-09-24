@@ -38,6 +38,8 @@ const Auth = () => {
           navigate('/super-admin/dashboard')
         } else if (profile?.role === 'admin') {
           navigate('/admin')
+        } else if (profile?.role === 'admin_store') {
+          navigate('/admin/toko')
         } else {
           navigate('/dashboard')
         }
@@ -81,6 +83,8 @@ const Auth = () => {
         navigate('/super-admin/dashboard')
       } else if (profile?.role === 'admin') {
         navigate('/admin')
+      } else if (profile?.role === 'admin_store') {
+        navigate('/admin/toko')
       } else {
         navigate('/dashboard')
       }
