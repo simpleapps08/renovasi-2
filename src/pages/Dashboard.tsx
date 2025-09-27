@@ -1,7 +1,7 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
-import { Calculator, History, CreditCard, TrendingUp, Sparkles } from "lucide-react"
+import { Calculator, History, CreditCard, TrendingUp, Sparkles, Store } from "lucide-react"
 import { Link } from "react-router-dom"
 
 
@@ -54,7 +54,7 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <Card className="gradient-card border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -119,6 +119,23 @@ const Dashboard = () => {
               <CardContent>
                 <Button asChild variant="outline" className="w-full">
                   <Link to="/dashboard/billing">Kelola Deposit</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5 text-yellow-600" />
+                  Toko Material
+                </CardTitle>
+                <p className="text-sm text-yellow-700">
+                  Belanja material bangunan berkualitas dengan harga terbaik
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Button asChild className="w-full bg-yellow-500 hover:bg-yellow-600 text-white border-0">
+                  <Link to="/toko">Kunjungi Toko</Link>
                 </Button>
               </CardContent>
             </Card>

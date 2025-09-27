@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ShoppingCart, Search, Filter, Star, Plus, Minus, Home, Menu, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProductService, Product as DBProduct } from '@/services/productService';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -29,6 +30,7 @@ interface CartItem extends Product {
 }
 
 const Toko = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
@@ -285,7 +287,10 @@ const Toko = () => {
                </Button>
                <Button
                  variant="ghost"
-                 onClick={() => setShowMobileMenu(false)}
+                 onClick={() => {
+                   setShowMobileMenu(false);
+                   navigate('/auth');
+                 }}
                  className="w-full justify-start text-green-700 hover:bg-green-50"
                >
                  <User className="h-4 w-4 mr-2" />
