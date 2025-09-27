@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Trash2, Edit, Plus, Save, X, Home, Search, Upload, Image } from "lucide-react"
+import { Trash2, Edit, Plus, Save, X, Home, Search, Upload, Image, Menu, LogOut, Calculator, User, Store } from "lucide-react"
 import { toast } from "sonner"
 import { ProductService, Product } from "@/services/productService"
 
@@ -23,6 +23,7 @@ const AdminToko = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const editFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -316,16 +317,16 @@ const AdminToko = () => {
       <div className="bg-gradient-to-r from-green-800 via-green-700 to-green-600 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo dan Tombol Beranda */}
+            {/* Menu Hamburger dan Logo */}
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.location.href = '/'}
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="text-white hover:bg-green-600 flex items-center space-x-2"
               >
-                <Home className="h-4 w-4" />
-                <span>Beranda</span>
+                <Menu className="h-4 w-4" />
+                <span className="hidden sm:inline">Menu</span>
               </Button>
               <div className="flex items-center space-x-2">
                 <div className="bg-white text-green-800 px-3 py-1 rounded font-bold text-lg">
@@ -360,6 +361,78 @@ const AdminToko = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="bg-white border-b border-green-200 shadow-lg">
+          <div className="px-4 py-3 space-y-3">
+            <div className="font-semibold text-green-800 text-lg border-b border-green-200 pb-2">
+              Menu Navigasi
+            </div>
+            
+            {/* Navigation Menu */}
+            <div className="space-y-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  window.location.href = '/';
+                  setShowMobileMenu(false);
+                }}
+                className="w-full justify-start text-green-700 hover:bg-green-50"
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Beranda
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  window.location.href = '/toko';
+                  setShowMobileMenu(false);
+                }}
+                className="w-full justify-start text-green-700 hover:bg-green-50"
+              >
+                <Store className="h-4 w-4 mr-2" />
+                Toko
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  window.location.href = '/dashboard';
+                  setShowMobileMenu(false);
+                }}
+                className="w-full justify-start text-green-700 hover:bg-green-50"
+              >
+                <Calculator className="h-4 w-4 mr-2" />
+                Simulasi RAB
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  window.location.href = '/dashboard/profile';
+                  setShowMobileMenu(false);
+                }}
+                className="w-full justify-start text-green-700 hover:bg-green-50"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Profil
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  // Handle logout
+                  localStorage.removeItem('admin_token');
+                  window.location.href = '/admin/login';
+                  setShowMobileMenu(false);
+                }}
+                className="w-full justify-start text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
