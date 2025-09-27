@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -7,19 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Trash2, Edit, Plus, Save, X, Home, Search } from "lucide-react"
+import { Trash2, Edit, Plus, Save, X, Home, Search, Upload, Image } from "lucide-react"
 import { toast } from "sonner"
-
-interface Product {
-  id: string
-  name: string
-  price: number
-  category: string
-  description: string
-  image: string
-  stock: number
-  rating: number
-}
+import { ProductService, Product } from "@/services/productService"
 
 interface StoreSettings {
   name: string
@@ -30,38 +20,11 @@ interface StoreSettings {
 }
 
 const AdminToko = () => {
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "1",
-      name: "Semen Portland",
-      price: 65000,
-      category: "material",
-      description: "Semen berkualitas tinggi untuk konstruksi",
-      image: "/placeholder.svg",
-      stock: 100,
-      rating: 4.5
-    },
-    {
-      id: "2",
-      name: "Bata Merah",
-      price: 800,
-      category: "material",
-      description: "Bata merah berkualitas untuk dinding",
-      image: "/placeholder.svg",
-      stock: 5000,
-      rating: 4.2
-    },
-    {
-      id: "3",
-      name: "Cat Tembok",
-      price: 85000,
-      category: "finishing",
-      description: "Cat tembok anti jamur dan tahan lama",
-      image: "/placeholder.svg",
-      stock: 50,
-      rating: 4.7
-    }
-  ])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const editFileInputRef = useRef<HTMLInputElement>(null)
 
   const [storeSettings, setStoreSettings] = useState<StoreSettings>({
     name: "Toko Bangunan Servisoo",
@@ -72,14 +35,13 @@ const AdminToko = () => {
   })
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
+  const [newProduct, setNewProduct] = useState<Omit<Product, 'id' | 'created_at' | 'updated_at' | 'store_id' | 'is_active'>>({
     name: "",
     price: 0,
     category: "",
     description: "",
-    image: "/placeholder.svg",
-    stock: 0,
-    rating: 0
+    image_url: "",
+    stock: 0
   })
 
   const categories = [
@@ -91,42 +53,140 @@ const AdminToko = () => {
     { value: "hardware", label: "Hardware" }
   ]
 
-  const handleAddProduct = () => {
+  // Load products on component mount
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const loadProducts = async () => {
+    setLoading(true)
+    try {
+      const fetchedProducts = await ProductService.getProducts()
+      setProducts(fetchedProducts)
+    } catch (error) {
+      toast.error("Gagal memuat produk")
+      console.error('Error loading products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle image upload for new product
+  const handleImageUpload = async (file: File) => {
+    if (!file) return
+
+    setUploadingImage(true)
+    try {
+      const imageUrl = await ProductService.uploadProductImage(file)
+      if (imageUrl) {
+        setNewProduct(prev => ({ ...prev, image_url: imageUrl }))
+        toast.success("Gambar berhasil diupload")
+      } else {
+        toast.error("Gagal mengupload gambar")
+      }
+    } catch (error) {
+      toast.error("Gagal mengupload gambar")
+      console.error('Error uploading image:', error)
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  // Handle image upload for editing product
+  const handleEditImageUpload = async (file: File) => {
+    if (!file || !editingProduct) return
+
+    setUploadingImage(true)
+    try {
+      const imageUrl = await ProductService.uploadProductImage(file)
+      if (imageUrl) {
+        setEditingProduct(prev => prev ? { ...prev, image_url: imageUrl } : null)
+        toast.success("Gambar berhasil diupload")
+      } else {
+        toast.error("Gagal mengupload gambar")
+      }
+    } catch (error) {
+      toast.error("Gagal mengupload gambar")
+      console.error('Error uploading image:', error)
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.category) {
       toast.error("Mohon lengkapi semua field yang diperlukan")
       return
     }
 
-    const product: Product = {
-      ...newProduct,
-      id: Date.now().toString(),
-      rating: 0
+    setLoading(true)
+    try {
+      const createdProduct = await ProductService.createProduct(newProduct)
+      if (createdProduct) {
+        setProducts(prev => [createdProduct, ...prev])
+        setNewProduct({
+          name: "",
+          price: 0,
+          category: "",
+          description: "",
+          image_url: "",
+          stock: 0
+        })
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+        toast.success("Produk berhasil ditambahkan")
+      } else {
+        toast.error("Gagal menambahkan produk")
+      }
+    } catch (error) {
+      toast.error("Gagal menambahkan produk")
+      console.error('Error adding product:', error)
+    } finally {
+      setLoading(false)
     }
-
-    setProducts([...products, product])
-    setNewProduct({
-      name: "",
-      price: 0,
-      category: "",
-      description: "",
-      image: "/placeholder.svg",
-      stock: 0,
-      rating: 0
-    })
-    toast.success("Produk berhasil ditambahkan")
   }
 
-  const handleUpdateProduct = () => {
-    if (!editingProduct) return
+  const handleUpdateProduct = async () => {
+    if (!editingProduct?.id) return
     
-    setProducts(products.map(p => p.id === editingProduct.id ? editingProduct : p))
-    setEditingProduct(null)
-    toast.success("Produk berhasil diperbarui")
+    setLoading(true)
+    try {
+      const updatedProduct = await ProductService.updateProduct(editingProduct.id, editingProduct)
+      if (updatedProduct) {
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? updatedProduct : p))
+        setEditingProduct(null)
+        toast.success("Produk berhasil diperbarui")
+      } else {
+        toast.error("Gagal memperbarui produk")
+      }
+    } catch (error) {
+      toast.error("Gagal memperbarui produk")
+      console.error('Error updating product:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(p => p.id !== id))
-    toast.success("Produk berhasil dihapus")
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus produk ini?")) return
+
+    setLoading(true)
+    try {
+      const success = await ProductService.deleteProduct(id)
+      if (success) {
+        setProducts(prev => prev.filter(p => p.id !== id))
+        toast.success("Produk berhasil dihapus")
+      } else {
+        toast.error("Gagal menghapus produk")
+      }
+    } catch (error) {
+      toast.error("Gagal menghapus produk")
+      console.error('Error deleting product:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleUpdateStore = () => {
@@ -271,6 +331,51 @@ const AdminToko = () => {
                       placeholder="Masukkan jumlah stok"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="product-image">Gambar Produk</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        id="product-image"
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleImageUpload(file)
+                        }}
+                        className="flex-1"
+                        disabled={uploadingImage}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingImage}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {uploadingImage ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    {newProduct.image_url && (
+                      <div className="mt-2">
+                        <img
+                          src={newProduct.image_url}
+                          alt="Preview"
+                          className="w-20 h-20 object-cover rounded-md border"
+                        />
+                      </div>
+                    )}
+                  </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="product-description">Deskripsi</Label>
                     <Textarea
@@ -283,9 +388,18 @@ const AdminToko = () => {
                   </div>
                 </div>
                 <div className="flex justify-end mt-4">
-                  <Button onClick={handleAddProduct}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tambah Produk
+                  <Button onClick={handleAddProduct} disabled={loading || uploadingImage}>
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Menambahkan...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Tambah Produk
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
@@ -345,6 +459,48 @@ const AdminToko = () => {
                               />
                             </div>
                             <div className="space-y-2">
+                              <Label>Gambar Produk</Label>
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) handleEditImageUpload(file)
+                                  }}
+                                  className="flex-1"
+                                  disabled={uploadingImage}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={uploadingImage}
+                                >
+                                  {uploadingImage ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                                      Uploading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Upload className="h-4 w-4 mr-2" />
+                                      Upload
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                              {editingProduct.image_url && (
+                                <div className="mt-2">
+                                  <img
+                                    src={editingProduct.image_url}
+                                    alt="Preview"
+                                    className="w-20 h-20 object-cover rounded-md border"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <div className="space-y-2">
                               <Label>Deskripsi</Label>
                               <Textarea
                                 value={editingProduct.description}
@@ -356,16 +512,36 @@ const AdminToko = () => {
                               <Button variant="outline" size="sm" onClick={() => setEditingProduct(null)}>
                                 Batal
                               </Button>
-                              <Button size="sm" onClick={handleUpdateProduct}>
-                                <Save className="h-4 w-4 mr-1" />
-                                Simpan
+                              <Button size="sm" onClick={handleUpdateProduct} disabled={loading || uploadingImage}>
+                                {loading ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Menyimpan...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="h-4 w-4 mr-1" />
+                                    Simpan
+                                  </>
+                                )}
                               </Button>
                             </div>
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <div className="aspect-video bg-gray-100 rounded-md flex items-center justify-center">
-                              <span className="text-gray-400 text-sm">Gambar Produk</span>
+                            <div className="aspect-video bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                              {product.image_url ? (
+                                <img
+                                  src={product.image_url}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex flex-col items-center justify-center text-gray-400">
+                                  <Image className="h-8 w-8 mb-2" />
+                                  <span className="text-sm">Tidak ada gambar</span>
+                                </div>
+                              )}
                             </div>
                             <div>
                               <h3 className="font-semibold text-lg">{product.name}</h3>
