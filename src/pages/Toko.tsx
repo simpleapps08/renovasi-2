@@ -74,13 +74,16 @@ const Toko = () => {
   }, []);
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
-    { value: 'material', label: 'Material' },
-    { value: 'semen', label: 'Semen' },
-    { value: 'bata', label: 'Bata' },
-    { value: 'keramik', label: 'Keramik' },
-    { value: 'cat', label: 'Cat' },
-    { value: 'pipa', label: 'Pipa' },
-    { value: 'genteng', label: 'Genteng' }
+    { value: 'material-bangunan-dasar', label: '1. Material Bangunan Dasar' },
+    { value: 'atap-plafon', label: '2. Atap & Plafon' },
+    { value: 'dinding-lantai', label: '3. Dinding & Lantai' },
+    { value: 'pintu-jendela', label: '4. Pintu & Jendela' },
+    { value: 'peralatan-tukang', label: '5. Peralatan Tukang' },
+    { value: 'sanitasi-kamar-mandi', label: '6. Sanitasi & Kamar Mandi' },
+    { value: 'instalasi-listrik', label: '7. Instalasi Listrik' },
+    { value: 'air-plumbing', label: '8. Air & Plumbing' },
+    { value: 'perlengkapan-eksterior', label: '9. Perlengkapan Eksterior' },
+    { value: 'keselamatan-keamanan', label: '10. Peralatan Keselamatan & Keamanan' }
   ];
 
   const filteredProducts = useMemo(() => {

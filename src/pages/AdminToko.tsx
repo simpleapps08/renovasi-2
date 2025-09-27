@@ -45,12 +45,108 @@ const AdminToko = () => {
   })
 
   const categories = [
-    { value: "material", label: "Material Bangunan" },
-    { value: "tools", label: "Alat & Perkakas" },
-    { value: "finishing", label: "Finishing" },
-    { value: "electrical", label: "Listrik" },
-    { value: "plumbing", label: "Plambing" },
-    { value: "hardware", label: "Hardware" }
+    { 
+      value: "material-bangunan-dasar", 
+      label: "Material Bangunan Dasar",
+      subcategories: [
+        "Semen & Mortar",
+        "Pasir & Kerikil", 
+        "Batu Bata & Batako",
+        "Besi & Baja (Wiremesh, Besi Beton, dll.)",
+        "Kayu & Papan"
+      ]
+    },
+    { 
+      value: "atap-plafon", 
+      label: "Atap & Plafon",
+      subcategories: [
+        "Genteng (Tanah Liat, Metal, Beton, dll.)",
+        "Seng & Spandek",
+        "Plafon Gypsum",
+        "Plafon PVC",
+        "Aksesoris Atap & Plafon"
+      ]
+    },
+    { 
+      value: "dinding-lantai", 
+      label: "Dinding & Lantai",
+      subcategories: [
+        "Keramik Lantai & Dinding",
+        "Granit & Marmer",
+        "Cat Tembok & Cat Kayu/Besi",
+        "Wallpaper & Pelapis Dinding",
+        "Plesteran & Aksesoris"
+      ]
+    },
+    { 
+      value: "pintu-jendela", 
+      label: "Pintu & Jendela",
+      subcategories: [
+        "Pintu Kayu",
+        "Pintu Besi & Baja Ringan",
+        "Kusen & Daun Jendela",
+        "Kaca & Aksesoris"
+      ]
+    },
+    { 
+      value: "peralatan-tukang", 
+      label: "Peralatan Tukang",
+      subcategories: [
+        "Alat Pertukangan Manual (Palu, Gergaji, Kunci, dll.)",
+        "Alat Listrik (Bor, Gerinda, Mesin Potong, dll.)",
+        "Tangga & Perancah"
+      ]
+    },
+    { 
+      value: "sanitasi-kamar-mandi", 
+      label: "Sanitasi & Kamar Mandi",
+      subcategories: [
+        "Kloset & Wastafel",
+        "Shower & Keran",
+        "Bak Mandi & Aksesoris",
+        "Pipa PVC & Fitting"
+      ]
+    },
+    { 
+      value: "instalasi-listrik", 
+      label: "Instalasi Listrik",
+      subcategories: [
+        "Kabel & Stop Kontak",
+        "Lampu & Fitting",
+        "MCB & Panel Listrik",
+        "Aksesoris Instalasi"
+      ]
+    },
+    { 
+      value: "air-plumbing", 
+      label: "Air & Plumbing",
+      subcategories: [
+        "Toren & Tangki Air",
+        "Pompa Air",
+        "Pipa (PVC, Besi, PPR, dll.)",
+        "Valve & Aksesoris"
+      ]
+    },
+    { 
+      value: "perlengkapan-eksterior", 
+      label: "Perlengkapan Eksterior",
+      subcategories: [
+        "Cat Exterior & Pelapis Anti Bocor",
+        "Pagar & Kanopi",
+        "Bahan Taman (Rumput Sintetis, Batu Alam, dll.)",
+        "Jalan Setapak & Paving Block"
+      ]
+    },
+    { 
+      value: "peralatan-keselamatan-keamanan", 
+      label: "Peralatan Keselamatan & Keamanan",
+      subcategories: [
+        "Helm Proyek & Rompi",
+        "Sepatu Safety",
+        "Sarung Tangan & Masker",
+        "CCTV & Kunci"
+      ]
+    }
   ]
 
   // Load products on component mount
@@ -320,6 +416,20 @@ const AdminToko = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {/* Display subcategories for selected category */}
+                    {newProduct.category && (
+                      <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                        <Label className="text-sm font-medium text-gray-700">Sub-kategori untuk referensi:</Label>
+                        <div className="mt-1 text-xs text-gray-600">
+                          {categories.find(cat => cat.value === newProduct.category)?.subcategories?.map((sub, index) => (
+                            <div key={index} className="flex items-center space-x-1">
+                              <span>•</span>
+                              <span>{sub}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="product-stock">Stok</Label>
@@ -449,6 +559,20 @@ const AdminToko = () => {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              {/* Display subcategories for selected category */}
+                              {editingProduct.category && (
+                                <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                                  <Label className="text-sm font-medium text-gray-700">Sub-kategori untuk referensi:</Label>
+                                  <div className="mt-1 text-xs text-gray-600">
+                                    {categories.find(cat => cat.value === editingProduct.category)?.subcategories?.map((sub, index) => (
+                                      <div key={index} className="flex items-center space-x-1">
+                                        <span>•</span>
+                                        <span>{sub}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <div className="space-y-2">
                               <Label>Stok</Label>
