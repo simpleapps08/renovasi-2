@@ -1,5 +1,11 @@
--- Create products table for store management
-CREATE TABLE IF NOT EXISTS products (
+-- Fix products table structure to work with current authentication system
+-- Run this in Supabase SQL Editor
+
+-- Drop existing products table if it exists (be careful with this in production)
+DROP TABLE IF EXISTS products CASCADE;
+
+-- Recreate products table with correct structure
+CREATE TABLE products (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -13,10 +19,10 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create index for better performance
-CREATE INDEX IF NOT EXISTS idx_products_store_id ON products(store_id);
-CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-CREATE INDEX IF NOT EXISTS idx_products_is_active ON products(is_active);
+-- Create indexes for better performance
+CREATE INDEX idx_products_store_id ON products(store_id);
+CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_is_active ON products(is_active);
 
 -- Enable RLS (Row Level Security)
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
@@ -24,9 +30,7 @@ ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 -- Create RLS policies
 -- Store owners can manage their own products
 CREATE POLICY "Store owners can manage their products" ON products
-    FOR ALL USING (
-        auth.uid() = store_id
-    );
+    FOR ALL USING (auth.uid() = store_id);
 
 -- Public can view active products
 CREATE POLICY "Public can view active products" ON products
@@ -47,8 +51,6 @@ CREATE TRIGGER update_products_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Insert sample categories (optional)
-INSERT INTO products (name, description, price, category, stock, store_id, image_url) VALUES
-('Contoh Produk 1', 'Deskripsi produk contoh', 100000, 'Elektronik', 10, (SELECT id FROM auth.users LIMIT 1), 'https://via.placeholder.com/300x300'),
-('Contoh Produk 2', 'Deskripsi produk contoh 2', 250000, 'Fashion', 5, (SELECT id FROM auth.users LIMIT 1), 'https://via.placeholder.com/300x300')
-ON CONFLICT DO NOTHING;
+-- Grant necessary permissions
+GRANT ALL ON products TO authenticated;
+GRANT ALL ON products TO anon;
