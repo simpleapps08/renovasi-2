@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, Filter, Star, Plus, Minus, Home, Menu, User } from 'lucide-react';
+import { ShoppingCart, Search, Filter, Star, Plus, Minus, Home, Menu, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ProductService, Product as DBProduct } from '@/services/productService';
 
 interface Product {
   id: string;
@@ -13,13 +14,14 @@ interface Product {
   price: number;
   originalPrice?: number;
   category: string;
-  brand: string;
-  rating: number;
-  reviews: number;
+  brand?: string;
+  rating?: number;
+  reviews?: number;
   image: string;
   description: string;
   inStock: boolean;
-  unit: string;
+  unit?: string;
+  stock: number;
 }
 
 interface CartItem extends Product {
@@ -33,91 +35,43 @@ const Toko = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample products data
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'Semen Portland Tiga Roda 40kg',
-      price: 65000,
-      originalPrice: 70000,
-      category: 'semen',
-      brand: 'Tiga Roda',
-      rating: 4.5,
-      reviews: 128,
-      image: '/placeholder.svg',
-      description: 'Semen berkualitas tinggi untuk konstruksi bangunan',
-      inStock: true,
-      unit: 'sak'
-    },
-    {
-      id: '2',
-      name: 'Bata Merah Press Grade A',
-      price: 850,
-      category: 'bata',
-      brand: 'Lokal',
-      rating: 4.2,
-      reviews: 89,
-      image: '/placeholder.svg',
-      description: 'Bata merah berkualitas untuk dinding struktural',
-      inStock: true,
-      unit: 'buah'
-    },
-    {
-      id: '3',
-      name: 'Keramik Lantai 40x40 Motif Kayu',
-      price: 45000,
-      originalPrice: 50000,
-      category: 'keramik',
-      brand: 'Roman',
-      rating: 4.7,
-      reviews: 256,
-      image: '/placeholder.svg',
-      description: 'Keramik lantai anti slip dengan motif kayu natural',
-      inStock: true,
-      unit: 'm²'
-    },
-    {
-      id: '4',
-      name: 'Cat Tembok Dulux Catylac 25kg',
-      price: 320000,
-      category: 'cat',
-      brand: 'Dulux',
-      rating: 4.6,
-      reviews: 167,
-      image: '/placeholder.svg',
-      description: 'Cat tembok berkualitas tinggi tahan cuaca',
-      inStock: true,
-      unit: 'kaleng'
-    },
-    {
-      id: '5',
-      name: 'Pipa PVC 4 inch Rucika',
-      price: 125000,
-      category: 'pipa',
-      brand: 'Rucika',
-      rating: 4.4,
-      reviews: 94,
-      image: '/placeholder.svg',
-      description: 'Pipa PVC berkualitas untuk instalasi air',
-      inStock: false,
-      unit: 'batang'
-    },
-    {
-      id: '6',
-      name: 'Genteng Beton Flat Monier',
-      price: 8500,
-      category: 'genteng',
-      brand: 'Monier',
-      rating: 4.3,
-      reviews: 73,
-      image: '/placeholder.svg',
-      description: 'Genteng beton flat tahan lama dan berkualitas',
-      inStock: true,
-      unit: 'buah'
-    }
-  ];
+  // Load products from database
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const dbProducts = await ProductService.getPublicProducts();
+        
+        // Transform database products to match UI interface
+        const transformedProducts: Product[] = dbProducts.map((dbProduct: DBProduct) => ({
+          id: dbProduct.id || '',
+          name: dbProduct.name,
+          price: dbProduct.price,
+          category: dbProduct.category,
+          brand: 'Toko Online', // Default brand since not in DB
+          rating: 4.5, // Default rating
+          reviews: Math.floor(Math.random() * 200) + 10, // Random reviews
+          image: dbProduct.image_url || '/placeholder.svg',
+          description: dbProduct.description || 'Produk berkualitas tinggi',
+          inStock: dbProduct.stock > 0,
+          unit: 'buah', // Default unit
+          stock: dbProduct.stock
+        }));
+        
+        setProducts(transformedProducts);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        toast.error('Gagal memuat produk dari database');
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    loadProducts();
+  }, []);
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
     { value: 'semen', label: 'Semen' },
@@ -406,74 +360,86 @@ const Toko = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map(product => (
-                <Card key={product.id} className="hover:shadow-xl transition-all duration-300 border border-green-200 hover:border-green-400 bg-white">
-                  <CardHeader className="p-0">
-                    <div className="aspect-square bg-gray-100 rounded-t-lg flex items-center justify-center">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-t-lg"
-                      />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {product.brand}
-                      </Badge>
-                      <CardTitle className="text-sm font-medium line-clamp-2">
-                        {product.name}
-                      </CardTitle>
-                      <div className="flex items-center space-x-1">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-3 w-3 ${
-                                i < Math.floor(product.rating)
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500">({product.reviews})</span>
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="text-center">
+                  <Loader2 className="h-12 w-12 animate-spin text-green-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Memuat produk...</p>
+                </div>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-gray-600 text-lg">Tidak ada produk yang ditemukan</p>
+                <p className="text-gray-500 text-sm mt-2">Coba ubah filter atau kata kunci pencarian</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map(product => (
+                  <Card key={product.id} className="hover:shadow-xl transition-all duration-300 border border-green-200 hover:border-green-400 bg-white">
+                    <CardHeader className="p-0">
+                      <div className="aspect-square bg-gray-100 rounded-t-lg flex items-center justify-center">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover rounded-t-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
                       </div>
-                      <CardDescription className="text-xs line-clamp-2">
-                        {product.description}
-                      </CardDescription>
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-lg">
-                            {formatPrice(product.price)}
-                          </span>
-                          {product.originalPrice && (
-                            <span className="text-sm text-gray-500 line-through">
-                              {formatPrice(product.originalPrice)}
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {product.brand}
+                        </Badge>
+                        <CardTitle className="text-sm font-medium line-clamp-2">
+                          {product.name}
+                        </CardTitle>
+                        <div className="flex items-center space-x-1">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < Math.floor(product.rating || 0)
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-gray-500">({product.reviews || 0})</span>
+                        </div>
+                        <CardDescription className="text-xs line-clamp-2">
+                          {product.description}
+                        </CardDescription>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-bold text-lg">
+                              {formatPrice(product.price)}
                             </span>
-                          )}
+                            {product.originalPrice && (
+                              <span className="text-sm text-gray-500 line-through">
+                                {formatPrice(product.originalPrice)}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500">per {product.unit || 'buah'}</p>
+                          <p className="text-xs text-gray-600">Stok: {product.stock}</p>
                         </div>
-                        <p className="text-xs text-gray-500">per {product.unit}</p>
+                        <Button
+                          onClick={() => addToCart(product)}
+                          disabled={!product.inStock}
+                          className={`w-full ${product.inStock ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-600'}`}
+                          size="sm"
+                        >
+                          {product.inStock ? 'Tambah ke Keranjang' : 'Stok Habis'}
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => addToCart(product)}
-                        disabled={!product.inStock}
-                        className={`w-full ${product.inStock ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-600'}`}
-                        size="sm"
-                      >
-                        {product.inStock ? 'Tambah ke Keranjang' : 'Stok Habis'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow-md border border-green-200">
-                <p className="text-green-600 font-medium">Tidak ada produk yang ditemukan</p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
           </div>
