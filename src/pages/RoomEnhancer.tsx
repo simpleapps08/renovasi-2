@@ -289,27 +289,36 @@ const RoomEnhancer = () => {
       {/* Header */}
       <div className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-accent/10 rounded-lg">
-                <Wand2 className="h-6 w-6 text-accent" />
+          <div className="flex flex-col space-y-4">
+            {/* Top row with home button, title, and AI status */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Button asChild variant="outline" className="border-accent/30 text-accent hover:bg-accent/10 p-2">
+                  <Link to="/">
+                    <Home className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">Desain Cerdas</h1>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Desain Cerdas</h1>
-                <p className="text-muted-foreground">Transform ruangan Anda dengan AI</p>
+              
+              {/* API Status Indicator */}
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  apiStatus === 'connected' ? 'bg-green-500' :
+                  apiStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                }`} />
+                <span className="text-sm text-muted-foreground">
+                  {apiStatus === 'connected' ? 'Google AI Connected' :
+                   apiStatus === 'error' ? 'AI Disconnected' : 'Checking AI...'}
+                </span>
               </div>
             </div>
             
-            {/* API Status Indicator */}
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                apiStatus === 'connected' ? 'bg-green-500' :
-                apiStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
-              }`} />
-              <span className="text-sm text-muted-foreground">
-                {apiStatus === 'connected' ? 'Google AI Connected' :
-                 apiStatus === 'error' ? 'AI Disconnected' : 'Checking AI...'}
-              </span>
+            {/* Full width description text */}
+            <div className="w-full">
+              <p className="text-muted-foreground text-center">Biarkan AI memberi inspirasi desain yang sesuai dengan gaya Anda</p>
             </div>
           </div>
         </div>
@@ -317,60 +326,6 @@ const RoomEnhancer = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Home Button */}
-        <div className="mb-6">
-          <Button asChild variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
-            <Link to="/">
-              <Home className="w-4 h-4 mr-2" />
-              Beranda
-            </Link>
-          </Button>
-        </div>
-
-        <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-2xl p-8 mb-8 border border-accent/20">
-          <div className="flex items-center gap-3 mb-4">
-            <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Powered by AI Technology
-            </Badge>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-accent to-accent-dark bg-clip-text text-transparent">
-              Desain Cerdas AI
-            </span>
-          </h1>
-          <p className="text-foreground/80 text-lg mb-6 max-w-2xl">
-            Transform ruangan Anda dengan teknologi AI terdepan. Upload foto ruangan, 
-            pilih gaya desain, dan dapatkan visualisasi renovasi yang menakjubkan dalam hitungan detik.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-card rounded-lg p-4 shadow-sm border border-accent/10">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
-                <Upload className="w-5 h-5 text-accent" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-1">Upload Foto</h3>
-              <p className="text-sm text-muted-foreground">Unggah foto ruangan yang ingin direnovasi</p>
-            </div>
-            
-            <div className="bg-card rounded-lg p-4 shadow-sm border border-accent/10">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
-                <Wand2 className="w-5 h-5 text-accent" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-1">Pilih Gaya</h3>
-              <p className="text-sm text-muted-foreground">Tentukan gaya desain sesuai preferensi</p>
-            </div>
-            
-            <div className="bg-card rounded-lg p-4 shadow-sm border border-accent/10">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
-                <Sparkles className="w-5 h-5 text-accent" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-1">Hasil AI</h3>
-              <p className="text-sm text-muted-foreground">Dapatkan visualisasi renovasi yang realistis</p>
-            </div>
-          </div>
-        </div>
-
         {state.error && (
           <div className="bg-destructive/15 border border-destructive/20 rounded-lg p-4 mb-6">
             <div className="flex items-start space-x-3">
