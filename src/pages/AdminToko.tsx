@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Trash2, Edit, Plus, Save, X, Home, Search, Upload, Image, Menu, LogOut, Calculator, User, Store } from "lucide-react"
 import { toast } from "sonner"
 import { ProductService, Product } from "@/services/productService"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface StoreSettings {
   name: string
@@ -20,6 +21,7 @@ interface StoreSettings {
 }
 
 const AdminToko = () => {
+  const { signOut } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
@@ -407,10 +409,22 @@ const AdminToko = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  // Handle logout
-                  localStorage.removeItem('admin_token');
-                  window.location.href = '/admin/login';
+                onClick={async () => {
+                  try {
+                    await signOut();
+                    toast("Logout berhasil", {
+                      description: "Anda telah keluar dari sistem",
+                    });
+                    // Redirect to landing page
+                    window.location.href = '/';
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                    toast("Logout berhasil", {
+                      description: "Anda telah keluar dari sistem",
+                    });
+                    // Force redirect even if there's an error
+                    window.location.href = '/';
+                  }
                   setShowMobileMenu(false);
                 }}
                 className="w-full justify-start text-red-600 hover:bg-red-50"
