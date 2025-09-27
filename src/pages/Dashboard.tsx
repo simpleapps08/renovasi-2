@@ -13,8 +13,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-secondary/20 flex">
       <DashboardSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       
-      <main className="flex-1 lg:ml-0 pt-16 lg:pt-0">
-        {/* Header with light yellow background for mobile */}
+      <main className="flex-1 lg:ml-0 lg:pt-0">
+        {/* Header with light yellow background for mobile - positioned at very top */}
         <div className="lg:hidden bg-yellow-100/50 px-6 py-4 border-b">
           <div className="flex items-center gap-3">
             {/* Hamburger menu inside header */}
@@ -40,22 +40,10 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Kelola proyek renovasi Anda dengan mudah</p>
           </div>
 
-          {/* Stats Cards - Switched positions of Saldo Deposit and Total Proyek */}
+          {/* Stats Cards - Saldo Deposit first, Total Proyek second */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* Total Proyek - Now first position with light yellow background */}
-            <Card className="bg-yellow-50/70 border-yellow-100 order-1 md:order-1">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Proyek</CardTitle>
-                <History className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">0</div>
-                <p className="text-xs text-muted-foreground">Simulasi RAB tersimpan</p>
-              </CardContent>
-            </Card>
-
-            {/* Saldo Deposit - Now second position with light green background */}
-            <Card className="bg-green-50/70 border-green-100 order-2 md:order-2">
+            {/* Saldo Deposit - Now first position with light green background */}
+            <Card className="bg-green-50/70 border-green-100 order-1 md:order-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Saldo Deposit</CardTitle>
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -63,6 +51,18 @@ const Dashboard = () => {
               <CardContent>
                 <div className="text-2xl font-bold">Rp 0</div>
                 <p className="text-xs text-muted-foreground">Tersedia untuk digunakan</p>
+              </CardContent>
+            </Card>
+
+            {/* Total Proyek - Now second position with light yellow background */}
+            <Card className="bg-yellow-50/70 border-yellow-100 order-2 md:order-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Proyek</CardTitle>
+                <History className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">Simulasi RAB tersimpan</p>
               </CardContent>
             </Card>
 
