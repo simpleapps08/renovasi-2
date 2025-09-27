@@ -328,67 +328,59 @@ const Toko = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters - Visible on desktop, only sorting */}
+          {/* Sidebar Filters - Visible on desktop */}
           <div className="w-64 bg-white p-6 border-r border-green-200 hidden md:block">
-            {/* Sort */}
-            <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
-              <h3 className="font-semibold mb-2 flex items-center text-green-800">
-                <Filter className="h-4 w-4 mr-2" />
-                Urutkan
-              </h3>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="border-green-300 focus:ring-green-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Nama A-Z</SelectItem>
-                  <SelectItem value="price-low">Harga Terendah</SelectItem>
-                  <SelectItem value="price-high">Harga Tertinggi</SelectItem>
-                  <SelectItem value="rating">Rating Tertinggi</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              {/* Category Filter */}
+              <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
+                <h3 className="font-semibold mb-2 flex items-center text-green-800">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Kategori
+                </h3>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="border-green-300 focus:ring-green-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort */}
+              <div className="bg-white p-3 rounded-lg shadow-md border border-green-200">
+                <h3 className="font-semibold mb-2 flex items-center text-green-800">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Urutkan
+                </h3>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="border-green-300 focus:ring-green-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Nama A-Z</SelectItem>
+                    <SelectItem value="price-low">Harga Terendah</SelectItem>
+                    <SelectItem value="price-high">Harga Tertinggi</SelectItem>
+                    <SelectItem value="rating">Rating Tertinggi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="flex gap-6">
-            {/* Desktop Sidebar - Categories */}
-            <div className="hidden lg:block w-64 flex-shrink-0">
-              <Card className="bg-white border border-green-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-semibold text-green-700">
-                    <Filter className="h-5 w-5 inline mr-2" />
-                    Kategori Produk
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {categories.map(category => (
-                    <Button
-                      key={category.value}
-                      variant={selectedCategory === category.value ? "default" : "ghost"}
-                      className={`w-full justify-start text-left ${
-                        selectedCategory === category.value 
-                          ? "bg-green-600 text-white hover:bg-green-700" 
-                          : "text-gray-700 hover:bg-green-50"
-                      }`}
-                      onClick={() => setSelectedCategory(category.value)}
-                    >
-                      {category.label}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
+          <div className="flex-1">
+            {/* Results Header */}
+            <div className="bg-white p-4 rounded-lg shadow-md border border-green-200 mb-6">
+              <p className="text-green-700 font-medium">
+                Menampilkan {filteredProducts.length} produk
+                {searchTerm && ` untuk "${searchTerm}"`}
+              </p>
             </div>
-
-            {/* Main Products Area */}
-            <div className="flex-1">
-              {/* Results Header */}
-              <div className="bg-white p-4 rounded-lg shadow-md border border-green-200 mb-6">
-                <p className="text-green-700 font-medium">
-                  Menampilkan {filteredProducts.length} produk
-                  {searchTerm && ` untuk "${searchTerm}"`}
-                </p>
-              </div>
 
             {/* Products Grid */}
             {loading ? (
@@ -473,7 +465,6 @@ const Toko = () => {
                 ))}
               </div>
             )}
-            </div>
           </div>
         </div>
       </div>
