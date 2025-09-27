@@ -52,8 +52,10 @@ const HeroSection = () => {
                 </Link>
               </Button>
               
-              <Button variant="outline" size="xl" className="border-white/30 text-black hover:text-white hover:bg-white/10">
-                Lihat Portofolio
+              <Button variant="outline" size="xl" className="border-white/30 text-black hover:text-white hover:bg-white/10" asChild>
+                <Link to="/toko">
+                  Toko Bangunan Online
+                </Link>
               </Button>
             </div>
             
