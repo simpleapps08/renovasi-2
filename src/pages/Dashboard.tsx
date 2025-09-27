@@ -1,20 +1,36 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
-import { Calculator, History, CreditCard, TrendingUp, Sparkles, Store } from "lucide-react"
+import { Calculator, History, CreditCard, TrendingUp, Sparkles, Store, Menu, X } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useState } from "react"
 
 
 const Dashboard = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-secondary/20 flex">
-      <DashboardSidebar />
+      <DashboardSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       
       <main className="flex-1 lg:ml-0 pt-16 lg:pt-0">
         {/* Header with light yellow background for mobile */}
         <div className="lg:hidden bg-yellow-100/50 px-6 py-4 border-b">
-          <h1 className="text-2xl font-bold text-foreground">Dashboard Pengguna</h1>
-          <p className="text-muted-foreground text-sm">Kelola proyek renovasi Anda dengan mudah</p>
+          <div className="flex items-center gap-3">
+            {/* Hamburger menu inside header */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2"
+            >
+              {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Dashboard Pengguna</h1>
+              <p className="text-muted-foreground text-sm">Kelola proyek renovasi Anda dengan mudah</p>
+            </div>
+          </div>
         </div>
         
         <div className="p-6">
@@ -24,21 +40,9 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Kelola proyek renovasi Anda dengan mudah</p>
           </div>
 
-          {/* Stats Cards - Reordered for mobile */}
+          {/* Stats Cards - Switched positions of Saldo Deposit and Total Proyek */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* Saldo Deposit - First position with light green background */}
-            <Card className="bg-green-50/70 border-green-100 order-2 md:order-2">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Saldo Deposit</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Rp 0</div>
-                <p className="text-xs text-muted-foreground">Tersedia untuk digunakan</p>
-              </CardContent>
-            </Card>
-
-            {/* Total Proyek - Middle position with light yellow background */}
+            {/* Total Proyek - Now first position with light yellow background */}
             <Card className="bg-yellow-50/70 border-yellow-100 order-1 md:order-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Proyek</CardTitle>
@@ -47,6 +51,18 @@ const Dashboard = () => {
               <CardContent>
                 <div className="text-2xl font-bold">0</div>
                 <p className="text-xs text-muted-foreground">Simulasi RAB tersimpan</p>
+              </CardContent>
+            </Card>
+
+            {/* Saldo Deposit - Now second position with light green background */}
+            <Card className="bg-green-50/70 border-green-100 order-2 md:order-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Saldo Deposit</CardTitle>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">Rp 0</div>
+                <p className="text-xs text-muted-foreground">Tersedia untuk digunakan</p>
               </CardContent>
             </Card>
 

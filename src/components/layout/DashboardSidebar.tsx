@@ -13,11 +13,20 @@ const navigation = [
   { name: 'Profil', href: '/dashboard/profile', icon: User },
 ]
 
-export function DashboardSidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+interface DashboardSidebarProps {
+  sidebarOpen?: boolean
+  setSidebarOpen?: (open: boolean) => void
+}
+
+export function DashboardSidebar({ sidebarOpen: externalSidebarOpen, setSidebarOpen: externalSetSidebarOpen }: DashboardSidebarProps = {}) {
+  const [internalSidebarOpen, setInternalSidebarOpen] = useState(false)
   const { signOut, profile } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  // Use external state if provided, otherwise use internal state
+  const sidebarOpen = externalSidebarOpen !== undefined ? externalSidebarOpen : internalSidebarOpen
+  const setSidebarOpen = externalSetSidebarOpen || setInternalSidebarOpen
 
   const handleSignOut = async () => {
     await signOut()
@@ -30,8 +39,8 @@ export function DashboardSidebar() {
 
   return (
     <>
-      {/* Mobile sidebar toggle */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Mobile sidebar toggle - Hidden since it's now in Dashboard header */}
+      <div className="lg:hidden fixed top-4 left-4 z-50 hidden">
         <Button
           variant="outline"
           size="sm"
