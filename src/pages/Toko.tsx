@@ -74,6 +74,7 @@ const Toko = () => {
   }, []);
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
+    { value: 'material', label: 'Material' },
     { value: 'semen', label: 'Semen' },
     { value: 'bata', label: 'Bata' },
     { value: 'keramik', label: 'Keramik' },
@@ -85,7 +86,7 @@ const Toko = () => {
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.brand.toLowerCase().includes(searchTerm.toLowerCase());
+                          (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
@@ -350,14 +351,44 @@ const Toko = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1">
-            {/* Results Header */}
-            <div className="bg-white p-4 rounded-lg shadow-md border border-green-200 mb-6">
-              <p className="text-green-700 font-medium">
-                Menampilkan {filteredProducts.length} produk
-                {searchTerm && ` untuk "${searchTerm}"`}
-              </p>
+          <div className="flex gap-6">
+            {/* Desktop Sidebar - Categories */}
+            <div className="hidden lg:block w-64 flex-shrink-0">
+              <Card className="bg-white border border-green-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg font-semibold text-green-700">
+                    <Filter className="h-5 w-5 inline mr-2" />
+                    Kategori Produk
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {categories.map(category => (
+                    <Button
+                      key={category.value}
+                      variant={selectedCategory === category.value ? "default" : "ghost"}
+                      className={`w-full justify-start text-left ${
+                        selectedCategory === category.value 
+                          ? "bg-green-600 text-white hover:bg-green-700" 
+                          : "text-gray-700 hover:bg-green-50"
+                      }`}
+                      onClick={() => setSelectedCategory(category.value)}
+                    >
+                      {category.label}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Main Products Area */}
+            <div className="flex-1">
+              {/* Results Header */}
+              <div className="bg-white p-4 rounded-lg shadow-md border border-green-200 mb-6">
+                <p className="text-green-700 font-medium">
+                  Menampilkan {filteredProducts.length} produk
+                  {searchTerm && ` untuk "${searchTerm}"`}
+                </p>
+              </div>
 
             {/* Products Grid */}
             {loading ? (
@@ -442,6 +473,7 @@ const Toko = () => {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
@@ -497,14 +529,14 @@ const Toko = () => {
               </div>
               {cart.length > 0 && (
                 <div className="p-4 border-t border-green-200 bg-green-50">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-semibold text-green-800">Total:</span>
-                  <span className="font-bold text-lg text-green-800">{formatPrice(getTotalPrice())}</span>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-semibold text-green-800">Total:</span>
+                    <span className="font-bold text-lg text-green-800">{formatPrice(getTotalPrice())}</span>
+                  </div>
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
+                    Checkout ({getTotalItems()} item)
+                  </Button>
                 </div>
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
-                  Checkout ({getTotalItems()} item)
-                </Button>
-              </div>
               )}
             </div>
           </div>
