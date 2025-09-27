@@ -397,17 +397,6 @@ const AdminToko = () => {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  window.location.href = '/dashboard';
-                  setShowMobileMenu(false);
-                }}
-                className="w-full justify-start text-green-700 hover:bg-green-50"
-              >
-                <Calculator className="h-4 w-4 mr-2" />
-                Simulasi RAB
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
                   window.location.href = '/dashboard/profile';
                   setShowMobileMenu(false);
                 }}
