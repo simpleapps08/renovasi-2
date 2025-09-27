@@ -268,7 +268,7 @@ const RoomEnhancer = () => {
     if (state.generatedImage && navigator.share) {
       try {
         await navigator.share({
-          title: 'Hasil Renovasi Room Enhancer',
+          title: 'Hasil Renovasi Desain Cerdas',
           text: 'Lihat hasil renovasi ruangan saya menggunakan AI!',
           url: state.generatedImage
         });
@@ -295,7 +295,7 @@ const RoomEnhancer = () => {
                 <Wand2 className="h-6 w-6 text-accent" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Room Enhancer</h1>
+                <h1 className="text-2xl font-bold text-foreground">Desain Cerdas</h1>
                 <p className="text-muted-foreground">Transform ruangan Anda dengan AI</p>
               </div>
             </div>
@@ -336,7 +336,7 @@ const RoomEnhancer = () => {
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-accent to-accent-dark bg-clip-text text-transparent">
-              Room Enhancer AI
+              Desain Cerdas AI
             </span>
           </h1>
           <p className="text-foreground/80 text-lg mb-6 max-w-2xl">

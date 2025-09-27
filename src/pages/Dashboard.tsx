@@ -76,7 +76,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-accent" />
-                  Room Enhancer
+                  Desain Cerdas
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Transform ruangan dengan AI visual enhancement
