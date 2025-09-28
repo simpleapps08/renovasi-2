@@ -3,7 +3,13 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileUploadProps } from '@/types/roomEnhancer';
+
+interface FileUploadProps {
+  onFileSelect: (file: File) => void;
+  selectedFile: File | null;
+  onFileRemove: () => void;
+  isLoading?: boolean;
+}
 
 const FileUpload: React.FC<FileUploadProps> = ({ 
   onFileSelect, 
@@ -79,7 +85,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span className="text-xs text-gray-600 font-medium">
-              Format: JPG, PNG, WEBP • Maksimal 10MB
+              Format: JPG, PNG, WEBP • Maksimal 10MB • Auto-kompres jika &gt;2MB
             </span>
           </div>
         </div>

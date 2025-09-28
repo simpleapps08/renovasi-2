@@ -15,6 +15,7 @@ import { geminiFlashService } from '../services/geminiFlashService';
 import ErrorBoundary, { useErrorHandler } from '../components/ErrorBoundary';
 import StorageManager from '../components/StorageManager';
 import { useAuth } from '../contexts/AuthContext';
+import { ImageCompression } from '../utils/imageCompression';
 
 const RoomEnhancer = () => {
   const { handleError } = useErrorHandler();
@@ -155,17 +156,59 @@ const RoomEnhancer = () => {
     validateServices();
   }, []);
 
-  const handleFileSelect = (file: File) => {
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+  const handleFileSelect = async (file: File) => {
+    // Check if file is too large (over 10MB - hard limit)
+    if (file.size > 10 * 1024 * 1024) {
       setState(prev => ({ ...prev, error: 'File terlalu besar. Maksimal 10MB.' }));
       return;
     }
-    setState(prev => ({ 
-      ...prev, 
-      selectedFile: file, 
-      error: null,
-      generatedImage: null 
-    }));
+
+    try {
+      let processedFile = file;
+
+      // Compress image if larger than 2MB
+      if (ImageCompression.needsCompression(file, 2)) {
+        toast.loading('Mengompres gambar...', { id: 'compression' });
+        
+        const compressionResult = await ImageCompression.compressImage(file, {
+          maxSizeMB: 2,
+          maxWidthOrHeight: 1920,
+          quality: 0.8,
+          fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg'
+        });
+
+        toast.dismiss('compression');
+
+        if (compressionResult.success && compressionResult.compressedFile) {
+          processedFile = compressionResult.compressedFile;
+          
+          const originalSizeStr = ImageCompression.formatFileSize(compressionResult.originalSize);
+          const compressedSizeStr = ImageCompression.formatFileSize(compressionResult.compressedSize);
+          const ratio = Math.round(compressionResult.compressionRatio * 10) / 10;
+          
+          toast.success(
+            `Gambar berhasil dikompres! ${originalSizeStr} → ${compressedSizeStr} (${ratio}x lebih kecil)`,
+            { duration: 4000 }
+          );
+        } else {
+          toast.error('Gagal mengompres gambar: ' + (compressionResult.error || 'Unknown error'));
+          setState(prev => ({ ...prev, error: 'Gagal mengompres gambar. Silakan coba dengan gambar yang lebih kecil.' }));
+          return;
+        }
+      }
+
+      setState(prev => ({ 
+        ...prev, 
+        selectedFile: processedFile, 
+        error: null,
+        generatedImage: null 
+      }));
+
+    } catch (error) {
+      console.error('File processing error:', error);
+      toast.error('Gagal memproses file gambar');
+      setState(prev => ({ ...prev, error: 'Gagal memproses file gambar. Silakan coba lagi.' }));
+    }
   };
 
   const handleFileRemove = () => {
