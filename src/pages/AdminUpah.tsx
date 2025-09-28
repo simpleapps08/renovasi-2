@@ -15,12 +15,13 @@ import { supabase } from "@/integrations/supabase/client"
 
 interface Upah {
   id: string
-  jenis_pekerjaan: string
+  nama_pekerjaan: string
   kategori: string
   satuan: string
-  upah_per_satuan: number
-  tingkat_keahlian: string
-  lokasi?: string
+  upah_per_hari?: number
+  upah_per_jam?: number
+  deskripsi?: string
+  is_active?: boolean
   created_at?: string
   updated_at?: string
 }
@@ -30,7 +31,7 @@ const AdminUpah = () => {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterKategori, setFilterKategori] = useState('semua')
-  const [filterKeahlian, setFilterKeahlian] = useState('semua')
+  const [filterStatus, setFilterStatus] = useState('semua')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUpah, setEditingUpah] = useState<Upah | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -47,7 +48,7 @@ const AdminUpah = () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('labour_rates')
+        .from('upah_tukang')
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -75,26 +76,28 @@ const AdminUpah = () => {
   }
 
   const [formData, setFormData] = useState({
-    jenis_pekerjaan: '',
+    nama_pekerjaan: '',
     kategori: '',
     satuan: '',
-    upah_per_satuan: '',
-    tingkat_keahlian: 'menengah',
-    lokasi: ''
+    upah_per_hari: '',
+    upah_per_jam: '',
+    deskripsi: '',
+    is_active: true
   })
 
-  const kategoriOptions = ['Struktur', 'Finishing', 'MEP', 'Landscaping', 'Demolisi', 'Lainnya']
+  const kategoriOptions = ['Struktur', 'Finishing', 'MEP', 'Landscaping', 'Demolisi', 'Manajemen', 'Umum', 'Lainnya']
   const satuanOptions = ['hari', 'jam', 'm2', 'm3', 'titik', 'unit', 'paket', 'borongan']
-  const keahlianOptions = ['pemula', 'menengah', 'ahli', 'master']
 
   // Filter dan search
   const filteredUpah = upahData.filter(upah => {
-    const matchesSearch = upah.jenis_pekerjaan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = upah.nama_pekerjaan.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          upah.kategori.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         upah.lokasi?.toLowerCase().includes(searchTerm.toLowerCase())
+                         upah.deskripsi?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesKategori = filterKategori === 'semua' || upah.kategori === filterKategori
-    const matchesKeahlian = filterKeahlian === 'semua' || upah.tingkat_keahlian === filterKeahlian
-    return matchesSearch && matchesKategori && matchesKeahlian
+    const matchesStatus = filterStatus === 'semua' || 
+                         (filterStatus === 'aktif' && upah.is_active) ||
+                         (filterStatus === 'tidak_aktif' && !upah.is_active)
+    return matchesSearch && matchesKategori && matchesStatus
   })
 
   // Pagination
@@ -105,7 +108,7 @@ const AdminUpah = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.jenis_pekerjaan || !formData.kategori || !formData.satuan || !formData.upah_per_satuan) {
+    if (!formData.nama_pekerjaan || !formData.kategori || !formData.satuan) {
       toast({
         title: "Error",
         description: "Mohon lengkapi semua field yang wajib diisi.",
@@ -116,17 +119,18 @@ const AdminUpah = () => {
 
     try {
       const upahDataNew = {
-        jenis_pekerjaan: formData.jenis_pekerjaan,
+        nama_pekerjaan: formData.nama_pekerjaan,
         kategori: formData.kategori,
         satuan: formData.satuan,
-        upah_per_satuan: parseInt(formData.upah_per_satuan),
-        tingkat_keahlian: formData.tingkat_keahlian,
-        lokasi: formData.lokasi || null
+        upah_per_hari: formData.upah_per_hari ? parseFloat(formData.upah_per_hari) : null,
+        upah_per_jam: formData.upah_per_jam ? parseFloat(formData.upah_per_jam) : null,
+        deskripsi: formData.deskripsi || null,
+        is_active: formData.is_active
       }
 
       if (editingUpah) {
         const { error } = await supabase
-          .from('labour_rates')
+          .from('upah_tukang')
           .update(upahDataNew)
           .eq('id', editingUpah.id)
 
@@ -146,7 +150,7 @@ const AdminUpah = () => {
         })
       } else {
         const { error } = await supabase
-          .from('labour_rates')
+          .from('upah_tukang')
           .insert([upahDataNew])
 
         if (error) {
@@ -182,12 +186,13 @@ const AdminUpah = () => {
   const handleEdit = (upah: Upah) => {
     setEditingUpah(upah)
     setFormData({
-      jenis_pekerjaan: upah.jenis_pekerjaan,
+      nama_pekerjaan: upah.nama_pekerjaan,
       kategori: upah.kategori,
       satuan: upah.satuan,
-      upah_per_satuan: upah.upah_per_satuan.toString(),
-      tingkat_keahlian: upah.tingkat_keahlian,
-      lokasi: upah.lokasi || ''
+      upah_per_hari: upah.upah_per_hari?.toString() || '',
+      upah_per_jam: upah.upah_per_jam?.toString() || '',
+      deskripsi: upah.deskripsi || '',
+      is_active: upah.is_active ?? true
     })
     setIsDialogOpen(true)
   }
@@ -195,7 +200,7 @@ const AdminUpah = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('labour_rates')
+        .from('upah_tukang')
         .delete()
         .eq('id', id)
 
@@ -228,27 +233,28 @@ const AdminUpah = () => {
 
   const resetForm = () => {
     setFormData({
-      jenis_pekerjaan: '',
+      nama_pekerjaan: '',
       kategori: '',
       satuan: '',
-      upah_per_satuan: '',
-      tingkat_keahlian: 'menengah',
-      lokasi: ''
+      upah_per_hari: '',
+      upah_per_jam: '',
+      deskripsi: '',
+      is_active: true
     })
     setEditingUpah(null)
   }
 
   const handleExportCSV = () => {
     const csvContent = [
-      ['Jenis Pekerjaan', 'Kategori', 'Satuan', 'Upah per Satuan', 'Tingkat Keahlian', 'Lokasi', 'Status', 'Tanggal Dibuat'],
+      ['Nama Pekerjaan', 'Kategori', 'Satuan', 'Upah per Hari', 'Upah per Jam', 'Deskripsi', 'Status', 'Tanggal Dibuat'],
       ...upahData.map(u => [
-        u.jenis_pekerjaan,
+        u.nama_pekerjaan,
         u.kategori,
         u.satuan,
-        u.upah_per_satuan.toString(),
-        u.tingkat_keahlian,
-        u.lokasi || '',
-        u.status,
+        u.upah_per_hari?.toString() || '',
+        u.upah_per_jam?.toString() || '',
+        u.deskripsi || '',
+        u.is_active ? 'Aktif' : 'Tidak Aktif',
         u.created_at
       ])
     ].map(row => row.join(',')).join('\n')
@@ -278,26 +284,25 @@ const AdminUpah = () => {
         const lines = csv.split('\n')
         const headers = lines[0].split(',')
         
-        if (headers.length < 5) {
+        if (headers.length < 4) {
           throw new Error('Format CSV tidak valid')
         }
 
         const newUpahData: Upah[] = []
         for (let i = 1; i < lines.length; i++) {
           const values = lines[i].split(',')
-          if (values.length >= 5 && values[0].trim()) {
+          if (values.length >= 4 && values[0].trim()) {
             newUpahData.push({
               id: Date.now().toString() + i,
-              jenis_pekerjaan: values[0].trim(),
+              nama_pekerjaan: values[0].trim(),
               kategori: values[1].trim(),
               satuan: values[2].trim(),
-              upah_per_satuan: parseInt(values[3].trim()) || 0,
-              tingkat_keahlian: (values[4]?.trim() as 'pemula' | 'menengah' | 'ahli' | 'master') || 'menengah',
-              lokasi: values[5]?.trim() || '',
-              status: (values[6]?.trim() as 'aktif' | 'nonaktif') || 'aktif',
-              deskripsi: '',
-              created_at: new Date().toISOString().split('T')[0],
-              updated_at: new Date().toISOString().split('T')[0]
+              upah_per_hari: parseInt(values[3].trim()) || 0,
+              upah_per_jam: parseInt(values[4]?.trim()) || 0,
+              deskripsi: values[5]?.trim() || '',
+              is_active: (values[6]?.trim().toLowerCase() === 'true') || true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             })
           }
         }
@@ -319,14 +324,8 @@ const AdminUpah = () => {
     event.target.value = ''
   }
 
-  const getKeahlianBadgeVariant = (keahlian: string) => {
-    switch (keahlian) {
-      case 'pemula': return 'secondary'
-      case 'menengah': return 'outline'
-      case 'ahli': return 'default'
-      case 'master': return 'destructive'
-      default: return 'secondary'
-    }
+  const getStatusBadgeVariant = (isActive: boolean) => {
+    return isActive ? 'default' : 'secondary'
   }
 
   return (
@@ -360,7 +359,7 @@ const AdminUpah = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Cari jenis pekerjaan, kategori, atau lokasi..."
+                    placeholder="Cari nama pekerjaan, kategori, atau deskripsi..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -378,17 +377,14 @@ const AdminUpah = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={filterKeahlian} onValueChange={setFilterKeahlian}>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue placeholder="Filter Keahlian" />
+                      <SelectValue placeholder="Filter Status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="semua">Semua Keahlian</SelectItem>
-                      {keahlianOptions.map(keahlian => (
-                        <SelectItem key={keahlian} value={keahlian}>
-                          {keahlian.charAt(0).toUpperCase() + keahlian.slice(1)}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="semua">Semua Status</SelectItem>
+                      <SelectItem value="aktif">Aktif</SelectItem>
+                      <SelectItem value="nonaktif">Non-aktif</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -431,11 +427,11 @@ const AdminUpah = () => {
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="jenis_pekerjaan">Jenis Pekerjaan *</Label>
+                          <Label htmlFor="nama_pekerjaan">Nama Pekerjaan *</Label>
                           <Input
-                            id="jenis_pekerjaan"
-                            value={formData.jenis_pekerjaan}
-                            onChange={(e) => setFormData({...formData, jenis_pekerjaan: e.target.value})}
+                            id="nama_pekerjaan"
+                            value={formData.nama_pekerjaan}
+                            onChange={(e) => setFormData({...formData, nama_pekerjaan: e.target.value})}
                             placeholder="Contoh: Tukang Batu"
                             required
                           />
@@ -455,7 +451,7 @@ const AdminUpah = () => {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="satuan">Satuan *</Label>
                           <Select value={formData.satuan} onValueChange={(value) => setFormData({...formData, satuan: value})}>
@@ -470,42 +466,48 @@ const AdminUpah = () => {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="upah_per_satuan">Upah per Satuan (Rp) *</Label>
+                          <Label htmlFor="upah_per_hari">Upah per Hari (Rp)</Label>
                           <Input
-                            id="upah_per_satuan"
+                            id="upah_per_hari"
                             type="number"
-                            value={formData.upah_per_satuan}
-                            onChange={(e) => setFormData({...formData, upah_per_satuan: e.target.value})}
+                            value={formData.upah_per_hari || ''}
+                            onChange={(e) => setFormData({...formData, upah_per_hari: parseInt(e.target.value) || 0})}
                             placeholder="0"
-                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="upah_per_jam">Upah per Jam (Rp)</Label>
+                          <Input
+                            id="upah_per_jam"
+                            type="number"
+                            value={formData.upah_per_jam || ''}
+                            onChange={(e) => setFormData({...formData, upah_per_jam: parseInt(e.target.value) || 0})}
+                            placeholder="0"
                           />
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="tingkat_keahlian">Tingkat Keahlian *</Label>
-                          <Select value={formData.tingkat_keahlian} onValueChange={(value) => setFormData({...formData, tingkat_keahlian: value})}>
+                          <Label htmlFor="deskripsi">Deskripsi</Label>
+                          <Input
+                            id="deskripsi"
+                            value={formData.deskripsi || ''}
+                            onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}
+                            placeholder="Deskripsi pekerjaan"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="is_active">Status</Label>
+                          <Select value={formData.is_active ? 'true' : 'false'} onValueChange={(value) => setFormData({...formData, is_active: value === 'true'})}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {keahlianOptions.map(keahlian => (
-                                <SelectItem key={keahlian} value={keahlian}>
-                                  {keahlian.charAt(0).toUpperCase() + keahlian.slice(1)}
-                                </SelectItem>
-                              ))}
+                              <SelectItem value="true">Aktif</SelectItem>
+                              <SelectItem value="false">Non-aktif</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="lokasi">Lokasi</Label>
-                          <Input
-                            id="lokasi"
-                            value={formData.lokasi}
-                            onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
-                            placeholder="Contoh: Jakarta"
-                          />
                         </div>
                       </div>
                       
@@ -530,7 +532,7 @@ const AdminUpah = () => {
           <CardHeader>
             <CardTitle>Data Upah Tenaga Kerja ({filteredUpah.length} item)</CardTitle>
             <CardDescription>
-              Daftar upah tenaga kerja berdasarkan jenis pekerjaan dan tingkat keahlian
+              Daftar upah tenaga kerja berdasarkan nama pekerjaan dan kategori
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -538,28 +540,32 @@ const AdminUpah = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Jenis Pekerjaan</TableHead>
+                    <TableHead>Nama Pekerjaan</TableHead>
                     <TableHead>Kategori</TableHead>
                     <TableHead>Satuan</TableHead>
-                    <TableHead>Upah/Satuan</TableHead>
-                    <TableHead>Tingkat Keahlian</TableHead>
-                    <TableHead>Lokasi</TableHead>
+                    <TableHead>Upah/Hari</TableHead>
+                    <TableHead>Upah/Jam</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedUpah.map((upah) => (
                     <TableRow key={upah.id}>
-                      <TableCell className="font-medium">{upah.jenis_pekerjaan}</TableCell>
+                      <TableCell className="font-medium">{upah.nama_pekerjaan}</TableCell>
                       <TableCell>{upah.kategori}</TableCell>
                       <TableCell>{upah.satuan}</TableCell>
-                      <TableCell>Rp {upah.upah_per_satuan?.toLocaleString('id-ID')}</TableCell>
                       <TableCell>
-                        <Badge variant={upah.tingkat_keahlian === 'ahli' ? 'default' : upah.tingkat_keahlian === 'terampil' ? 'secondary' : 'outline'}>
-                          {upah.tingkat_keahlian}
+                        {upah.upah_per_hari ? `Rp ${upah.upah_per_hari.toLocaleString('id-ID')}` : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {upah.upah_per_jam ? `Rp ${upah.upah_per_jam.toLocaleString('id-ID')}` : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(upah.is_active || false)}>
+                          {upah.is_active ? 'Aktif' : 'Non-aktif'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{upah.lokasi}</TableCell>
                       <TableCell>
                         <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 sm:space-x-2">
                           <Button
@@ -582,7 +588,7 @@ const AdminUpah = () => {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Hapus Data Upah</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Apakah Anda yakin ingin menghapus data upah "{upah.jenis_pekerjaan}"? 
+                                  Apakah Anda yakin ingin menghapus data upah "{upah.nama_pekerjaan}"? 
                                   Tindakan ini tidak dapat dibatalkan.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
