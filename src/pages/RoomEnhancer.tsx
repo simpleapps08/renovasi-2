@@ -6,7 +6,7 @@ import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle, Lock,
 import { toast } from 'sonner';
 import { Link, Navigate } from 'react-router-dom';
 import FileUpload from '@/components/room-enhancer/FileUpload';
-import PromptInput from '@/components/room-enhancer/PromptInput';
+import PromptDropdowns from '@/components/room-enhancer/PromptDropdowns';
 import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
 import { RoomEnhancerState, STYLE_PRESETS, GenerationHistoryItem } from '@/types/roomEnhancer';
 import { realAiService } from '../services/realAiService';
@@ -47,11 +47,86 @@ const RoomEnhancer = () => {
     aiAnalysis: null
   });
   
+  // New state for dropdown selections
+  const [promptSelections, setPromptSelections] = useState({
+    gedungRuangan: '',
+    tema: '',
+    warnaDinding: '',
+    materialLantai: '',
+    furnitur: '',
+    aksesoris: '',
+    pencahayaan: '',
+    efekVisual: ''
+  });
+  
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<'realai' | 'gemini-flash'>('gemini-flash');
   const [processingTime, setProcessingTime] = useState<number>(0);
   const [retryCount, setRetryCount] = useState<number>(0);
+
+  // Function to generate prompt from selections
+  const generatePromptFromSelections = () => {
+    const mappings = {
+      gedungRuangan: {
+        'ruangan': 'ruangan',
+        'gedung': 'gedung'
+      },
+      tema: {
+        'modern-minimalis': 'Modern Minimalis',
+        'skandinavia': 'Skandinavia',
+        'industrial': 'Industrial',
+        'tradisional': 'Tradisional',
+        'kontemporer': 'Kontemporer'
+      },
+      materialLantai: {
+        'kayu-oak-terang': 'Kayu oak terang',
+        'marmer-putih': 'Marmer putih',
+        'granit-gelap': 'Granit gelap',
+        'keramik-polos': 'Keramik polos',
+        'beton-ekspos': 'Beton ekspos'
+      },
+      furnitur: {
+        'sofa-minimalis-abu-abu': 'Sofa minimalis abu-abu',
+        'meja-kayu-modern': 'Meja kayu modern',
+        'kursi-bergaya-retro': 'Kursi bergaya retro',
+        'rak-buku-terbuka': 'Rak buku terbuka',
+        'tempat-tidur-sederhana': 'Tempat tidur sederhana'
+      },
+      aksesoris: {
+        'tanaman-indoor': 'Tanaman indoor',
+        'lampu-gantung': 'Lampu gantung',
+        'karpet-motif-geometris': 'Karpet motif geometris',
+        'lukisan-dinding': 'Lukisan dinding',
+        'cermin-besar': 'Cermin besar'
+      },
+      pencahayaan: {
+        'led-hangat-tepi-plafon': 'LED hangat di tepi plafon',
+        'lampu-gantung-modern': 'Lampu gantung modern',
+        'lampu-sorot-minimalis': 'Lampu sorot minimalis',
+        'cahaya-alami-jendela-besar': 'Cahaya alami dari jendela besar'
+      },
+      efekVisual: {
+        'bersih-dan-luas': 'bersih dan luas',
+        'hangat-dan-nyaman': 'hangat dan nyaman',
+        'elegan-dan-mewah': 'elegan dan mewah',
+        'natural-dan-sejuk': 'natural dan sejuk'
+      }
+    };
+
+    let prompt = `Gunakan gambar ${mappings.gedungRuangan[promptSelections.gedungRuangan] || '[GEDUNG/RUANGAN]'} yang diupload sebagai referensi. `;
+    prompt += `Ubah tampilannya menjadi desain ${mappings.tema[promptSelections.tema] || '[TEMA]'}. `;
+    prompt += `Ganti warna/tekstur dinding menjadi ${promptSelections.warnaDinding || '[WARNA DINDING]'}. `;
+    prompt += `Ubah lantai menjadi ${mappings.materialLantai[promptSelections.materialLantai] || '[MATERIAL LANTAI]'}. `;
+    prompt += `Tambahkan furnitur: ${mappings.furnitur[promptSelections.furnitur] || '[FURNITUR]'}. `;
+    prompt += `Tambahkan aksesoris: ${mappings.aksesoris[promptSelections.aksesoris] || '[AKSESORIS]'}. `;
+    prompt += `Tambahkan pencahayaan ${mappings.pencahayaan[promptSelections.pencahayaan] || '[PENCAHAYAAN]'}. `;
+    prompt += `Pertahankan tata letak dan proporsi asli ruangan/gedung, tetapi tingkatkan kesan agar terlihat ${mappings.efekVisual[promptSelections.efekVisual] || '[EFEK VISUAL]'}. `;
+    prompt += `Pastikan pencahayaan dan perspektif tetap konsisten dengan foto asli. `;
+    prompt += `Hindari distorsi, pantulan tidak wajar, atau permukaan yang terlalu mengkilap.`;
+
+    return prompt;
+  };
 
   // Validate services on component mount
   useEffect(() => {
@@ -113,12 +188,15 @@ const RoomEnhancer = () => {
       return;
     }
 
-    if (!state.selectedStyle && !state.prompt.trim()) {
-      setState(prev => ({ ...prev, error: 'Silakan pilih gaya desain atau berikan deskripsi.' }));
-      return;
-    }
-
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    // Generate prompt from selections
+    const generatedPrompt = generatePromptFromSelections();
+    
+    setState(prev => ({ 
+      ...prev, 
+      isLoading: true, 
+      error: null,
+      prompt: generatedPrompt // Update the prompt with generated one
+    }));
     setAiAnalysis('');
     setProcessingTime(0);
 
@@ -363,12 +441,12 @@ const RoomEnhancer = () => {
             isLoading={state.isLoading}
           />
 
-          {/* Prompt Section */}
-          <PromptInput
-            prompt={state.prompt}
-            onPromptChange={(prompt) => setState(prev => ({ ...prev, prompt }))}
-            selectedStyle={state.selectedStyle}
-            onStyleChange={(style) => setState(prev => ({ ...prev, selectedStyle: style }))}
+          {/* Prompt Dropdowns Section */}
+          <PromptDropdowns
+            selections={promptSelections}
+            onSelectionChange={(key, value) => 
+              setPromptSelections(prev => ({ ...prev, [key]: value }))
+            }
             isLoading={state.isLoading}
           />
         </div>
