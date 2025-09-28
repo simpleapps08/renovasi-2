@@ -85,7 +85,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span className="text-xs text-gray-600 font-medium">
-              Format: JPG, PNG, WEBP • Maksimal 10MB • Auto-kompres jika &gt;2MB
+              Format: JPG, PNG, WEBP • Maksimal 10MB • Auto-kompres jika {'>'}2MB
             </span>
           </div>
         </div>

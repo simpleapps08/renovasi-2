@@ -38,7 +38,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const materialLantaiOptions = [
-    { value: 'sesuai-gambar-asli', label: 'Sesuai Gambar Asli' },
+    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
     { value: 'kayu-oak-terang', label: 'Kayu oak terang' },
     { value: 'marmer-putih', label: 'Marmer putih' },
     { value: 'granit-gelap', label: 'Granit gelap' },
@@ -47,7 +47,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const furniturOptions = [
-    { value: 'sesuai-gambar-asli', label: 'Sesuai Gambar Asli' },
+    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
     { value: 'sofa-minimalis-abu-abu', label: 'Sofa minimalis abu-abu' },
     { value: 'meja-kayu-modern', label: 'Meja kayu modern' },
     { value: 'kursi-bergaya-retro', label: 'Kursi bergaya retro' },
@@ -56,7 +56,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const aksesorisOptions = [
-    { value: 'sesuai-gambar-asli', label: 'Sesuai Gambar Asli' },
+    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
     { value: 'tanaman-indoor', label: 'Tanaman indoor' },
     { value: 'lampu-gantung', label: 'Lampu gantung' },
     { value: 'karpet-motif-geometris', label: 'Karpet motif geometris' },
@@ -65,6 +65,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const pencahayaanOptions = [
+    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
     { value: 'led-hangat-tepi-plafon', label: 'LED hangat di tepi plafon' },
     { value: 'lampu-gantung-modern', label: 'Lampu gantung modern' },
     { value: 'lampu-sorot-minimalis', label: 'Lampu sorot minimalis' },
@@ -72,6 +73,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const efekVisualOptions = [
+    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
     { value: 'bersih-dan-luas', label: 'Bersih dan luas' },
     { value: 'hangat-dan-nyaman', label: 'Hangat dan nyaman' },
     { value: 'elegan-dan-mewah', label: 'Elegan dan mewah' },
