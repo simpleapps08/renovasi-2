@@ -38,6 +38,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const materialLantaiOptions = [
+    { value: 'sesuai-gambar-asli', label: 'Sesuai Gambar Asli' },
     { value: 'kayu-oak-terang', label: 'Kayu oak terang' },
     { value: 'marmer-putih', label: 'Marmer putih' },
     { value: 'granit-gelap', label: 'Granit gelap' },
@@ -46,6 +47,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const furniturOptions = [
+    { value: 'sesuai-gambar-asli', label: 'Sesuai Gambar Asli' },
     { value: 'sofa-minimalis-abu-abu', label: 'Sofa minimalis abu-abu' },
     { value: 'meja-kayu-modern', label: 'Meja kayu modern' },
     { value: 'kursi-bergaya-retro', label: 'Kursi bergaya retro' },
@@ -54,6 +56,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   ];
 
   const aksesorisOptions = [
+    { value: 'sesuai-gambar-asli', label: 'Sesuai Gambar Asli' },
     { value: 'tanaman-indoor', label: 'Tanaman indoor' },
     { value: 'lampu-gantung', label: 'Lampu gantung' },
     { value: 'karpet-motif-geometris', label: 'Karpet motif geometris' },
@@ -75,20 +78,67 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
     { value: 'natural-dan-sejuk', label: 'Natural dan sejuk' }
   ];
 
-  // Color options for wall colors with hex codes
+  // HTML Color Chart with comprehensive color options
   const warnaColors = [
-    { value: '#FFFFFF', label: 'Putih', color: '#FFFFFF' },
-    { value: '#F5F5F5', label: 'Off White', color: '#F5F5F5' },
-    { value: '#E8E8E8', label: 'Abu Terang', color: '#E8E8E8' },
-    { value: '#D3D3D3', label: 'Abu Sedang', color: '#D3D3D3' },
-    { value: '#A9A9A9', label: 'Abu Gelap', color: '#A9A9A9' },
-    { value: '#F0E68C', label: 'Krem', color: '#F0E68C' },
-    { value: '#DEB887', label: 'Beige', color: '#DEB887' },
-    { value: '#8FBC8F', label: 'Hijau Sage', color: '#8FBC8F' },
-    { value: '#B0C4DE', label: 'Biru Muda', color: '#B0C4DE' },
+    // Basic Colors
+    { value: '#FFFFFF', label: 'White', color: '#FFFFFF' },
+    { value: '#000000', label: 'Black', color: '#000000' },
+    { value: '#FF0000', label: 'Red', color: '#FF0000' },
+    { value: '#00FF00', label: 'Lime', color: '#00FF00' },
+    { value: '#0000FF', label: 'Blue', color: '#0000FF' },
+    { value: '#FFFF00', label: 'Yellow', color: '#FFFF00' },
+    { value: '#FF00FF', label: 'Magenta', color: '#FF00FF' },
+    { value: '#00FFFF', label: 'Cyan', color: '#00FFFF' },
+    
+    // Gray Scale
+    { value: '#C0C0C0', label: 'Silver', color: '#C0C0C0' },
+    { value: '#808080', label: 'Gray', color: '#808080' },
+    { value: '#800000', label: 'Maroon', color: '#800000' },
+    { value: '#808000', label: 'Olive', color: '#808000' },
+    { value: '#008000', label: 'Green', color: '#008000' },
+    { value: '#800080', label: 'Purple', color: '#800080' },
+    { value: '#008080', label: 'Teal', color: '#008080' },
+    { value: '#000080', label: 'Navy', color: '#000080' },
+    
+    // Extended Colors
+    { value: '#FFA500', label: 'Orange', color: '#FFA500' },
+    { value: '#FFC0CB', label: 'Pink', color: '#FFC0CB' },
+    { value: '#A52A2A', label: 'Brown', color: '#A52A2A' },
+    { value: '#FFD700', label: 'Gold', color: '#FFD700' },
+    { value: '#E6E6FA', label: 'Lavender', color: '#E6E6FA' },
+    { value: '#98FB98', label: 'Pale Green', color: '#98FB98' },
+    { value: '#87CEEB', label: 'Sky Blue', color: '#87CEEB' },
+    { value: '#DDA0DD', label: 'Plum', color: '#DDA0DD' },
+    
+    // Popular Interior Colors
+    { value: '#F5F5DC', label: 'Beige', color: '#F5F5DC' },
+    { value: '#F0E68C', label: 'Khaki', color: '#F0E68C' },
+    { value: '#E0E0E0', label: 'Light Gray', color: '#E0E0E0' },
+    { value: '#F8F8FF', label: 'Ghost White', color: '#F8F8FF' },
+    { value: '#F5F5F5', label: 'White Smoke', color: '#F5F5F5' },
+    { value: '#FFFAF0', label: 'Floral White', color: '#FFFAF0' },
+    { value: '#FDF5E6', label: 'Old Lace', color: '#FDF5E6' },
+    { value: '#FAF0E6', label: 'Linen', color: '#FAF0E6' },
+    
+    // Warm Colors
+    { value: '#FFEFD5', label: 'Papaya Whip', color: '#FFEFD5' },
+    { value: '#FFEBCD', label: 'Blanched Almond', color: '#FFEBCD' },
+    { value: '#FFE4B5', label: 'Moccasin', color: '#FFE4B5' },
+    { value: '#FFDEAD', label: 'Navajo White', color: '#FFDEAD' },
     { value: '#F5DEB3', label: 'Wheat', color: '#F5DEB3' },
-    { value: '#FFE4E1', label: 'Pink Muda', color: '#FFE4E1' },
-    { value: '#E6E6FA', label: 'Lavender', color: '#E6E6FA' }
+    { value: '#DEB887', label: 'Burlywood', color: '#DEB887' },
+    { value: '#D2B48C', label: 'Tan', color: '#D2B48C' },
+    { value: '#BC8F8F', label: 'Rosy Brown', color: '#BC8F8F' },
+    
+    // Cool Colors
+    { value: '#B0E0E6', label: 'Powder Blue', color: '#B0E0E6' },
+    { value: '#ADD8E6', label: 'Light Blue', color: '#ADD8E6' },
+    { value: '#87CEFA', label: 'Light Sky Blue', color: '#87CEFA' },
+    { value: '#B0C4DE', label: 'Light Steel Blue', color: '#B0C4DE' },
+    { value: '#F0F8FF', label: 'Alice Blue', color: '#F0F8FF' },
+    { value: '#E0FFFF', label: 'Light Cyan', color: '#E0FFFF' },
+    { value: '#AFEEEE', label: 'Pale Turquoise', color: '#AFEEEE' },
+    { value: '#F0FFFF', label: 'Azure', color: '#F0FFFF' }
   ];
 
   return (
@@ -142,10 +192,10 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           </Select>
         </div>
 
-        {/* Warna Dinding - Color Picker */}
+        {/* Wall Color Picker with HTML Color Chart */}
         <div className="space-y-2">
           <Label>Warna Dinding</Label>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-8 gap-2 p-4 border rounded-lg bg-muted/30 max-h-48 overflow-y-auto">
             {warnaColors.map((color) => (
               <button
                 key={color.value}
@@ -153,7 +203,7 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
                 onClick={() => onSelectionChange('warnaDinding', color.value)}
                 disabled={isLoading}
                 className={`
-                  w-12 h-12 rounded-lg border-2 transition-all duration-200 hover:scale-105
+                  w-8 h-8 rounded border-2 transition-all duration-200 hover:scale-110
                   ${selections.warnaDinding === color.value 
                     ? 'border-accent shadow-lg ring-2 ring-accent/30' 
                     : 'border-border hover:border-accent/50'
@@ -164,9 +214,23 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
               />
             ))}
           </div>
+          {/* Custom Color Picker */}
+          <div className="flex items-center space-x-2">
+            <Label className="text-sm">Custom Color:</Label>
+            <input
+              type="color"
+              value={selections.warnaDinding || '#FFFFFF'}
+              onChange={(e) => onSelectionChange('warnaDinding', e.target.value)}
+              disabled={isLoading}
+              className="w-12 h-8 border rounded cursor-pointer"
+            />
+            <span className="text-sm text-muted-foreground">
+              {selections.warnaDinding || '#FFFFFF'}
+            </span>
+          </div>
           {selections.warnaDinding && (
             <p className="text-sm text-muted-foreground">
-              Warna terpilih: {warnaColors.find(c => c.value === selections.warnaDinding)?.label} ({selections.warnaDinding})
+              Warna terpilih: {warnaColors.find(c => c.value === selections.warnaDinding)?.label || 'Custom'} ({selections.warnaDinding})
             </p>
           )}
         </div>
