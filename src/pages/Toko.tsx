@@ -90,9 +90,14 @@ const Toko = () => {
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // Search filter - if no search term, show all products
+      const matchesSearch = !searchTerm || 
+                          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Category filter - if 'all' is selected, show all products
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      
       return matchesSearch && matchesCategory;
     });
 
@@ -104,7 +109,7 @@ const Toko = () => {
         case 'price-high':
           return b.price - a.price;
         case 'rating':
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
         case 'name':
         default:
           return a.name.localeCompare(b.name);
@@ -112,7 +117,7 @@ const Toko = () => {
     });
 
     return filtered;
-  }, [searchTerm, selectedCategory, sortBy]);
+  }, [products, searchTerm, selectedCategory, sortBy]);
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
