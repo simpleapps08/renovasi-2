@@ -114,11 +114,14 @@ class GeminiFlashService {
              analysis = part.text;
              console.log(part.text);
            } else if (part.inlineData) {
-             // Convert base64 back to blob and create URL (following documentation pattern)
+             // Convert base64 back to blob and create URL (browser-compatible approach)
              const imageData = part.inlineData.data;
-             const buffer = Buffer.from(imageData, "base64");
-             // Create blob URL for browser compatibility
-             const bytes = new Uint8Array(buffer);
+             // Convert base64 to Uint8Array without using Buffer (browser-compatible)
+             const binaryString = atob(imageData);
+             const bytes = new Uint8Array(binaryString.length);
+             for (let i = 0; i < binaryString.length; i++) {
+               bytes[i] = binaryString.charCodeAt(i);
+             }
              const blob = new Blob([bytes], { type: part.inlineData.mimeType || 'image/png' });
              imageUrl = URL.createObjectURL(blob);
              console.log("Image saved as blob URL");
