@@ -50,14 +50,14 @@ const RoomEnhancer = () => {
   
   // New state for dropdown selections
   const [promptSelections, setPromptSelections] = useState({
-    gedungRuangan: '',
-    tema: '',
     warnaDinding: '',
-    materialLantai: '',
-    furnitur: '',
-    aksesoris: '',
-    pencahayaan: '',
-    efekVisual: ''
+    finishingCat: '',
+    gayaInterior: '',
+    aksesoris1: '',
+    aksesoris2: '',
+    aksesoris3: '',
+    jenisPencahayaan: '',
+    suasana: ''
   });
   
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
@@ -66,85 +66,40 @@ const RoomEnhancer = () => {
   const [processingTime, setProcessingTime] = useState<number>(0);
   const [retryCount, setRetryCount] = useState<number>(0);
 
-  // Function to generate prompt from selections using new template format
+  // Function to generate prompt from selections using new Indonesian template format
   const generatePromptFromSelections = () => {
-    const mappings = {
-      gedungRuangan: {
-        'ruangan': 'room',
-        'gedung': 'building'
-      },
-      tema: {
-        'modern-minimalis': 'modern minimalist style',
-        'skandinavia': 'Scandinavian style',
-        'industrial': 'industrial style',
-        'tradisional': 'traditional style',
-        'kontemporer': 'contemporary style'
-      },
-      materialLantai: {
-        'kayu-oak-terang': 'light oak wood flooring',
-        'marmer-putih': 'white marble flooring',
-        'granit-gelap': 'dark granite flooring',
-        'keramik-polos': 'plain ceramic tiles',
-        'beton-ekspos': 'exposed concrete flooring'
-      },
-      furnitur: {
-        'sofa-minimalis-abu-abu': 'gray minimalist sofa',
-        'meja-kayu-modern': 'modern wooden table',
-        'kursi-bergaya-retro': 'retro-style chairs',
-        'rak-buku-terbuka': 'open bookshelf',
-        'tempat-tidur-sederhana': 'simple bed'
-      },
-      aksesoris: {
-        'tanaman-indoor': 'indoor plants',
-        'lampu-gantung': 'pendant lights',
-        'karpet-motif-geometris': 'geometric patterned carpet',
-        'lukisan-dinding': 'wall paintings',
-        'cermin-besar': 'large mirror'
-      },
-      pencahayaan: {
-        'led-hangat-tepi-plafon': 'warm LED ceiling edge lighting',
-        'lampu-gantung-modern': 'modern pendant lighting',
-        'lampu-sorot-minimalis': 'minimalist spotlights',
-        'cahaya-alami-jendela-besar': 'natural light from large windows'
-      },
-      efekVisual: {
-        'bersih-dan-luas': 'clean and spacious',
-        'hangat-dan-nyaman': 'warm and cozy',
-        'elegan-dan-mewah': 'elegant and luxurious',
-        'natural-dan-sejuk': 'natural and fresh'
-      }
-    };
+    // Get wall color - use hex value or color name
+    const wallColor = promptSelections.warnaDinding || 'putih';
+    
+    // Get finish type
+    const finishType = promptSelections.finishingCat || 'matte lembut';
+    
+    // Get style theme
+    const styleTheme = promptSelections.gayaInterior || 'minimalis Skandinavia';
+    
+    // Get decor items
+    const decorItem1 = promptSelections.aksesoris1 || 'lukisan abstrak berbingkai kayu terang';
+    const decorItem2 = promptSelections.aksesoris2 || 'vas putih dengan tanaman hijau kecil';
+    const decorItem3 = promptSelections.aksesoris3 || 'bantal linen netral di sofa';
+    
+    // Get lighting type
+    const lightingType = promptSelections.jenisPencahayaan || 'pencahayaan alami dari jendela';
+    
+    // Get mood
+    const mood = promptSelections.suasana || 'tenang dan bersih';
 
-    // Build elements to change based on selections
-    const elementsToChange = [];
-    
-    if (promptSelections.warnaDinding) {
-      elementsToChange.push(`wall color to ${promptSelections.warnaDinding}`);
-    }
-    
-    if (promptSelections.materialLantai) {
-      elementsToChange.push(`flooring to ${mappings.materialLantai[promptSelections.materialLantai] || promptSelections.materialLantai}`);
-    }
-    
-    if (promptSelections.furnitur) {
-      elementsToChange.push(`furniture to include ${mappings.furnitur[promptSelections.furnitur] || promptSelections.furnitur}`);
-    }
-    
-    if (promptSelections.aksesoris) {
-      elementsToChange.push(`accessories to include ${mappings.aksesoris[promptSelections.aksesoris] || promptSelections.aksesoris}`);
-    }
-    
-    if (promptSelections.pencahayaan) {
-      elementsToChange.push(`lighting to ${mappings.pencahayaan[promptSelections.pencahayaan] || promptSelections.pencahayaan}`);
-    }
+    // Create the new Indonesian template-based prompt
+    const prompt = `Gunakan gambar ruangan yang diberikan, ubah warna cat dinding menjadi ${wallColor} dengan hasil akhir ${finishType}. Tambahkan aksesoris bergaya ${styleTheme}, termasuk:
 
-    // Create the new template-based prompt
-    let prompt = `Using the provided image, change only the ${elementsToChange.join(', ')} to create a ${mappings.tema[promptSelections.tema] || 'modern'} design. Keep everything else in the image exactly the same, preserving the original style, lighting, and composition.`;
-    
-    // Add effect if specified
-    if (promptSelections.efekVisual) {
-      prompt += ` Make the overall atmosphere ${mappings.efekVisual[promptSelections.efekVisual] || promptSelections.efekVisual}.`;
-    }
+${decorItem1}
+
+${decorItem2}
+
+${decorItem3}
+
+Pastikan pencahayaan ruangan ${lightingType} tetap konsisten dan suasana keseluruhan terasa ${mood}.
+Pertahankan perspektif, tekstur, dan bayangan agar terlihat alami dan realistis.
+Hindari over-saturasi warna, distorsi furnitur, atau elemen yang tampak melayang.`;
 
     return prompt;
   };

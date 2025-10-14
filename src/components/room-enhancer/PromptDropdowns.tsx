@@ -6,14 +6,14 @@ import { Badge } from '@/components/ui/badge';
 
 interface PromptDropdownsProps {
   selections: {
-    gedungRuangan: string;
-    tema: string;
     warnaDinding: string;
-    materialLantai: string;
-    furnitur: string;
-    aksesoris: string;
-    pencahayaan: string;
-    efekVisual: string;
+    finishingCat: string;
+    gayaInterior: string;
+    aksesoris1: string;
+    aksesoris2: string;
+    aksesoris3: string;
+    jenisPencahayaan: string;
+    suasana: string;
   };
   onSelectionChange: (key: string, value: string) => void;
   isLoading?: boolean;
@@ -24,60 +24,54 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
   onSelectionChange,
   isLoading = false
 }) => {
-  const gedungRuanganOptions = [
-    { value: 'ruangan', label: 'Ruangan' },
-    { value: 'gedung', label: 'Gedung' }
+  const finishingCatOptions = [
+    { value: 'matte lembut', label: 'Matte Lembut' },
+    { value: 'semi-gloss', label: 'Semi-Gloss' },
+    { value: 'tekstur semen halus', label: 'Tekstur Semen Halus' },
+    { value: 'metallic accent', label: 'Metallic Accent' }
   ];
 
-  const temaOptions = [
-    { value: 'modern-minimalis', label: 'Modern Minimalis' },
-    { value: 'skandinavia', label: 'Skandinavia' },
-    { value: 'industrial', label: 'Industrial' },
-    { value: 'tradisional', label: 'Tradisional' },
-    { value: 'kontemporer', label: 'Kontemporer' }
+  const gayaInteriorOptions = [
+    { value: 'minimalis Skandinavia', label: 'Minimalis Skandinavia' },
+    { value: 'modern luxury', label: 'Modern Luxury' },
+    { value: 'bohemian natural', label: 'Bohemian Natural' },
+    { value: 'industrial urban', label: 'Industrial Urban' },
+    { value: 'Japandi clean', label: 'Japandi Clean' }
   ];
 
-  const materialLantaiOptions = [
-    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
-    { value: 'kayu-oak-terang', label: 'Kayu oak terang' },
-    { value: 'marmer-putih', label: 'Marmer putih' },
-    { value: 'granit-gelap', label: 'Granit gelap' },
-    { value: 'keramik-polos', label: 'Keramik polos' },
-    { value: 'beton-ekspos', label: 'Beton ekspos' }
+  const aksesoris1Options = [
+    { value: 'lukisan abstrak berbingkai kayu terang', label: 'Lukisan abstrak berbingkai kayu terang' },
+    { value: 'poster monokrom', label: 'Poster monokrom' },
+    { value: 'cermin bundar besar', label: 'Cermin bundar besar' },
+    { value: 'pajangan logam minimal', label: 'Pajangan logam minimal' }
   ];
 
-  const furniturOptions = [
-    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
-    { value: 'sofa-minimalis-abu-abu', label: 'Sofa minimalis abu-abu' },
-    { value: 'meja-kayu-modern', label: 'Meja kayu modern' },
-    { value: 'kursi-bergaya-retro', label: 'Kursi bergaya retro' },
-    { value: 'rak-buku-terbuka', label: 'Rak buku terbuka' },
-    { value: 'tempat-tidur-sederhana', label: 'Tempat tidur sederhana' }
+  const aksesoris2Options = [
+    { value: 'vas putih dengan tanaman hijau kecil', label: 'Vas putih dengan tanaman hijau kecil' },
+    { value: 'tanaman monstera dalam pot rotan', label: 'Tanaman monstera dalam pot rotan' },
+    { value: 'patung dekoratif batu', label: 'Patung dekoratif batu' },
+    { value: 'lampu meja geometris', label: 'Lampu meja geometris' }
   ];
 
-  const aksesorisOptions = [
-    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
-    { value: 'tanaman-indoor', label: 'Tanaman indoor' },
-    { value: 'lampu-gantung', label: 'Lampu gantung' },
-    { value: 'karpet-motif-geometris', label: 'Karpet motif geometris' },
-    { value: 'lukisan-dinding', label: 'Lukisan dinding' },
-    { value: 'cermin-besar', label: 'Cermin besar' }
+  const aksesoris3Options = [
+    { value: 'bantal linen netral di sofa', label: 'Bantal linen netral di sofa' },
+    { value: 'karpet rajut tebal warna krem', label: 'Karpet rajut tebal warna krem' },
+    { value: 'throw blanket wol abu muda', label: 'Throw blanket wol abu muda' },
+    { value: 'kursi aksen rotan', label: 'Kursi aksen rotan' }
   ];
 
-  const pencahayaanOptions = [
-    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
-    { value: 'led-hangat-tepi-plafon', label: 'LED hangat di tepi plafon' },
-    { value: 'lampu-gantung-modern', label: 'Lampu gantung modern' },
-    { value: 'lampu-sorot-minimalis', label: 'Lampu sorot minimalis' },
-    { value: 'cahaya-alami-jendela-besar', label: 'Cahaya alami dari jendela besar' }
+  const jenisPencahayaanOptions = [
+    { value: 'pencahayaan alami dari jendela', label: 'Pencahayaan alami dari jendela' },
+    { value: 'lampu gantung hangat 3000K', label: 'Lampu gantung hangat 3000K' },
+    { value: 'cahaya lembut sore hari', label: 'Cahaya lembut sore hari' },
+    { value: 'soft LED putih netral', label: 'Soft LED putih netral' }
   ];
 
-  const efekVisualOptions = [
-    { value: 'pertahankan-sesuai-gambar-referensi', label: 'Pertahankan sesuai gambar referensi' },
-    { value: 'bersih-dan-luas', label: 'Bersih dan luas' },
-    { value: 'hangat-dan-nyaman', label: 'Hangat dan nyaman' },
-    { value: 'elegan-dan-mewah', label: 'Elegan dan mewah' },
-    { value: 'natural-dan-sejuk', label: 'Natural dan sejuk' }
+  const suasanaOptions = [
+    { value: 'tenang dan bersih', label: 'Tenang dan bersih' },
+    { value: 'hangat dan nyaman', label: 'Hangat dan nyaman' },
+    { value: 'elegan dan kontemporer', label: 'Elegan dan kontemporer' },
+    { value: 'alami dan segar', label: 'Alami dan segar' }
   ];
 
   // HTML Color Chart with comprehensive color options
@@ -152,48 +146,6 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Gedung/Ruangan Selection */}
-        <div className="space-y-2">
-          <Label>Tipe Bangunan</Label>
-          <Select 
-            value={selections.gedungRuangan} 
-            onValueChange={(value) => onSelectionChange('gedungRuangan', value)}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih tipe bangunan..." />
-            </SelectTrigger>
-            <SelectContent>
-              {gedungRuanganOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Tema Selection */}
-        <div className="space-y-2">
-          <Label>Tema Desain</Label>
-          <Select 
-            value={selections.tema} 
-            onValueChange={(value) => onSelectionChange('tema', value)}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih tema desain..." />
-            </SelectTrigger>
-            <SelectContent>
-              {temaOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Wall Color Picker with HTML Color Chart */}
         <div className="space-y-2">
           <Label>Warna Dinding</Label>
@@ -237,19 +189,19 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           )}
         </div>
 
-        {/* Material Lantai Selection */}
+        {/* Finishing Cat Selection */}
         <div className="space-y-2">
-          <Label>Material Lantai</Label>
+          <Label>Finishing Cat</Label>
           <Select 
-            value={selections.materialLantai} 
-            onValueChange={(value) => onSelectionChange('materialLantai', value)}
+            value={selections.finishingCat} 
+            onValueChange={(value) => onSelectionChange('finishingCat', value)}
             disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Pilih material lantai..." />
+              <SelectValue placeholder="Pilih finishing cat..." />
             </SelectTrigger>
             <SelectContent>
-              {materialLantaiOptions.map((option) => (
+              {finishingCatOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -258,19 +210,19 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           </Select>
         </div>
 
-        {/* Furnitur Selection */}
+        {/* Gaya Interior Selection */}
         <div className="space-y-2">
-          <Label>Furnitur</Label>
+          <Label>Gaya Interior</Label>
           <Select 
-            value={selections.furnitur} 
-            onValueChange={(value) => onSelectionChange('furnitur', value)}
+            value={selections.gayaInterior} 
+            onValueChange={(value) => onSelectionChange('gayaInterior', value)}
             disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Pilih furnitur..." />
+              <SelectValue placeholder="Pilih gaya interior..." />
             </SelectTrigger>
             <SelectContent>
-              {furniturOptions.map((option) => (
+              {gayaInteriorOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -279,19 +231,19 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           </Select>
         </div>
 
-        {/* Aksesoris Selection */}
+        {/* Aksesoris 1 Selection */}
         <div className="space-y-2">
-          <Label>Aksesoris</Label>
+          <Label>Aksesori 1</Label>
           <Select 
-            value={selections.aksesoris} 
-            onValueChange={(value) => onSelectionChange('aksesoris', value)}
+            value={selections.aksesoris1} 
+            onValueChange={(value) => onSelectionChange('aksesoris1', value)}
             disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Pilih aksesoris..." />
+              <SelectValue placeholder="Pilih aksesori 1..." />
             </SelectTrigger>
             <SelectContent>
-              {aksesorisOptions.map((option) => (
+              {aksesoris1Options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -300,19 +252,19 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           </Select>
         </div>
 
-        {/* Pencahayaan Selection */}
+        {/* Aksesoris 2 Selection */}
         <div className="space-y-2">
-          <Label>Pencahayaan</Label>
+          <Label>Aksesori 2</Label>
           <Select 
-            value={selections.pencahayaan} 
-            onValueChange={(value) => onSelectionChange('pencahayaan', value)}
+            value={selections.aksesoris2} 
+            onValueChange={(value) => onSelectionChange('aksesoris2', value)}
             disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Pilih pencahayaan..." />
+              <SelectValue placeholder="Pilih aksesori 2..." />
             </SelectTrigger>
             <SelectContent>
-              {pencahayaanOptions.map((option) => (
+              {aksesoris2Options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -321,19 +273,19 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           </Select>
         </div>
 
-        {/* Efek Visual Selection */}
+        {/* Aksesoris 3 Selection */}
         <div className="space-y-2">
-          <Label>Efek Visual</Label>
+          <Label>Aksesori 3</Label>
           <Select 
-            value={selections.efekVisual} 
-            onValueChange={(value) => onSelectionChange('efekVisual', value)}
+            value={selections.aksesoris3} 
+            onValueChange={(value) => onSelectionChange('aksesoris3', value)}
             disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Pilih efek visual..." />
+              <SelectValue placeholder="Pilih aksesori 3..." />
             </SelectTrigger>
             <SelectContent>
-              {efekVisualOptions.map((option) => (
+              {aksesoris3Options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -342,35 +294,46 @@ const PromptDropdowns: React.FC<PromptDropdownsProps> = ({
           </Select>
         </div>
 
-        {/* Preview of selections */}
-        <div className="p-4 bg-muted/30 rounded-lg border">
-          <h4 className="font-medium mb-2">Preview Pilihan:</h4>
-          <div className="space-y-1 text-sm">
-            {selections.gedungRuangan && (
-              <p><span className="font-medium">Tipe:</span> {gedungRuanganOptions.find(o => o.value === selections.gedungRuangan)?.label}</p>
-            )}
-            {selections.tema && (
-              <p><span className="font-medium">Tema:</span> {temaOptions.find(o => o.value === selections.tema)?.label}</p>
-            )}
-            {selections.warnaDinding && (
-              <p><span className="font-medium">Warna Dinding:</span> {warnaColors.find(c => c.value === selections.warnaDinding)?.label}</p>
-            )}
-            {selections.materialLantai && (
-              <p><span className="font-medium">Lantai:</span> {materialLantaiOptions.find(o => o.value === selections.materialLantai)?.label}</p>
-            )}
-            {selections.furnitur && (
-              <p><span className="font-medium">Furnitur:</span> {furniturOptions.find(o => o.value === selections.furnitur)?.label}</p>
-            )}
-            {selections.aksesoris && (
-              <p><span className="font-medium">Aksesoris:</span> {aksesorisOptions.find(o => o.value === selections.aksesoris)?.label}</p>
-            )}
-            {selections.pencahayaan && (
-              <p><span className="font-medium">Pencahayaan:</span> {pencahayaanOptions.find(o => o.value === selections.pencahayaan)?.label}</p>
-            )}
-            {selections.efekVisual && (
-              <p><span className="font-medium">Efek Visual:</span> {efekVisualOptions.find(o => o.value === selections.efekVisual)?.label}</p>
-            )}
-          </div>
+        {/* Jenis Pencahayaan Selection */}
+        <div className="space-y-2">
+          <Label>Jenis Pencahayaan</Label>
+          <Select 
+            value={selections.jenisPencahayaan} 
+            onValueChange={(value) => onSelectionChange('jenisPencahayaan', value)}
+            disabled={isLoading}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pilih jenis pencahayaan..." />
+            </SelectTrigger>
+            <SelectContent>
+              {jenisPencahayaanOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Suasana Selection */}
+        <div className="space-y-2">
+          <Label>Suasana</Label>
+          <Select 
+            value={selections.suasana} 
+            onValueChange={(value) => onSelectionChange('suasana', value)}
+            disabled={isLoading}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pilih suasana..." />
+            </SelectTrigger>
+            <SelectContent>
+              {suasanaOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardContent>
     </Card>
