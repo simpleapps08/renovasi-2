@@ -66,65 +66,85 @@ const RoomEnhancer = () => {
   const [processingTime, setProcessingTime] = useState<number>(0);
   const [retryCount, setRetryCount] = useState<number>(0);
 
-  // Function to generate prompt from selections
+  // Function to generate prompt from selections using new template format
   const generatePromptFromSelections = () => {
     const mappings = {
       gedungRuangan: {
-        'ruangan': 'ruangan',
-        'gedung': 'gedung'
+        'ruangan': 'room',
+        'gedung': 'building'
       },
       tema: {
-        'modern-minimalis': 'Modern Minimalis',
-        'skandinavia': 'Skandinavia',
-        'industrial': 'Industrial',
-        'tradisional': 'Tradisional',
-        'kontemporer': 'Kontemporer'
+        'modern-minimalis': 'modern minimalist style',
+        'skandinavia': 'Scandinavian style',
+        'industrial': 'industrial style',
+        'tradisional': 'traditional style',
+        'kontemporer': 'contemporary style'
       },
       materialLantai: {
-        'kayu-oak-terang': 'Kayu oak terang',
-        'marmer-putih': 'Marmer putih',
-        'granit-gelap': 'Granit gelap',
-        'keramik-polos': 'Keramik polos',
-        'beton-ekspos': 'Beton ekspos'
+        'kayu-oak-terang': 'light oak wood flooring',
+        'marmer-putih': 'white marble flooring',
+        'granit-gelap': 'dark granite flooring',
+        'keramik-polos': 'plain ceramic tiles',
+        'beton-ekspos': 'exposed concrete flooring'
       },
       furnitur: {
-        'sofa-minimalis-abu-abu': 'Sofa minimalis abu-abu',
-        'meja-kayu-modern': 'Meja kayu modern',
-        'kursi-bergaya-retro': 'Kursi bergaya retro',
-        'rak-buku-terbuka': 'Rak buku terbuka',
-        'tempat-tidur-sederhana': 'Tempat tidur sederhana'
+        'sofa-minimalis-abu-abu': 'gray minimalist sofa',
+        'meja-kayu-modern': 'modern wooden table',
+        'kursi-bergaya-retro': 'retro-style chairs',
+        'rak-buku-terbuka': 'open bookshelf',
+        'tempat-tidur-sederhana': 'simple bed'
       },
       aksesoris: {
-        'tanaman-indoor': 'Tanaman indoor',
-        'lampu-gantung': 'Lampu gantung',
-        'karpet-motif-geometris': 'Karpet motif geometris',
-        'lukisan-dinding': 'Lukisan dinding',
-        'cermin-besar': 'Cermin besar'
+        'tanaman-indoor': 'indoor plants',
+        'lampu-gantung': 'pendant lights',
+        'karpet-motif-geometris': 'geometric patterned carpet',
+        'lukisan-dinding': 'wall paintings',
+        'cermin-besar': 'large mirror'
       },
       pencahayaan: {
-        'led-hangat-tepi-plafon': 'LED hangat di tepi plafon',
-        'lampu-gantung-modern': 'Lampu gantung modern',
-        'lampu-sorot-minimalis': 'Lampu sorot minimalis',
-        'cahaya-alami-jendela-besar': 'Cahaya alami dari jendela besar'
+        'led-hangat-tepi-plafon': 'warm LED ceiling edge lighting',
+        'lampu-gantung-modern': 'modern pendant lighting',
+        'lampu-sorot-minimalis': 'minimalist spotlights',
+        'cahaya-alami-jendela-besar': 'natural light from large windows'
       },
       efekVisual: {
-        'bersih-dan-luas': 'bersih dan luas',
-        'hangat-dan-nyaman': 'hangat dan nyaman',
-        'elegan-dan-mewah': 'elegan dan mewah',
-        'natural-dan-sejuk': 'natural dan sejuk'
+        'bersih-dan-luas': 'clean and spacious',
+        'hangat-dan-nyaman': 'warm and cozy',
+        'elegan-dan-mewah': 'elegant and luxurious',
+        'natural-dan-sejuk': 'natural and fresh'
       }
     };
 
-    let prompt = `Gunakan gambar ${mappings.gedungRuangan[promptSelections.gedungRuangan] || '[GEDUNG/RUANGAN]'} yang diupload sebagai referensi. `;
-    prompt += `Ubah tampilannya menjadi desain ${mappings.tema[promptSelections.tema] || '[TEMA]'}. `;
-    prompt += `Ganti warna/tekstur dinding menjadi ${promptSelections.warnaDinding || '[WARNA DINDING]'}. `;
-    prompt += `Ubah lantai menjadi ${mappings.materialLantai[promptSelections.materialLantai] || '[MATERIAL LANTAI]'}. `;
-    prompt += `Tambahkan furnitur: ${mappings.furnitur[promptSelections.furnitur] || '[FURNITUR]'}. `;
-    prompt += `Tambahkan aksesoris: ${mappings.aksesoris[promptSelections.aksesoris] || '[AKSESORIS]'}. `;
-    prompt += `Tambahkan pencahayaan ${mappings.pencahayaan[promptSelections.pencahayaan] || '[PENCAHAYAAN]'}. `;
-    prompt += `Pertahankan tata letak dan proporsi asli ruangan/gedung, tetapi tingkatkan kesan agar terlihat ${mappings.efekVisual[promptSelections.efekVisual] || '[EFEK VISUAL]'}. `;
-    prompt += `Pastikan pencahayaan dan perspektif tetap konsisten dengan foto asli. `;
-    prompt += `Hindari distorsi, pantulan tidak wajar, atau permukaan yang terlalu mengkilap.`;
+    // Build elements to change based on selections
+    const elementsToChange = [];
+    
+    if (promptSelections.warnaDinding) {
+      elementsToChange.push(`wall color to ${promptSelections.warnaDinding}`);
+    }
+    
+    if (promptSelections.materialLantai) {
+      elementsToChange.push(`flooring to ${mappings.materialLantai[promptSelections.materialLantai] || promptSelections.materialLantai}`);
+    }
+    
+    if (promptSelections.furnitur) {
+      elementsToChange.push(`furniture to include ${mappings.furnitur[promptSelections.furnitur] || promptSelections.furnitur}`);
+    }
+    
+    if (promptSelections.aksesoris) {
+      elementsToChange.push(`accessories to include ${mappings.aksesoris[promptSelections.aksesoris] || promptSelections.aksesoris}`);
+    }
+    
+    if (promptSelections.pencahayaan) {
+      elementsToChange.push(`lighting to ${mappings.pencahayaan[promptSelections.pencahayaan] || promptSelections.pencahayaan}`);
+    }
+
+    // Create the new template-based prompt
+    let prompt = `Using the provided image, change only the ${elementsToChange.join(', ')} to create a ${mappings.tema[promptSelections.tema] || 'modern'} design. Keep everything else in the image exactly the same, preserving the original style, lighting, and composition.`;
+    
+    // Add effect if specified
+    if (promptSelections.efekVisual) {
+      prompt += ` Make the overall atmosphere ${mappings.efekVisual[promptSelections.efekVisual] || promptSelections.efekVisual}.`;
+    }
 
     return prompt;
   };

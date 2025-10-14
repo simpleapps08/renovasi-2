@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Modality } from '@google/genai';
 
 /**
  * Gemini Flash 2.5 Image Preview Service
@@ -32,7 +32,7 @@ class GeminiFlashService {
     
     if (this.apiKey) {
       try {
-        // Initialize GoogleGenAI with API key (following the provided code pattern)
+        // Initialize GoogleGenAI with API key (browser environment requires API key)
         this.client = new GoogleGenAI({ apiKey: this.apiKey });
         console.log('Gemini Flash service initialized successfully');
       } catch (error) {
@@ -81,47 +81,47 @@ class GeminiFlashService {
       // Convert image to base64
       const base64Image = await this.fileToBase64(request.imageFile);
       
-      // Prepare the prompt for room enhancement
+      // Prepare the prompt for room enhancement using new documentation format
       const enhancementPrompt = [
-        { 
-          text: `${request.prompt}. Please enhance this room image with modern design elements, better lighting, and improved aesthetics. Generate a new enhanced version of this room.` 
-        },
         {
           inlineData: {
             mimeType: request.imageFile.type,
             data: base64Image,
           },
         },
+        { 
+          text: request.prompt
+        }
       ];
 
-      // Make API call to Gemini Flash 2.5 (following the provided code pattern)
+      // Make API call to Gemini Flash 2.5 (following the provided documentation pattern)
        const response = await this.client.models.generateContent({
-         model: request.model || 'gemini-2.5-flash-image-preview',
+         model: request.model || 'gemini-2.5-flash-image',
          contents: enhancementPrompt,
        });
 
       const processingTime = Date.now() - startTime;
       
-      // Process response (following the provided code pattern)
+      // Process response (following the provided documentation pattern)
        if (response.candidates && response.candidates.length > 0) {
          const candidate = response.candidates[0];
          let imageUrl: string | undefined;
          let analysis: string | undefined;
          
-         // Process each part of the response (following the provided code pattern)
+         // Process each part of the response (following the provided documentation pattern)
          for (const part of candidate.content.parts) {
            if (part.text) {
              analysis = part.text;
+             console.log(part.text);
            } else if (part.inlineData) {
-             // Convert base64 back to blob and create URL (browser-compatible version)
+             // Convert base64 back to blob and create URL (following documentation pattern)
              const imageData = part.inlineData.data;
-             const buffer = atob(imageData);
-             const bytes = new Uint8Array(buffer.length);
-             for (let i = 0; i < buffer.length; i++) {
-               bytes[i] = buffer.charCodeAt(i);
-             }
+             const buffer = Buffer.from(imageData, "base64");
+             // Create blob URL for browser compatibility
+             const bytes = new Uint8Array(buffer);
              const blob = new Blob([bytes], { type: part.inlineData.mimeType || 'image/png' });
              imageUrl = URL.createObjectURL(blob);
+             console.log("Image saved as blob URL");
            }
          }
         
