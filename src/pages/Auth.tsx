@@ -57,11 +57,14 @@ const Auth = () => {
 
     try {
       console.log('🔐 Attempting login for:', loginData.email)
+      console.log('📡 Calling supabase.auth.signInWithPassword...')
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password,
       })
+
+      console.log('📥 signInWithPassword completed, hasError:', !!error, 'hasUser:', !!data?.user)
 
       if (error) {
         console.error('❌ Login error:', error)
@@ -79,11 +82,13 @@ const Auth = () => {
       if (data.user) {
         console.log('🔍 Fetching profile for user_id:', data.user.id)
 
+        console.log('📡 Querying profiles table...')
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('user_id', data.user.id)
           .single()
+        console.log('📥 Profile query returned, error:', !!profileError, 'profile:', !!profile)
 
         if (profileError) {
           console.error('❌ Profile fetch error:', profileError)
