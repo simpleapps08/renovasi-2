@@ -21,15 +21,12 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'react-vendor';
-            }
+            // Recharts is very large, keep it separate
             if (id.includes('recharts')) {
               return 'recharts';
             }
-            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
-              return 'ui-vendor';
-            }
+            // Keep everything else in a single vendor chunk to prevent circular dependency issues
+            // causing "Cannot access 'R' before initialization" errors
             return 'vendor';
           }
         },
