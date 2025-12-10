@@ -12,10 +12,10 @@ class GeminiFlashService {
   private client: GoogleGenAI | null = null;
   private apiKey: string;
 
-  // Model Constants - Full Free Strategy
-  private readonly MODEL_ANALYSIS = 'gemini-1.5-flash';           // Step 1: Vision analysis
-  private readonly MODEL_REFINEMENT = 'gemini-1.5-flash';         // Step 2: Text refinement
-  private readonly MODEL_IMAGE_GEN = 'gemini-2.0-flash-exp';      // Step 3: Image editing (experimental)
+  // Model Constants
+  private readonly MODEL_ANALYSIS = 'gemini-1.5-flash';
+  private readonly MODEL_REFINEMENT = 'gemini-1.5-flash';
+  private readonly MODEL_IMAGE_GEN = 'gemini-2.0-flash-exp';
 
   constructor() {
     // Use standard AI Studio key as primary
@@ -58,70 +58,47 @@ class GeminiFlashService {
    * Step 1: Analyze Room
    */
   async analyzeRoomImage(file: File): Promise<string> {
-    console.log('🖼️ Starting room image analysis...');
-    console.log('📄 File:', file.name, 'Size:', file.size, 'Type:', file.type);
+    console.log('🖼️ Starting room analysis (Simple Script)...');
 
     if (!this.client) {
-      console.error('❌ No Gemini client available');
-      throw new Error('API Key tidak ditemukan. Cek .env Anda.');
+      throw new Error('API Key tidak ditemukan.');
     }
 
     try {
-      console.log('🔄 Converting image to base64...');
       const base64Image = await this.fileToBase64(file);
-      console.log('✅ Image converted, length:', base64Image.length);
 
-      const analysisPrompt = `
-        Analyze this room image for a renovation app. Describe concisely:
-        1. Lighting Source & Direction
-        2. Key Colors & Materials currently present
-        3. Structural Elements (windows, style of room)
-        4. Furniture layout
-        Output plain text description only.
-      `;
+      const contents = [
+        {
+          inlineData: {
+            mimeType: file.type,
+            data: base64Image,
+          },
+        },
+        { text: "Analyze this room image for renovation purposes. Describe lighting, colors, and structure." },
+      ];
 
-      console.log('🚀 Sending request to Gemini API...');
-      console.log('📌 Using model:', this.MODEL_ANALYSIS);
+      console.log('🚀 Sending simple analysis request...');
 
       const response = await this.client.models.generateContent({
         model: this.MODEL_ANALYSIS,
-        contents: [
-          {
-            parts: [
-              { inlineData: { mimeType: file.type, data: base64Image } },
-              { text: analysisPrompt }
-            ]
-          }
-        ]
+        contents: contents,
       });
 
-      console.log('📥 Received response from Gemini');
-      console.log('📊 Response:', JSON.stringify(response, null, 2));
+      console.log('✅ Analysis response received');
+      const text = response.text; // Simple access helper in newer SDK
 
-      const analysis = response.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (!analysis) {
-        console.error('❌ No analysis text in response');
-        throw new Error('No analysis generated');
+      if (!text) {
+        // Fallback if helper not available
+        const candidateText = response.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!candidateText) throw new Error('No text generated');
+        return candidateText;
       }
 
-      console.log('✅ Analysis successful:', analysis.substring(0, 100) + '...');
-      return analysis;
+      return text;
 
     } catch (error: any) {
       console.error('❌ Analysis failed:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        status: error.status,
-        statusText: error.statusText,
-        stack: error.stack
-      });
-
-      // More user-friendly error message
-      if (error.status === 403 || error.message?.includes('403') || error.message?.includes('blocked')) {
-        throw new Error('API Key diblokir atau tidak valid. Silakan cek konfigurasi Google AI Studio Anda.');
-      }
-      throw new Error(`Gagal menganalisis gambar: ${error.message || 'Unknown error'}`);
+      throw new Error(`Gagal menganalisis gambar: ${error.message}`);
     }
   }
 
@@ -161,11 +138,11 @@ class GeminiFlashService {
   }
 
   /**
-   * Step 3: Generate Image using Imagen (Text-to-Image)
-   * Adapted from user provided script for Google GenAI SDK
+   * Step 3: Generate Image using Gemini Image Model (Image-to-Image)
+   * Adapted from user provided script using 'gemini-native-image' logic
    */
   async generateRoomImage(file: File, finalPrompt: string): Promise<string> {
-    console.log('🎨 Starting image generation with Imagen...');
+    console.log('🎨 Starting specific image generation task...');
     console.log('📝 Prompt:', finalPrompt);
 
     if (!this.client) {
@@ -174,63 +151,71 @@ class GeminiFlashService {
     }
 
     try {
-      console.log('🚀 Calling client.models.generateImages...');
+      console.log('🔄 Converting input image to base64...');
+      const base64Image = await this.fileToBase64(file);
+      console.log('✅ Image converted');
 
-      // Call the Imagen model using the SDK method
-      // Note: generateImages is typically Text-to-Image. 
-      // The uploaded 'file' is largely ignored here unless using an edit-specific endpoint.
-      const response = await this.client.models.generateImages({
-        model: 'imagen-3.0-generate-001', // Using stable 3.0 version
-        prompt: finalPrompt,
-        config: {
-          numberOfImages: 1,
-        },
+      // Construct prompt content exactly as requested
+      const promptContent = [
+        { text: finalPrompt },
+        {
+          inlineData: {
+            mimeType: file.type,
+            data: base64Image
+          }
+        }
+      ];
+
+      console.log('🚀 Calling generateContent with model:', this.MODEL_IMAGE_GEN);
+
+      const response = await this.client.models.generateContent({
+        model: this.MODEL_IMAGE_GEN, // using gemini-2.0-flash-exp (closest to requested 2.5-flash-image)
+        contents: promptContent,
       });
 
-      console.log('📥 Received response from Imagen');
-      // console.log('📊 Response structure:', JSON.stringify(response, null, 2));
+      console.log('📥 Received response from Gemini');
 
-      // Check for generated images
-      if (response.generatedImages && response.generatedImages.length > 0) {
-        const generatedImage = response.generatedImages[0];
+      const candidate = response.candidates?.[0];
+      if (!candidate?.content?.parts) {
+        throw new Error('No content returned from model');
+      }
 
-        if (generatedImage.image?.imageBytes) {
-          console.log('✅ Image bytes found');
+      // Iterate through parts to find the image (as per script logic)
+      for (const part of candidate.content.parts) {
+        if (part.text) {
+          console.log('ℹ️ Model output text:', part.text);
+        } else if (part.inlineData) {
+          console.log('✅ Image data found in response');
 
-          // Convert base64 bytes to Blob URL (Browser equivalent of fs.writeFileSync)
-          const base64Data = generatedImage.image.imageBytes;
-
-          // Decode Base64 string
-          const binaryString = atob(base64Data);
+          const imageData = part.inlineData.data;
+          // Browser adaptation: Convert Base64 to Blob URL
+          const binaryString = atob(imageData);
           const len = binaryString.length;
           const bytes = new Uint8Array(len);
           for (let i = 0; i < len; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
 
-          const blob = new Blob([bytes], { type: "image/png" });
-          const blobUrl = URL.createObjectURL(blob);
+          const mimeType = part.inlineData.mimeType || 'image/png';
+          const blob = new Blob([bytes], { type: mimeType });
+          const blobUrl = URL.createObjectURL(blob); // "saved" as a URL
 
-          console.log('✅ Image generation successful! URL created.');
+          console.log('✅ Image saved/created as Blob URL');
           return blobUrl;
         }
       }
 
-      throw new Error('Tidak ada data gambar yang dikembalikan oleh model.');
+      // If no image part found in logic loop
+      throw new Error('Model responded but no image was generated. It might have refused the request.');
 
     } catch (error: any) {
       console.error('❌ Image generation failed:', error);
-      console.error('❌ Error details:', error.message);
 
-      // Handle common errors
-      if (error.status === 404 || error.message?.includes('not found')) {
-        throw new Error('Model Imagen tidak ditemukan atau belum aktif di akun ini.');
-      }
-      if (error.status === 403 || error.message?.includes('permission')) {
-        throw new Error('API Key tidak memiliki izin akses ke Imagen.');
+      if (error.status === 404) {
+        throw new Error(`Model ${this.MODEL_IMAGE_GEN} tidak ditemukan. Cek ejaan model.`);
       }
 
-      throw new Error(`Gagal generate gambar: ${error.message || 'Unknown error'}`);
+      throw new Error(`Gagal generate gambar: ${error.message}`);
     }
   }
 
