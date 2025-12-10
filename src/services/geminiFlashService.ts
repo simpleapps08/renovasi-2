@@ -17,12 +17,18 @@ class GeminiFlashService {
   private readonly MODEL_REFINEMENT = 'gemini-1.5-flash';
 
   constructor() {
-    // Reverted: Use standard AI Studio key as primary to resolve blocking issues
+    // Use standard AI Studio key as primary
     this.apiKey = import.meta.env.VITE_GOOGLE_AI_STUDIO_API_KEY || '';
+
+    console.log('🔧 Initializing Gemini service...');
+    console.log('📝 API Key present:', !!this.apiKey);
+    console.log('📝 API Key length:', this.apiKey.length);
+    console.log('📝 API Key prefix:', this.apiKey.substring(0, 10) + '...');
 
     if (this.apiKey) {
       try {
         this.client = new GoogleGenAI({ apiKey: this.apiKey });
+        console.log('✅ Gemini client initialized successfully');
       } catch (error) {
         console.error('❌ Failed to initialize Gemini service:', error);
       }
@@ -51,10 +57,18 @@ class GeminiFlashService {
    * Step 1: Analyze Room
    */
   async analyzeRoomImage(file: File): Promise<string> {
-    if (!this.client) throw new Error('API Key tidak ditemukan. Cek .env Anda.');
+    console.log('🖼️ Starting room image analysis...');
+    console.log('📄 File:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+    if (!this.client) {
+      console.error('❌ No Gemini client available');
+      throw new Error('API Key tidak ditemukan. Cek .env Anda.');
+    }
 
     try {
+      console.log('🔄 Converting image to base64...');
       const base64Image = await this.fileToBase64(file);
+      console.log('✅ Image converted, length:', base64Image.length);
 
       const analysisPrompt = `
         Analyze this room image for a renovation app. Describe concisely:
@@ -64,6 +78,9 @@ class GeminiFlashService {
         4. Furniture layout
         Output plain text description only.
       `;
+
+      console.log('🚀 Sending request to Gemini API...');
+      console.log('📌 Using model:', this.MODEL_ANALYSIS);
 
       const response = await this.client.models.generateContent({
         model: this.MODEL_ANALYSIS,
@@ -77,17 +94,33 @@ class GeminiFlashService {
         ]
       });
 
+      console.log('📥 Received response from Gemini');
+      console.log('📊 Response:', JSON.stringify(response, null, 2));
+
       const analysis = response.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!analysis) throw new Error('No analysis generated');
+
+      if (!analysis) {
+        console.error('❌ No analysis text in response');
+        throw new Error('No analysis generated');
+      }
+
+      console.log('✅ Analysis successful:', analysis.substring(0, 100) + '...');
       return analysis;
 
     } catch (error: any) {
-      console.error('Analysis failed:', error);
+      console.error('❌ Analysis failed:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.status,
+        statusText: error.statusText,
+        stack: error.stack
+      });
+
       // More user-friendly error message
       if (error.status === 403 || error.message?.includes('403') || error.message?.includes('blocked')) {
         throw new Error('API Key diblokir atau tidak valid. Silakan cek konfigurasi Google AI Studio Anda.');
       }
-      throw new Error('Gagal menganalisis gambar. Pastikan API Key valid.');
+      throw new Error(`Gagal menganalisis gambar: ${error.message || 'Unknown error'}`);
     }
   }
 
