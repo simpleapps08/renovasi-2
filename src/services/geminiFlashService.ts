@@ -161,12 +161,12 @@ class GeminiFlashService {
   }
 
   /**
-   * Step 3: Generate Image using gemini-2.5-flash-image-preview
-   * This is the actual image editing step using Generative Inpainting
+   * Step 3: Generate Image using Imagen (Text-to-Image)
+   * Adapted from user provided script for Google GenAI SDK
    */
   async generateRoomImage(file: File, finalPrompt: string): Promise<string> {
-    console.log('🎨 Starting image generation with Gemini Flash Image Preview...');
-    console.log('📝 Final prompt:', finalPrompt);
+    console.log('🎨 Starting image generation with Imagen...');
+    console.log('📝 Prompt:', finalPrompt);
 
     if (!this.client) {
       console.error('❌ No Gemini client available');
@@ -174,82 +174,60 @@ class GeminiFlashService {
     }
 
     try {
-      console.log('🔄 Converting image to base64...');
-      const base64Image = await this.fileToBase64(file);
-      console.log('✅ Image converted for generation');
+      console.log('🚀 Calling client.models.generateImages...');
 
-      console.log('🚀 Calling gemini-2.5-flash-image-preview...');
-
-      // Use the Flash Image Preview model for low-cost image editing
-      const response = await this.client.models.generateContent({
-        model: this.MODEL_IMAGE_GEN,
-        contents: [
-          {
-            parts: [
-              { inlineData: { mimeType: file.type, data: base64Image } },
-              { text: finalPrompt }
-            ]
-          }
-        ]
+      // Call the Imagen model using the SDK method
+      // Note: generateImages is typically Text-to-Image. 
+      // The uploaded 'file' is largely ignored here unless using an edit-specific endpoint.
+      const response = await this.client.models.generateImages({
+        model: 'imagen-3.0-generate-001', // Using stable 3.0 version
+        prompt: finalPrompt,
+        config: {
+          numberOfImages: 1,
+        },
       });
 
-      console.log('📥 Received response from Gemini Image Preview');
-      console.log('📊 Response structure:', JSON.stringify(response, null, 2));
+      console.log('📥 Received response from Imagen');
+      // console.log('📊 Response structure:', JSON.stringify(response, null, 2));
 
-      // Extract image from response
-      const candidate = response.candidates?.[0];
+      // Check for generated images
+      if (response.generatedImages && response.generatedImages.length > 0) {
+        const generatedImage = response.generatedImages[0];
 
-      if (!candidate?.content?.parts) {
-        console.error('❌ No content parts in response');
-        throw new Error('No content returned from model');
-      }
+        if (generatedImage.image?.imageBytes) {
+          console.log('✅ Image bytes found');
 
-      // Check for inline image data
-      for (const part of candidate.content.parts) {
-        if (part.inlineData) {
-          console.log('✅ Image data found in response');
-          const mimeType = part.inlineData.mimeType || 'image/png';
-          const base64Data = part.inlineData.data;
+          // Convert base64 bytes to Blob URL (Browser equivalent of fs.writeFileSync)
+          const base64Data = generatedImage.image.imageBytes;
 
-          // Convert base64 to Blob URL for display
+          // Decode Base64 string
           const binaryString = atob(base64Data);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
-          const blob = new Blob([bytes], { type: mimeType });
+
+          const blob = new Blob([bytes], { type: "image/png" });
           const blobUrl = URL.createObjectURL(blob);
 
-          console.log('✅ Image generation successful!');
+          console.log('✅ Image generation successful! URL created.');
           return blobUrl;
         }
       }
 
-      // Check if model returned text instead (refusal or error)
-      const textPart = candidate.content.parts.find(p => p.text)?.text;
-      if (textPart) {
-        console.warn('⚠️ Model returned text instead of image:', textPart);
-        throw new Error(`Model tidak menghasilkan gambar. Response: "${textPart.substring(0, 200)}..."`);
-      }
-
-      throw new Error('Tidak ada gambar yang dihasilkan oleh model.');
+      throw new Error('Tidak ada data gambar yang dikembalikan oleh model.');
 
     } catch (error: any) {
       console.error('❌ Image generation failed:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        status: error.status,
-        statusText: error.statusText
-      });
+      console.error('❌ Error details:', error.message);
 
-      // Handle specific error cases
-      if (error.status === 404 || error.message?.includes('404') || error.message?.includes('not found')) {
-        console.error('❌ Model gemini-2.5-flash-image-preview not found or not accessible');
-        throw new Error('Model gemini-2.5-flash-image-preview tidak tersedia. Pastikan API key memiliki akses ke model ini.');
+      // Handle common errors
+      if (error.status === 404 || error.message?.includes('not found')) {
+        throw new Error('Model Imagen tidak ditemukan atau belum aktif di akun ini.');
       }
-
-      if (error.status === 403 || error.message?.includes('403') || error.message?.includes('blocked')) {
-        throw new Error('API Key tidak memiliki akses ke model image generation. Periksa quota dan permissions di Google AI Studio.');
+      if (error.status === 403 || error.message?.includes('permission')) {
+        throw new Error('API Key tidak memiliki izin akses ke Imagen.');
       }
 
       throw new Error(`Gagal generate gambar: ${error.message || 'Unknown error'}`);
