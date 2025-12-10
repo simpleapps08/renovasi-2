@@ -5,12 +5,13 @@ import { supabase } from '../lib/supabaseClient';
 // Define the Profile interface based on your database schema
 interface Profile {
   id: string;
-  email?: string;
-  full_name?: string;
-  location?: string;
+  user_id: string;
+  nama: string;
+  lokasi?: string | null;
   role?: string;
-  saldo_deposit?: number;
+  saldo_deposit?: number | null;
   created_at?: string;
+  updated_at?: string;
 }
 
 interface AuthContextType {
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('user_id', session.user.id)
           .single();
 
         if (mounted) {
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const { data: profileData } = await supabase
               .from('profiles')
               .select('*')
-              .eq('id', session.user.id)
+              .eq('user_id', session.user.id)
               .single();
 
             if (mounted) {

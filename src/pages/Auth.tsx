@@ -33,7 +33,7 @@ const Auth = () => {
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('user_id', session.user.id)
           .single()
 
 
@@ -74,7 +74,7 @@ const Auth = () => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', data.user.id)
+        .eq('user_id', data.user.id)
         .single()
 
 
@@ -132,8 +132,8 @@ const Auth = () => {
       password: registerData.password,
       options: {
         data: {
-          full_name: registerData.nama,
-          location: registerData.lokasi,
+          nama: registerData.nama,
+          lokasi: registerData.lokasi,
         },
         emailRedirectTo: `${window.location.origin}/auth/confirm`
       }
