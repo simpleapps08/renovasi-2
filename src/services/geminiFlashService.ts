@@ -15,7 +15,7 @@ class GeminiFlashService {
   // Model Constants
   private readonly MODEL_ANALYSIS = 'gemini-2.0-flash-exp';
   private readonly MODEL_REFINEMENT = 'gemini-2.0-flash-exp';
-  private readonly MODEL_IMAGE_GEN = 'gemini-2.0-flash-exp';
+  private readonly MODEL_IMAGE_GEN = 'gemini-2.5-flash-image';  // Supports actual image generation
 
   constructor() {
     // Use standard AI Studio key as primary
