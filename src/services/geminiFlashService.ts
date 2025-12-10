@@ -174,9 +174,22 @@ class GeminiFlashService {
       });
 
       console.log('📥 Received response from Gemini');
+      console.log('🔍 Full response:', JSON.stringify(response, null, 2));
 
       const candidate = response.candidates?.[0];
+      console.log('🔍 Candidate:', JSON.stringify(candidate, null, 2));
+      console.log('🔍 Has content?', !!candidate?.content);
+      console.log('🔍 Has parts?', !!candidate?.content?.parts);
+      console.log('🔍 Parts length:', candidate?.content?.parts?.length);
+
       if (!candidate?.content?.parts) {
+        console.error('❌ Response structure:', {
+          hasCandidates: !!response.candidates,
+          candidatesLength: response.candidates?.length,
+          hasCandidate: !!candidate,
+          hasContent: !!candidate?.content,
+          hasParts: !!candidate?.content?.parts,
+        });
         throw new Error('No content returned from model');
       }
 
