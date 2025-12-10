@@ -36,7 +36,22 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Protected Route Component
-function ProtectedRoute({ children }: { children: React.ReactNode, adminOnly?: boolean }) {
+// Protected Route Component
+function ProtectedRoute({ children, adminOnly }: { children: React.ReactNode, adminOnly?: boolean }) {
+  const { user, profile, loading } = useAuth();
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div></div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (adminOnly && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 }
 

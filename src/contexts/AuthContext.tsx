@@ -28,58 +28,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Do NOT set loading to true here, as it causes the entire app/router to unmount/remount
-      // which triggers a reload loop. Only updating state is sufficient.
+      // console.log("Auth Event:", event, session?.user?.email);
+      if (mounted) {
+        setSession(session);
+        setUser(session?.user ?? null);
 
-      setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        // Fetch the user's profile
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-        }
-        setProfile(profileData as Profile | null);
-      } else {
-        setProfile(null);
-      }
-
-      // Ensure loading is false after any auth change completes (useful if it was the first load)
-      setLoading(false);
-    });
-
-    // Initial check (Separate from listener to ensure immediate checking)
-    // Note: onAuthStateChange usually fires INITIAL_SESSION automatically upon subscription
-    // but explicit check is safer for hydration.
-    /* 
-       However, calling getSession() concurrently with the listener might cause race conditions
-       if not handled carefully. But usually, we just want to ensure 'loading' turns off eventually.
-    */
-
-    // We can rely on onAuthStateChange for the logic, but we need to ensure local storage read finishes.
-    // The previous implementation had a race where both might run. 
-    // Let's simplify: set timeout fallback or just trust the listener, but explicit getSession is standard.
-    // We will keep explicit getSession but purely to turn off loading if listener doesn't fire immediately.
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        // If no session, listener might fire SIGNED_OUT or nothing. 
-        // We must ensure loading stops if there's no user.
+        // Always turn off loading on auth event
         setLoading(false);
       }
-      // If there is a session, the onAuthStateChange will handle the data fetching and setting loading=false.
+
+      if (session?.user && mounted) {
+        // Fetch profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (mounted) {
+          setProfile(profileData as Profile | null);
+        }
+      } else if (mounted) {
+        setProfile(null);
+      }
     });
 
+    // Initial check (Robust)
+    // We check getSession to catch the case where no event fires (e.g. no change detected but initial state exists or is null)
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (mounted) {
+          if (session) {
+            setSession(session);
+            setUser(session.user);
+
+            // Fetch profile for initial session
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (mounted) {
+              setProfile(profileData as Profile | null);
+            }
+          }
+          // Turn off loading regardless of outcome
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        if (mounted) setLoading(false);
+      }
+    })();
+
     return () => {
+      mounted = false;
       authListener.subscription.unsubscribe();
     };
   }, []);
