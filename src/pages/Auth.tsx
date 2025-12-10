@@ -132,8 +132,8 @@ const Auth = () => {
       password: registerData.password,
       options: {
         data: {
-          nama: registerData.nama,
-          lokasi: registerData.lokasi,
+          full_name: registerData.nama,
+          location: registerData.lokasi,
         },
         emailRedirectTo: `${window.location.origin}/auth/confirm`
       }

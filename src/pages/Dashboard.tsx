@@ -65,13 +65,13 @@ export default function Dashboard() {
               <Avatar className="w-12 h-12 border-2 border-white/30">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-white/20 text-white font-semibold">
-                  {profile?.nama?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
+                  {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-white/80 text-xs font-medium">Selamat datang,</p>
                 <p className="text-white text-lg font-bold">
-                  {profile?.nama || user?.email?.split('@')[0] || 'Pengguna'}
+                  {profile?.full_name || user?.email?.split('@')[0] || 'Pengguna'}
                 </p>
               </div>
             </div>

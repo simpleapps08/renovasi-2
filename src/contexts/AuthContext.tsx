@@ -5,10 +5,12 @@ import { supabase } from '../lib/supabaseClient';
 // Define the Profile interface based on your database schema
 interface Profile {
   id: string;
-  nama?: string;
+  email?: string;
+  full_name?: string;
+  location?: string;
   role?: string;
+  saldo_deposit?: number;
   created_at?: string;
-  updated_at?: string;
 }
 
 interface AuthContextType {
