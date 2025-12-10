@@ -12,10 +12,10 @@ class GeminiFlashService {
   private client: GoogleGenAI | null = null;
   private apiKey: string;
 
-  // Model Constants - Full Free Strategy
-  private readonly MODEL_ANALYSIS = 'gemini-1.5-flash';        // Step 1: Vision analysis
-  private readonly MODEL_REFINEMENT = 'gemini-1.5-flash';      // Step 2: Text refinement
-  private readonly MODEL_IMAGE_GEN = 'gemini-2.5-flash-image-preview'; // Step 3: Image editing
+  // Model Constants - Full Free Strategy (using correct model identifiers for v1beta)
+  private readonly MODEL_ANALYSIS = 'gemini-1.5-flash-latest';        // Step 1: Vision analysis
+  private readonly MODEL_REFINEMENT = 'gemini-1.5-flash-latest';      // Step 2: Text refinement  
+  private readonly MODEL_IMAGE_GEN = 'gemini-2.0-flash-exp';          // Step 3: Image editing (experimental)
 
   constructor() {
     // Use standard AI Studio key as primary
@@ -190,12 +190,7 @@ class GeminiFlashService {
               { text: finalPrompt }
             ]
           }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-        }
+        ]
       });
 
       console.log('📥 Received response from Gemini Image Preview');
