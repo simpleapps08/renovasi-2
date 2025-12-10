@@ -13,8 +13,8 @@ class GeminiFlashService {
   private apiKey: string;
 
   // Model Constants
-  private readonly MODEL_ANALYSIS = 'gemini-1.5-flash';
-  private readonly MODEL_REFINEMENT = 'gemini-1.5-flash';
+  private readonly MODEL_ANALYSIS = 'gemini-2.0-flash-exp';
+  private readonly MODEL_REFINEMENT = 'gemini-2.0-flash-exp';
   private readonly MODEL_IMAGE_GEN = 'gemini-2.0-flash-exp';
 
   constructor() {
