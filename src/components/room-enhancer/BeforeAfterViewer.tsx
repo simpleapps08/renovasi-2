@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,13 +16,20 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
 }) => {
   const [showComparison, setShowComparison] = useState(true);
   const [sliderPosition, setSliderPosition] = useState(50);
-  
-  console.log('BeforeAfterViewer props:', { 
-    beforeImage: beforeImage ? 'File object present' : 'null/undefined', 
-    afterImage: afterImage ? afterImage : 'null/undefined', 
-    afterImageType: typeof afterImage,
-    isLoading 
-  });
+  const [beforeImageUrl, setBeforeImageUrl] = useState<string | null>(null);
+
+  // Properly manage ObjectURL lifecycle to prevent memory leaks
+  useEffect(() => {
+    if (beforeImage) {
+      const url = URL.createObjectURL(beforeImage);
+      setBeforeImageUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setBeforeImageUrl(null);
+    }
+  }, [beforeImage]);
 
   if (!beforeImage && !afterImage) {
     return null;
@@ -49,7 +56,7 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
               </Badge>
             )}
           </CardTitle>
-          
+
           <div className="flex items-center gap-2">
             {beforeImage && afterImage && (
               <Button
@@ -67,7 +74,7 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {isLoading ? (
           <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
@@ -83,42 +90,35 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
             {beforeImage && afterImage && showComparison ? (
               <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
                 {/* Before Image */}
-                <div 
+                <div
                   className="absolute inset-0"
                   style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
                 >
-                  <img 
-                    src={URL.createObjectURL(beforeImage)} 
-                    alt="Before renovation" 
+                  <img
+                    src={beforeImageUrl || ''}
+                    alt="Before renovation"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-4 left-4">
                     <Badge variant="secondary">Sebelum</Badge>
                   </div>
                 </div>
-                
+
                 {/* After Image */}
-                <div 
+                <div
                   className="absolute inset-0"
                   style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                 >
-                  <img 
-                    src={afterImage} 
-                    alt="After renovation" 
+                  <img
+                    src={afterImage}
+                    alt="After renovation"
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('Error loading after image:', afterImage);
-                      console.error('Image error event:', e);
-                    }}
-                    onLoad={() => {
-                      console.log('After image loaded successfully:', afterImage);
-                    }}
                   />
                   <div className="absolute top-4 right-4">
                     <Badge variant="default" className="bg-green-600">Sesudah</Badge>
                   </div>
                 </div>
-                
+
                 {/* Slider */}
                 <div className="absolute inset-0 flex items-center">
                   <input
@@ -129,10 +129,10 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                     onChange={handleSliderChange}
                     className="w-full h-full opacity-0 cursor-col-resize"
                   />
-                  <div 
+                  <div
                     className="absolute w-1 bg-white shadow-lg pointer-events-none"
-                    style={{ 
-                      left: `${sliderPosition}%`, 
+                    style={{
+                      left: `${sliderPosition}%`,
                       height: '100%',
                       transform: 'translateX(-50%)'
                     }}
@@ -150,9 +150,9 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {beforeImage && (
                     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-                      <img 
-                        src={URL.createObjectURL(beforeImage)} 
-                        alt="Before renovation" 
+                      <img
+                        src={beforeImageUrl || ''}
+                        alt="Before renovation"
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-4 left-4">
@@ -160,20 +160,13 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                       </div>
                     </div>
                   )}
-                  
+
                   {afterImage ? (
                     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-                      <img 
-                        src={afterImage} 
-                        alt="After renovation" 
+                      <img
+                        src={afterImage}
+                        alt="After renovation"
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          console.error('Error loading after image (single view):', afterImage);
-                          console.error('Image error event:', e);
-                        }}
-                        onLoad={() => {
-                          console.log('After image loaded successfully (single view):', afterImage);
-                        }}
                       />
                       <div className="absolute top-4 left-4">
                         <Badge variant="default" className="bg-green-600">Sesudah</Badge>
@@ -190,7 +183,7 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                 </div>
               </div>
             )}
-            
+
             {/* AI Analysis */}
             {aiAnalysis && (
               <div className="bg-muted/50 rounded-lg p-4">
@@ -198,7 +191,7 @@ const BeforeAfterViewer: React.FC<BeforeAfterViewerProps> = ({
                 <p className="text-sm text-muted-foreground">{aiAnalysis}</p>
               </div>
             )}
-            
+
             {/* Action Buttons */}
             {afterImage && (
               <div className="flex flex-wrap gap-2 justify-center">

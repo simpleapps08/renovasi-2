@@ -3,14 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Store, 
-  Package, 
-  Settings, 
-  BarChart3, 
-  Users, 
-  ShoppingCart, 
-  TrendingUp, 
+import {
+  Store,
+  Package,
+  Settings,
+  BarChart3,
+  Users,
+  ShoppingCart,
+  TrendingUp,
   Eye,
   Star,
   Calendar,
@@ -24,10 +24,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 
 // Import komponen yang telah dibuat
-import AdminTokoNew from '@/components/AdminTokoNew';
-import ProductManagement from '@/components/ProductManagement';
-import StoreManagement from '@/components/StoreManagement';
-import StoreAuth from '@/components/StoreAuth';
+import AdminTokoNew from './AdminTokoNew';
+import ProductManagement from '@/components/features/product/ProductManagement';
+import StoreManagement from '@/components/features/store/StoreManagement';
+import StoreAuth from '@/components/features/auth/StoreAuth';
 
 interface User {
   id: string;
@@ -67,7 +67,7 @@ const AdminTokoMultiVendor: React.FC = () => {
     try {
       const token = localStorage.getItem('store_auth_token');
       const userData = localStorage.getItem('store_user');
-      
+
       if (token && userData) {
         const user = JSON.parse(userData);
         setCurrentUser(user);
@@ -108,7 +108,7 @@ const AdminTokoMultiVendor: React.FC = () => {
         created_at: '2024-01-15T08:45:00Z'
       }
     ];
-    
+
     setNotifications(mockNotifications);
     setUnreadCount(mockNotifications.filter(n => !n.read).length);
   };
@@ -162,7 +162,7 @@ const AdminTokoMultiVendor: React.FC = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) {
       return `${diffInMinutes} menit yang lalu`;
     } else if (diffInMinutes < 1440) {
@@ -193,16 +193,15 @@ const AdminTokoMultiVendor: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
         <div className="flex items-center justify-between h-16 px-6 border-b">
           <div className="flex items-center space-x-2">
             <div className="bg-blue-100 p-2 rounded-lg">
@@ -240,8 +239,8 @@ const AdminTokoMultiVendor: React.FC = () => {
                 {currentUser.email}
               </p>
               <Badge variant="outline" className="mt-1 text-xs">
-                {currentUser.role === 'store_owner' ? 'Pemilik' : 
-                 currentUser.role === 'store_admin' ? 'Admin' : 'Staff'}
+                {currentUser.role === 'store_owner' ? 'Pemilik' :
+                  currentUser.role === 'store_admin' ? 'Admin' : 'Staff'}
               </Badge>
             </div>
           </div>
@@ -258,11 +257,10 @@ const AdminTokoMultiVendor: React.FC = () => {
                   setActiveTab(item.id);
                   setSidebarOpen(false);
                 }}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === item.id
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id
                     ? 'bg-blue-100 text-blue-700 border border-blue-200'
                     : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 <Icon className="h-5 w-5 mr-3" />
                 <div className="text-left">
@@ -303,7 +301,7 @@ const AdminTokoMultiVendor: React.FC = () => {
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              
+
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
                   {menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
@@ -320,8 +318,8 @@ const AdminTokoMultiVendor: React.FC = () => {
                 <Button variant="ghost" size="sm" className="relative">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
+                    <Badge
+                      variant="destructive"
                       className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                     >
                       {unreadCount}
@@ -329,7 +327,7 @@ const AdminTokoMultiVendor: React.FC = () => {
                   )}
                 </Button>
               </div>
-              
+
               <div className="text-sm text-gray-600">
                 Toko ID: {currentUser.store_id}
               </div>
@@ -401,9 +399,8 @@ const AdminTokoMultiVendor: React.FC = () => {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-3 rounded-lg border ${
-                  notification.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
-                }`}
+                className={`p-3 rounded-lg border ${notification.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
+                  }`}
               >
                 <div className="flex items-start space-x-3">
                   <span className="text-lg">

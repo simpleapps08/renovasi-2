@@ -1,65 +1,52 @@
-import { GoogleGenAI, Modality } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 
 /**
- * Gemini Flash 2.5 Image Preview Service
- * Integrates with Google's Gemini 2.5 Flash Image Preview model
+ * Gemini Room Enhancer Service
+ * Implements the "Full Free" strategy using:
+ * 1. Gemini 1.5 Flash (Vision) - For Analysis
+ * 2. Gemini 1.5 Flash (Text) - For Prompt Refinement
+ * 3. Gemini 2.5 Flash Image Preview - For Image Generation/Editing
  */
-
-interface GeminiFlashRequest {
-  imageFile: File;
-  prompt: string;
-  model?: string;
-}
-
-interface GeminiFlashResponse {
-  success: boolean;
-  imageUrl?: string;
-  analysis?: string;
-  processingTime?: number;
-  error?: string;
-}
 
 class GeminiFlashService {
   private client: GoogleGenAI | null = null;
   private apiKey: string;
-  private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+
+  // Model Constants
+  private readonly MODEL_ANALYSIS = 'gemini-2.5-flash';
+  private readonly MODEL_REFINEMENT = 'gemini-2.5-flash';
+  // Switched to gemini-2.5-flash-image-preview as requested
+  private readonly MODEL_EDITING = 'gemini-2.5-flash-image-preview';
 
   constructor() {
-    // Get API key from environment or storage (same as existing aiService)
-    this.apiKey = import.meta.env.VITE_GOOGLE_AI_STUDIO_API_KEY || 
-                  import.meta.env.VITE_GOOGLE_AI_API_KEY || 
-                  localStorage.getItem('google_ai_api_key') || '';
-    
+    // Use AI Studio key (valid format: AIza...) as primary
+    // Vision key was OAuth token format, not compatible with this API
+    this.apiKey = import.meta.env.VITE_GOOGLE_AI_STUDIO_API_KEY ||
+      import.meta.env.VITE_GOOGLE_CLOUD_VISION_API_KEY || '';
+
     if (this.apiKey) {
       try {
-        // Initialize GoogleGenAI with API key (browser environment requires API key)
+        // Initialize the new @google/genai SDK
         this.client = new GoogleGenAI({ apiKey: this.apiKey });
-        console.log('Gemini Flash service initialized successfully');
+        console.log('✅ Gemini Flash service initialized with key:', this.apiKey.substring(0, 10) + '...');
       } catch (error) {
-        console.error('Failed to initialize Gemini Flash service:', error);
+        console.error('❌ Failed to initialize Gemini Flash service:', error);
       }
     } else {
-      console.warn('Google AI API key not found. Please set VITE_GOOGLE_AI_STUDIO_API_KEY, VITE_GOOGLE_AI_API_KEY, or store in localStorage.');
+      console.warn('⚠️ Google AI API key not found in environment variables.');
     }
   }
 
   /**
-   * Check if API key is available
-   */
-  private hasApiKey(): boolean {
-    return !!this.apiKey && this.apiKey.trim() !== '';
-  }
-
-  /**
-   * Convert file to base64 string
+   * Helper to convert File to Base64 string for API calls
    */
   private async fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        const base64 = reader.result as string;
-        // Remove data:image/jpeg;base64, prefix
-        const base64Data = base64.split(',')[1];
+        const result = reader.result as string;
+        // Clean the base64 string (remove data URL prefix)
+        const base64Data = result.split(',')[1];
         resolve(base64Data);
       };
       reader.onerror = reject;
@@ -68,165 +55,161 @@ class GeminiFlashService {
   }
 
   /**
-   * Generate enhanced room image using Gemini Flash 2.5
+   * Step 2: Analyze Room (Cost: Very Low)
+   * Uses Gemini 1.5 Flash Vision to understand the room's structure and lighting.
    */
-  async generateContent(request: GeminiFlashRequest): Promise<GeminiFlashResponse> {
+  async analyzeRoomImage(file: File): Promise<string> {
+    if (!this.client) throw new Error('API Key tidak ditemukan. Cek konfigurasi .env Anda.');
+
     const startTime = Date.now();
-    
     try {
-      if (!this.hasApiKey() || !this.client) {
-        throw new Error('Google AI API key tidak tersedia atau client tidak terinisialisasi. Silakan atur VITE_GOOGLE_AI_STUDIO_API_KEY atau VITE_GOOGLE_AI_API_KEY.');
-      }
+      const base64Image = await this.fileToBase64(file);
 
-      // Convert image to base64
-      const base64Image = await this.fileToBase64(request.imageFile);
-      
-      // Prepare the prompt for room enhancement using new documentation format
-      const enhancementPrompt = [
-        {
-          inlineData: {
-            mimeType: request.imageFile.type,
-            data: base64Image,
-          },
-        },
-        { 
-          text: request.prompt
-        }
-      ];
+      const analysisPrompt = `
+        Analyze this room image for a renovation app. Describe the following concisely:
+        1. Lighting Source & Direction (e.g., natural light from right window)
+        2. Wall Texture & Material
+        3. Key Structural Elements (windows, doors, ceiling type)
+        4. Current Furniture layout to preserve
+        Output plain text description only.
+      `;
 
-      // Make API call to Gemini Flash 2.5 (following the provided documentation pattern)
-       const response = await this.client.models.generateContent({
-         model: request.model || 'gemini-2.5-flash-image',
-         contents: enhancementPrompt,
-       });
+      const response = await this.client.models.generateContent({
+        model: this.MODEL_ANALYSIS,
+        contents: [
+          {
+            parts: [
+              { inlineData: { mimeType: file.type, data: base64Image } },
+              { text: analysisPrompt }
+            ]
+          }
+        ]
+      });
 
-      const processingTime = Date.now() - startTime;
-      
-      // Process response (following the provided documentation pattern)
-       if (response.candidates && response.candidates.length > 0) {
-         const candidate = response.candidates[0];
-         let imageUrl: string | undefined;
-         let analysis: string | undefined;
-         
-         // Process each part of the response (following the provided documentation pattern)
-         for (const part of candidate.content.parts) {
-           if (part.text) {
-             analysis = part.text;
-             console.log(part.text);
-           } else if (part.inlineData) {
-             // Convert base64 back to blob and create URL (browser-compatible approach)
-             const imageData = part.inlineData.data;
-             // Convert base64 to Uint8Array without using Buffer (browser-compatible)
-             const binaryString = atob(imageData);
-             const bytes = new Uint8Array(binaryString.length);
-             for (let i = 0; i < binaryString.length; i++) {
-               bytes[i] = binaryString.charCodeAt(i);
-             }
-             const blob = new Blob([bytes], { type: part.inlineData.mimeType || 'image/png' });
-             imageUrl = URL.createObjectURL(blob);
-             console.log("Image saved as blob URL");
-           }
-         }
+      const analysis = response.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!analysis) throw new Error('Gagal menganalisis gambar.');
+
+      console.log(`Step 1 Analysis (${Date.now() - startTime}ms):`, analysis);
+      return analysis;
+
+    } catch (error: any) {
+      console.error('Analysis failed:', error);
+      throw new Error(error.message || 'Gagal melakukan analisis vision.');
+    }
+  }
+
+  /**
+   * Step 3: Refine Prompt (Cost: Near Zero)
+   * Uses Gemini 1.5 Flash Text to create a perfect prompt for the image generator.
+   */
+  async refinePrompt(userInstruction: string, analysisData: string): Promise<string> {
+    if (!this.client) throw new Error('API Key tidak ditemukan.');
+
+    const startTime = Date.now();
+    try {
+      const systemPrompt = `
+        Role: Expert AI Image Prompt Engineer.
+        Task: Create a single, highly detailed photorealistic prompt for an inpainting AI (Gemini Image).
         
-        return {
-          success: true,
-          imageUrl,
-          analysis,
-          processingTime
-        };
-      } else {
-        throw new Error('Tidak ada respons yang dihasilkan dari Gemini Flash');
-      }
-      
-    } catch (error) {
-      console.error('Gemini Flash generation error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Terjadi kesalahan saat menghasilkan gambar',
-        processingTime: Date.now() - startTime
-      };
+        Input:
+        - User Goal: "${userInstruction}"
+        - Room Analysis: "${analysisData}"
+        
+        Guidelines:
+        1. Combine the User Goal with the physical constraints from Analysis (lighting, perspective).
+        2. Explicitly state to MAINTAIN the furniture, floor, and ceiling if the user didn't ask to change them.
+        3. Use descriptive keywords for materials (e.g., "matte finish", "velvet texture") and lighting (e.g., "soft diffused sunlight").
+        4. Output ONLY the final prompt paragraph.
+      `;
+
+      const response = await this.client.models.generateContent({
+        model: this.MODEL_REFINEMENT,
+        contents: [
+          { parts: [{ text: systemPrompt }] }
+        ]
+      });
+
+      const refinedPrompt = response.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!refinedPrompt) throw new Error('Gagal menyusun prompt.');
+
+      console.log(`Step 2 Refinement (${Date.now() - startTime}ms):`, refinedPrompt);
+      return refinedPrompt;
+
+    } catch (error: any) {
+      console.error('Prompt refinement failed:', error);
+      throw new Error(error.message || 'Gagal menyempurnakan prompt.');
     }
   }
 
   /**
-   * Convert base64 image data to blob URL for display
+   * Step 4: Execute Image Generation (Cost: Low/Free Tier)
+   * Uses Gemini 2.5 Flash Image Preview for the actual visual editing.
    */
-  private base64ToImageUrl(base64Data: string, mimeType: string): string {
+  async generateRoomImage(file: File, finalPrompt: string): Promise<string> {
+    if (!this.client) throw new Error('API Key tidak ditemukan.');
+
+    const startTime = Date.now();
     try {
-      // Convert base64 to binary
-      const binaryString = atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      const base64Image = await this.fileToBase64(file);
+
+      console.log(`Step 3 Generating with ${this.MODEL_EDITING}...`);
+
+      const response = await this.client.models.generateContent({
+        model: this.MODEL_EDITING,
+        contents: [
+          {
+            parts: [
+              { inlineData: { mimeType: file.type, data: base64Image } },
+              { text: finalPrompt }
+            ]
+          }
+        ]
+      });
+
+      console.log('Generation response received');
+
+      // Extract image from response
+      const candidate = response.candidates?.[0];
+
+      // Check for inline image data
+      if (candidate?.content?.parts) {
+        for (const part of candidate.content.parts) {
+          if (part.inlineData) {
+            const mimeType = part.inlineData.mimeType || 'image/png';
+            const base64Data = part.inlineData.data;
+
+            // Convert to Blob URL
+            const binaryString = atob(base64Data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: mimeType });
+            return URL.createObjectURL(blob);
+          }
+        }
       }
-      
-      // Create blob and return URL
-      const blob = new Blob([bytes], { type: mimeType });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error('Error converting base64 to image URL:', error);
-      return '';
+
+      // Check for refusal or text-only response (common error case)
+      const textPart = candidate?.content?.parts?.find(p => p.text)?.text;
+      if (textPart) {
+        throw new Error(`Model menolak atau hanya merespons teks: "${textPart.substring(0, 100)}..."`);
+      }
+
+      throw new Error('Tidak ada gambar yang dihasilkan oleh model.');
+
+    } catch (error: any) {
+      console.error('Image generation failed:', error);
+      const msg = error.message || 'Gagal generate gambar';
+      if (msg.includes('404') || msg.includes('not found')) {
+        throw new Error(`Model ${this.MODEL_EDITING} tidak ditemukan. Pastikan API permission atau region support.`);
+      }
+      throw new Error(msg);
     }
-  }
-
-  /**
-   * Download generated image
-   */
-  downloadGeneratedImage(imageUrl: string, filename: string = 'gemini-generated-image.png'): void {
-    try {
-      const link = document.createElement('a');
-      link.href = imageUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error downloading image:', error);
-    }
-  }
-
-  /**
-   * Analyze image without generating new content
-   */
-  async analyzeImage(imageFile: File, analysisPrompt: string = 'Describe this image in detail'): Promise<GeminiFlashResponse> {
-    return this.generateContent({
-      imageFile,
-      prompt: analysisPrompt
-    });
-  }
-
-  /**
-   * Generate image based on text prompt and reference image
-   */
-  async generateImageFromPrompt(
-    referenceImage: File, 
-    creativePrompt: string
-  ): Promise<GeminiFlashResponse> {
-    const enhancedPrompt = `Based on this reference image, create a new image: ${creativePrompt}`;
-    
-    return this.generateContent({
-      imageFile: referenceImage,
-      prompt: enhancedPrompt
-    });
-  }
-
-  /**
-   * Room enhancement with Gemini Flash
-   */
-  async enhanceRoom(
-    roomImage: File,
-    style: string,
-    additionalRequirements: string = ''
-  ): Promise<GeminiFlashResponse> {
-    const prompt = `Create an enhanced version of this room with ${style} style. ${additionalRequirements ? `Additional requirements: ${additionalRequirements}` : ''} Generate a new image showing the transformed room.`;
-    
-    return this.generateContent({
-      imageFile: roomImage,
-      prompt
-    });
   }
 }
 
-// Export singleton instance
 export const geminiFlashService = new GeminiFlashService();
 export default geminiFlashService;

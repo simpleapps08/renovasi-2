@@ -10,6 +10,8 @@ import { Shield, ArrowLeft } from "lucide-react"
 
 const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('')
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -24,7 +26,7 @@ const AdminLogin = () => {
           .select('role')
           .eq('user_id', session.user.id)
           .single()
-        
+
         if (error) {
           console.log('Profile fetch error:', error.message)
           toast({
@@ -34,7 +36,7 @@ const AdminLogin = () => {
           })
           return
         }
-        
+
         if (profile?.role === 'super_admin') {
           navigate('/super-admin/dashboard')
         } else if (profile?.role === 'admin') {
@@ -57,7 +59,7 @@ const AdminLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: loginData.email,
       password: loginData.password,
@@ -74,51 +76,78 @@ const AdminLogin = () => {
     }
 
     if (data.user) {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .single()
-      
-        if (error) {
-          console.log('Profile fetch error during login:', error.message)
-          toast({
-            title: "Error",
-            description: "Gagal mengambil data profil pengguna.",
-            variant: "destructive",
-          })
-          await supabase.auth.signOut()
-          setIsLoading(false)
-          return
-        }
-      
-        if (profile?.role === 'super_admin') {
-          toast({
-            title: "Login Berhasil",
-            description: "Selamat datang di Super Admin Portal!",
-          })
-          navigate('/super-admin/dashboard')
-        } else if (profile?.role === 'admin') {
-          toast({
-            title: "Login Berhasil",
-            description: "Selamat datang, Administrator!",
-          })
-          navigate('/admin')
-        } else if (profile?.role === 'admin_store') {
-          toast({
-            title: "Login Berhasil",
-            description: "Selamat datang, Admin Toko!",
-          })
-          navigate('/admin/toko')
-        } else {
-          toast({
-            title: "Akses Ditolak",
-            description: "Akun ini tidak memiliki akses administrator.",
-            variant: "destructive",
-          })
-          await supabase.auth.signOut()
-        }
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single()
+
+      if (error) {
+        console.log('Profile fetch error during login:', error.message)
+        toast({
+          title: "Error",
+          description: "Gagal mengambil data profil pengguna.",
+          variant: "destructive",
+        })
+        await supabase.auth.signOut()
+        setIsLoading(false)
+        return
+      }
+
+      if (profile?.role === 'super_admin') {
+        toast({
+          title: "Login Berhasil",
+          description: "Selamat datang di Super Admin Portal!",
+        })
+        navigate('/super-admin/dashboard')
+      } else if (profile?.role === 'admin') {
+        toast({
+          title: "Login Berhasil",
+          description: "Selamat datang, Administrator!",
+        })
+        navigate('/admin')
+      } else if (profile?.role === 'admin_store') {
+        toast({
+          title: "Login Berhasil",
+          description: "Selamat datang, Admin Toko!",
+        })
+        navigate('/admin/toko')
+      } else {
+        toast({
+          title: "Akses Ditolak",
+          description: "Akun ini tidak memiliki akses administrator.",
+          variant: "destructive",
+        })
+        await supabase.auth.signOut()
+      }
     }
+    setIsLoading(false)
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+
+    if (error) {
+      toast({
+        title: "Gagal Mengirim Email",
+        description: error.message,
+        variant: "destructive",
+      })
+    } else {
+      toast({
+        title: "Email Terkirim!",
+        description: "Silakan cek email Anda untuk link reset password.",
+        duration: 6000,
+      })
+      setShowForgotPassword(false)
+      setForgotPasswordEmail('')
+    }
+
     setIsLoading(false)
   }
 
@@ -152,7 +181,7 @@ const AdminLogin = () => {
               Masukkan kredensial administrator untuk mengakses panel admin
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
@@ -162,12 +191,12 @@ const AdminLogin = () => {
                   type="email"
                   placeholder="admin@servisoo.com"
                   value={loginData.email}
-                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                   className="h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                 <Input
@@ -175,15 +204,25 @@ const AdminLogin = () => {
                   type="password"
                   placeholder="Masukkan password administrator"
                   value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                   className="h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                   required
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold" 
+
+              <div className="flex items-center justify-end mb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-purple-600 hover:underline"
+                >
+                  Lupa password?
+                </button>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -196,10 +235,42 @@ const AdminLogin = () => {
                 )}
               </Button>
             </form>
-            
+
+            {/* Forgot Password Modal */}
+            {showForgotPassword && (
+              <div className="mt-4 p-4 border rounded-lg bg-white/50">
+                <h3 className="font-semibold mb-2">Reset Password</h3>
+                <form onSubmit={handleForgotPassword} className="space-y-3">
+                  <Input
+                    type="email"
+                    placeholder="Masukkan email administrator"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    required
+                  />
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" disabled={isLoading}>
+                      {isLoading ? "Mengirim..." : "Kirim Link Reset"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setShowForgotPassword(false)
+                        setForgotPasswordEmail('')
+                      }}
+                    >
+                      Batal
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             <div className="mt-6 text-center">
-              <Link 
-                to="/auth" 
+              <Link
+                to="/auth"
                 className="text-sm text-purple-600 hover:text-purple-800 hover:underline"
               >
                 Login sebagai pengguna biasa?
@@ -207,11 +278,11 @@ const AdminLogin = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Info Box */}
         <div className="mt-6 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
           <p className="text-white/80 text-sm text-center">
-            <strong>Info:</strong> Halaman ini khusus untuk administrator SERVISOO. 
+            <strong>Info:</strong> Halaman ini khusus untuk administrator SERVISOO.
             Jika Anda pengguna biasa, silakan gunakan halaman login reguler.
           </p>
         </div>

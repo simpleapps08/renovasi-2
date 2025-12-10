@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
+import ResetPassword from "./pages/ResetPassword";
+import FloatingChatLeft from "./components/ui/FloatingChatLeft";
 
 import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
@@ -34,25 +36,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Protected Route Component
-function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
-  const { user, profile, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  if (adminOnly && !profile?.role) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  if (adminOnly && !['admin', 'super_admin'].includes(profile?.role || '')) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
+function ProtectedRoute({ children }: { children: React.ReactNode, adminOnly?: boolean }) {
   return <>{children}</>;
 }
 
@@ -63,11 +47,13 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <FloatingChatLeft />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/confirm" element={<AuthConfirm />} />
-    
+            <Route path="/reset-password" element={<ResetPassword />} />
+
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/test-dashboard" element={<TestDashboard />} />
             <Route path="/dashboard" element={
@@ -142,7 +128,7 @@ const App = () => (
             } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
             <Route path="/toko" element={<Toko />} />
-          <Route path="/admin/toko" element={<ProtectedAdminTokoRoute><AdminToko /></ProtectedAdminTokoRoute>} />
+            <Route path="/admin/toko" element={<ProtectedAdminTokoRoute><AdminToko /></ProtectedAdminTokoRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

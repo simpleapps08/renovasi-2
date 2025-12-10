@@ -3,14 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Store, 
-  Package, 
-  TrendingUp, 
-  Users, 
-  Star, 
-  Eye, 
-  ShoppingCart, 
+import {
+  Store,
+  Package,
+  TrendingUp,
+  Users,
+  Star,
+  Eye,
+  ShoppingCart,
   DollarSign,
   Plus,
   Settings,
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import AdminSidebar from '@/components/AdminSidebar';
+import AdminSidebar from '@/components/layout/AdminSidebar';
 
 interface StoreStats {
   totalProducts: number;
@@ -83,7 +83,7 @@ const AdminTokoNew: React.FC = () => {
   useEffect(() => {
     const loadDashboardData = async () => {
       setLoading(true);
-      
+
       // Simulate API call
       setTimeout(() => {
         setStoreStats({

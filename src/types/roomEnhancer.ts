@@ -27,7 +27,7 @@ export interface GenerationHistoryItem {
   timestamp: Date;
 }
 
-export type StylePreset = 
+export type StylePreset =
   | 'modern-minimalis'
   | 'skandinavia'
   | 'industrial'
@@ -59,24 +59,6 @@ export interface UploadCardProps {
 
 export interface PromptInputProps {
   prompt: string;
-  selectedStyle: string;
-  onPromptChange: (prompt: string) => void;
-  onStyleChange: (style: string) => void;
-  isLoading?: boolean;
-}
-
-export interface BeforeAfterViewerProps {
-  originalUrl: string | null;
-  enhancedUrl: string | null;
-  generating: boolean;
-  onDownload?: (type: 'original' | 'enhanced') => void;
-  onFullscreen?: (type: 'original' | 'enhanced') => void;
-}
-
-export interface GenerateRequest {
-  imageFile: File;
-  prompt: string;
-  stylePreset: StylePreset;
   options?: {
     strength?: number;
     guidance?: number;
@@ -106,7 +88,7 @@ export interface SupabaseStorageConfig {
 }
 
 // Error types
-export type RoomEnhancerError = 
+export type RoomEnhancerError =
   | 'FILE_TOO_LARGE'
   | 'INVALID_FILE_TYPE'
   | 'UPLOAD_FAILED'

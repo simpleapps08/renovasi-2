@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Send } from 'lucide-react'
+import { MessageCircle, X, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,25 +12,44 @@ interface Message {
   timestamp: Date
 }
 
+import { useLocation } from 'react-router-dom'
+
 const FloatingChatLeft = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const location = useLocation()
+
+  // Hide floating button on dashboard pages where BottomNav is present
+  const isDashboard = location.pathname.startsWith('/dashboard')
 
   // URL n8n Chat Trigger untuk workflow Servisoo
   const N8N_CHAT_URL = 'https://n8n-djgsdd49u07h.siomay.sumopod.my.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
-  
+
   // Session ID untuk memory management
   const [sessionId] = useState(() => `servisoo-left-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+
+  // Listener for custom event to open chat
+  useEffect(() => {
+    const handleOpenChatEvent = () => {
+      setIsOpen(true);
+    };
+
+    window.addEventListener('open-chat', handleOpenChatEvent);
+
+    return () => {
+      window.removeEventListener('open-chat', handleOpenChatEvent);
+    };
+  }, []);
 
   // Send welcome message when chat opens for the first time
   useEffect(() => {
     if (isOpen && !isInitialized) {
       setIsInitialized(true)
       setIsTyping(true)
-      
+
       // Send welcome message to n8n AI Agent
       const sendWelcomeMessage = async () => {
         try {
@@ -67,7 +86,7 @@ const FloatingChatLeft = () => {
           if (response.ok) {
             const contentType = response.headers.get('content-type')
             let botResponse = ''
-            
+
             if (contentType && contentType.includes('application/json')) {
               const data = await response.json()
               if (data.output) {
@@ -84,7 +103,7 @@ const FloatingChatLeft = () => {
             } else {
               botResponse = await response.text()
             }
-            
+
             if (botResponse && botResponse.trim()) {
               const welcomeMessage: Message = {
                 id: Date.now().toString(),
@@ -113,7 +132,7 @@ const FloatingChatLeft = () => {
             message: error.message,
             stack: error.stack
           })
-          
+
           // Always show welcome message even if N8N fails
           const welcomeMessage: Message = {
             id: Date.now().toString(),
@@ -181,7 +200,7 @@ const FloatingChatLeft = () => {
       if (response.ok) {
         const contentType = response.headers.get('content-type')
         let botResponse = ''
-        
+
         if (contentType && contentType.includes('application/json')) {
           const data = await response.json()
           // Handle berbagai format response dari n8n langchain
@@ -200,7 +219,7 @@ const FloatingChatLeft = () => {
           // Handle text response
           botResponse = await response.text()
         }
-        
+
         if (botResponse && botResponse.trim()) {
           const botMessage: Message = {
             id: (Date.now() + 1).toString(),
@@ -230,9 +249,9 @@ const FloatingChatLeft = () => {
         message: error.message,
         stack: error.stack
       })
-      
+
       let errorText = 'Chat sedang gangguan. Hubungi WhatsApp: 085808675233'
-      
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: errorText,
@@ -254,8 +273,8 @@ const FloatingChatLeft = () => {
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
-      {/* Chat Button */}
-      {!isOpen && (
+      {/* Chat Button - Only show if NOT on dashboard */}
+      {!isDashboard && (
         <Button
           onClick={() => setIsOpen(true)}
           className="h-14 w-14 rounded-full shadow-2xl animate-bounce hover:animate-none hover:bg-[#128C7E] transition-all duration-300 group"
@@ -263,12 +282,12 @@ const FloatingChatLeft = () => {
           size="icon"
         >
           {/* WhatsApp Icon SVG */}
-          <svg 
-            className="h-8 w-8 text-white group-hover:scale-110 transition-transform" 
-            viewBox="0 0 24 24" 
+          <svg
+            className="h-8 w-8 text-white group-hover:scale-110 transition-transform"
+            viewBox="0 0 24 24"
             fill="currentColor"
           >
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.516"/>
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.516" />
           </svg>
         </Button>
       )}
@@ -276,19 +295,12 @@ const FloatingChatLeft = () => {
       {/* Chat Window */}
       {isOpen && (
         <Card className="w-96 h-[500px] shadow-2xl border-2 border-green-200 bg-white animate-in slide-in-from-left-5 duration-300">
-          <CardHeader className="bg-gradient-to-r from-[#128C7E] to-[#25D366] text-white p-4 rounded-t-lg">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 rounded-t-lg">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                {/* WhatsApp Icon for Header */}
-                <svg 
-                  className="h-5 w-5" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor"
-                >
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.516"/>
-                </svg>
+                <MessageCircle className="h-5 w-5" />
                 <div>
-                  <div>WhatsApp SERVISOO</div>
+                  <div>Chat SERVISOO</div>
                   <div className="text-xs font-normal opacity-90">Customer Service Online</div>
                 </div>
               </CardTitle>
@@ -302,7 +314,7 @@ const FloatingChatLeft = () => {
               </Button>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-4 h-[440px] flex flex-col bg-gradient-to-b from-gray-50 to-white">
             {/* Messages Area */}
             <ScrollArea className="flex-1 mb-4 pr-4">
@@ -314,8 +326,8 @@ const FloatingChatLeft = () => {
                   >
                     <div
                       className={`max-w-[85%] p-3 rounded-2xl shadow-sm ${message.sender === 'user'
-                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white rounded-br-md'
-                          : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md'
+                        ? 'bg-gradient-to-r from-green-600 to-green-700 text-white rounded-br-md'
+                        : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md'
                         }`}
                     >
                       <div className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -371,7 +383,7 @@ const FloatingChatLeft = () => {
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            
+
             {/* Footer Info */}
             <div className="text-center mt-2">
               <p className="text-xs text-gray-500">

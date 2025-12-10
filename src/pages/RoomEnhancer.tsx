@@ -1,561 +1,290 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/enhanced-button';
-import { Sparkles, Wand2, Upload, Download, RefreshCw, Clock, AlertCircle, Lock, Home } from 'lucide-react';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import {
+  Sparkles,
+  Wand2,
+  Home,
+  ArrowRight,
+  RefreshCw,
+  Upload,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { geminiFlashService } from '@/services/geminiFlashService';
 import FileUpload from '@/components/room-enhancer/FileUpload';
-import PromptDropdowns from '@/components/room-enhancer/PromptDropdowns';
 import BeforeAfterViewer from '@/components/room-enhancer/BeforeAfterViewer';
-import { RoomEnhancerState, STYLE_PRESETS, GenerationHistoryItem } from '@/types/roomEnhancer';
-import { realAiService } from '../services/realAiService';
-import { storageService } from '../services/storageService';
-import { geminiFlashService } from '../services/geminiFlashService';
-import ErrorBoundary, { useErrorHandler } from '../components/ErrorBoundary';
-import StorageManager from '../components/StorageManager';
-import { useAuth } from '../contexts/AuthContext';
-import { ImageCompression } from '../utils/imageCompression';
+import { toast } from 'sonner';
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+const STEPS = [
+  { id: 1, title: 'Upload', desc: 'Foto Ruangan' },
+  { id: 2, title: 'Analisis', desc: 'AI Vision' },
+  { id: 3, title: 'Prompt', desc: 'Refinement' },
+  { id: 4, title: 'Proses', desc: 'Generating' },
+  { id: 5, title: 'Hasil', desc: 'Selesai' }
+];
 
 const RoomEnhancer = () => {
-  const { handleError } = useErrorHandler();
-  const { user, loading } = useAuth();
-  
-  // Redirect to login if not authenticated
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Memuat...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  const [state, setState] = useState<RoomEnhancerState>({
-    selectedFile: null,
-    prompt: '',
-    selectedStyle: 'modern-minimalis',
-    generatedImage: null,
-    isLoading: false,
-    error: null,
-    generationHistory: [],
-    aiAnalysis: null
-  });
-  
-  // New state for dropdown selections
-  const [promptSelections, setPromptSelections] = useState({
-    warnaDinding: '',
-    finishingCat: '',
-    gayaInterior: '',
-    aksesoris1: '',
-    aksesoris2: '',
-    aksesoris3: '',
-    jenisPencahayaan: '',
-    suasana: ''
-  });
-  
-  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const [aiAnalysis, setAiAnalysis] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<'realai' | 'gemini-flash'>('gemini-flash');
-  const [processingTime, setProcessingTime] = useState<number>(0);
-  const [retryCount, setRetryCount] = useState<number>(0);
+  const { user, loading: authLoading } = useAuth();
 
-  // Function to generate prompt from selections using new Indonesian template format
-  const generatePromptFromSelections = () => {
-    // Get wall color - use hex value or color name
-    const wallColor = promptSelections.warnaDinding || 'putih';
-    
-    // Get finish type
-    const finishType = promptSelections.finishingCat || 'matte lembut';
-    
-    // Get style theme
-    const styleTheme = promptSelections.gayaInterior || 'minimalis Skandinavia';
-    
-    // Get decor items
-    const decorItem1 = promptSelections.aksesoris1 || 'lukisan abstrak berbingkai kayu terang';
-    const decorItem2 = promptSelections.aksesoris2 || 'vas putih dengan tanaman hijau kecil';
-    const decorItem3 = promptSelections.aksesoris3 || 'bantal linen netral di sofa';
-    
-    // Get lighting type
-    const lightingType = promptSelections.jenisPencahayaan || 'pencahayaan alami dari jendela';
-    
-    // Get mood
-    const mood = promptSelections.suasana || 'tenang dan bersih';
+  // State Machine
+  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    // Create the new Indonesian template-based prompt
-    const prompt = `Gunakan gambar ruangan yang diberikan, ubah warna cat dinding menjadi ${wallColor} dengan hasil akhir ${finishType}. Tambahkan aksesoris bergaya ${styleTheme}, termasuk:
+  // Data State
+  const [file, setFile] = useState<File | null>(null);
+  const [instruction, setInstruction] = useState('');
+  const [analysis, setAnalysis] = useState('');
+  const [refinedPrompt, setRefinedPrompt] = useState('');
+  const [resultImage, setResultImage] = useState<string | null>(null);
 
-${decorItem1}
-
-${decorItem2}
-
-${decorItem3}
-
-Pastikan pencahayaan ruangan ${lightingType} tetap konsisten dan suasana keseluruhan terasa ${mood}.
-Pertahankan perspektif, tekstur, dan bayangan agar terlihat alami dan realistis.
-Hindari over-saturasi warna, distorsi furnitur, atau elemen yang tampak melayang.`;
-
-    return prompt;
+  const handleReset = () => {
+    setStep(1);
+    setFile(null);
+    setInstruction('');
+    setAnalysis('');
+    setRefinedPrompt('');
+    setResultImage(null);
+    setError(null);
   };
 
-  // Validate services on component mount
-  useEffect(() => {
-    const validateServices = async () => {
-      try {
-        // Check AI service health
-        const healthCheck = await realAiService.checkHealth();
-        
-        // Initialize storage service
-        await storageService.initializeBucket();
-        
-        setApiStatus(healthCheck.healthy ? 'connected' : 'error');
-        
-        if (!healthCheck.healthy) {
-          console.warn('AI Service issues:', healthCheck.errors);
-          toast('Beberapa layanan AI tidak tersedia, menggunakan mode demo');
-        }
-      } catch (error) {
-        console.error('Service validation error:', error);
-        handleError(error as Error, 'service initialization');
-        setApiStatus('error');
-        setState(prev => ({ ...prev, error: 'Gagal menginisialisasi layanan' }));
-      }
-    };
-    
-    validateServices();
-  }, []);
-
-  const handleFileSelect = async (file: File) => {
-    // Check if file is too large (over 10MB - hard limit)
-    if (file.size > 10 * 1024 * 1024) {
-      setState(prev => ({ ...prev, error: 'File terlalu besar. Maksimal 10MB.' }));
+  const startRenovation = async () => {
+    if (!file) {
+      toast.error('Silakan upload foto terlebih dahulu');
+      return;
+    }
+    if (!instruction.trim()) {
+      toast.error('Mohon berikan instruksi renovasi (contoh: Ganti dinding jadi biru)');
       return;
     }
 
-    try {
-      let processedFile = file;
-
-      // Compress image if larger than 2MB
-      if (ImageCompression.needsCompression(file, 2)) {
-        toast.loading('Mengompres gambar...', { id: 'compression' });
-        
-        const compressionResult = await ImageCompression.compressImage(file, {
-          maxSizeMB: 2,
-          maxWidthOrHeight: 1920,
-          quality: 0.8,
-          fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg'
-        });
-
-        toast.dismiss('compression');
-
-        if (compressionResult.success && compressionResult.compressedFile) {
-          processedFile = compressionResult.compressedFile;
-          
-          const originalSizeStr = ImageCompression.formatFileSize(compressionResult.originalSize);
-          const compressedSizeStr = ImageCompression.formatFileSize(compressionResult.compressedSize);
-          const ratio = Math.round(compressionResult.compressionRatio * 10) / 10;
-          
-          toast.success(
-            `Gambar berhasil dikompres! ${originalSizeStr} → ${compressedSizeStr} (${ratio}x lebih kecil)`,
-            { duration: 4000 }
-          );
-        } else {
-          toast.error('Gagal mengompres gambar: ' + (compressionResult.error || 'Unknown error'));
-          setState(prev => ({ ...prev, error: 'Gagal mengompres gambar. Silakan coba dengan gambar yang lebih kecil.' }));
-          return;
-        }
-      }
-
-      setState(prev => ({ 
-        ...prev, 
-        selectedFile: processedFile, 
-        error: null,
-        generatedImage: null 
-      }));
-
-    } catch (error) {
-      console.error('File processing error:', error);
-      toast.error('Gagal memproses file gambar');
-      setState(prev => ({ ...prev, error: 'Gagal memproses file gambar. Silakan coba lagi.' }));
-    }
-  };
-
-  const handleFileRemove = () => {
-    setState(prev => ({ 
-      ...prev, 
-      selectedFile: null, 
-      generatedImage: null 
-    }));
-  };
-
-  const handleGenerate = async () => {
-    console.log('Generate button clicked');
-    console.log('Selected file:', state.selectedFile);
-    console.log('Prompt:', state.prompt);
-    console.log('Style:', state.selectedStyle);
-    
-    if (!state.selectedFile) {
-      console.log('No file selected, returning');
-      setState(prev => ({ ...prev, error: 'Silakan pilih file gambar terlebih dahulu.' }));
-      return;
-    }
-
-    // Generate prompt from selections
-    const generatedPrompt = generatePromptFromSelections();
-    
-    setState(prev => ({ 
-      ...prev, 
-      isLoading: true, 
-      error: null,
-      prompt: generatedPrompt // Update the prompt with generated one
-    }));
-    setAiAnalysis('');
-    setProcessingTime(0);
+    setIsLoading(true);
+    setError(null);
 
     try {
-        const modelName = selectedModel === 'gemini-flash' ? 'Gemini Flash 2.5' : 'Real AI';
-        console.log(`Starting AI enhancement with ${modelName} service...`);
-        toast.loading(`Memproses gambar dengan ${modelName}...`, { id: 'ai-processing' });
+      // Step 2: Analyze
+      setStep(2);
+      const analysisResult = await geminiFlashService.analyzeRoomImage(file);
+      setAnalysis(analysisResult);
 
-        let result;
-        if (selectedModel === 'gemini-flash') {
-          // Use Gemini Flash service
-          const enhancedResult = await geminiFlashService.generateContent({
-            imageFile: state.selectedFile,
-            prompt: state.prompt || `Enhance this room with ${state.selectedStyle} style`,
-            model: 'gemini-2.5-flash-image-preview'
-          });
-          
-          result = {
-            success: enhancedResult.success,
-            enhancedImageUrl: enhancedResult.imageUrl,
-            aiAnalysis: enhancedResult.analysis,
-            processingTime: enhancedResult.processingTime,
-            error: enhancedResult.error
-          };
-        } else {
-          // Use existing Real AI service
-          result = await realAiService.generateEnhancedRoom({
-            imageFile: state.selectedFile,
-            prompt: state.prompt,
-            stylePreset: state.selectedStyle,
-            userId: 'demo-user' // In production, use actual user ID
-          });
-        }
+      // Step 3: Refine
+      setStep(3);
+      const promptResult = await geminiFlashService.refinePrompt(instruction, analysisResult);
+      setRefinedPrompt(promptResult);
 
-        console.log('AI Enhancement result:', result);
-        toast.dismiss('ai-processing');
+      // Step 4: Generate
+      setStep(4);
+      const imageUrl = await geminiFlashService.generateRoomImage(file, promptResult);
+      setResultImage(imageUrl);
 
-        if (result.success && result.enhancedImageUrl) {
-          setState(prev => ({ 
-            ...prev, 
-            generatedImage: result.enhancedImageUrl,
-            aiAnalysis: result.aiAnalysis || null,
-            generationHistory: [...prev.generationHistory, {
-              id: Date.now().toString(),
-              originalImage: prev.selectedFile!,
-              generatedImage: result.enhancedImageUrl,
-              prompt: prev.prompt,
-              style: prev.selectedStyle,
-              timestamp: new Date()
-            }]
-          }));
-          
-          // Set additional data
-          if (result.aiAnalysis) setAiAnalysis(result.aiAnalysis);
-          if (result.processingTime) setProcessingTime(result.processingTime);
-          
-          toast.success(`Renovasi berhasil dibuat! (${result.processingTime || 0}ms)`);
-        } else {
-          throw new Error(result.error || 'Gagal menghasilkan gambar yang ditingkatkan');
-        }
-    } catch (error) {
-      console.error('AI Enhancement error:', error);
-      toast.dismiss('ai-processing');
-      handleError(error as Error, 'AI image generation');
-      
-      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses gambar.';
-      setState(prev => ({ ...prev, error: errorMessage }));
-      
-      // Handle specific bucket error with detailed instructions
-      if (errorMessage.includes('Storage bucket tidak ditemukan') || errorMessage.includes('Bucket not found')) {
-        toast.error('❌ Setup Storage Diperlukan', {
-          duration: 8000,
-          description: 'Buka SUPABASE_STORAGE_SETUP_GUIDE.md untuk panduan lengkap'
-        });
-        setRetryCount(0);
-        return;
-      }
-      
-      // Retry logic for transient errors
-      if (retryCount < 2 && (errorMessage.includes('network') || errorMessage.includes('timeout'))) {
-        setRetryCount(prev => prev + 1);
-        toast.error(`Gagal memproses gambar, mencoba lagi... (${retryCount + 1}/3)`);
-        setTimeout(() => handleGenerate(), 2000);
-      } else {
-        toast.error('Gagal memproses gambar: ' + errorMessage);
-        setRetryCount(0);
-      }
+      // Done
+      setStep(5);
+      toast.success('Renovasi selesai!');
+
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Terjadi kesalahan saat memproses.');
+      toast.error('Gagal memproses permintaan.');
+      // Stay on current step or move specific step?
+      // Staying allows retry.
     } finally {
-      setState(prev => ({ ...prev, isLoading: false }));
+      setIsLoading(false);
     }
   };
 
-  const handleRegenerate = async () => {
-    if (!state.selectedFile || !state.selectedStyle) return;
-    
-    setState(prev => ({ ...prev, generatedImage: null }));
-    setAiAnalysis('');
-    setProcessingTime(0);
-    await handleGenerate();
-  };
-
-  const handleDownload = async () => {
-    if (state.generatedImage) {
-      try {
-        toast.loading('Mempersiapkan download...', { id: 'download' });
-        
-        const response = await fetch(state.generatedImage);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.style.display = 'none';
-        link.href = url;
-        
-        // Create descriptive filename
-        const styleName = state.selectedStyle.replace('-', '_');
-        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
-        link.download = `room_renovation_${styleName}_${timestamp}.png`;
-        
-        // Append to body, click, and remove
-        document.body.appendChild(link);
-        link.click();
-        
-        // Cleanup
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(link);
-        }, 100);
-        
-        toast.dismiss('download');
-        toast.success('Gambar berhasil didownload!');
-      } catch (error) {
-        console.error('Download error:', error);
-        toast.dismiss('download');
-        handleError(error as Error, 'image download');
-        toast.error('Gagal mendownload gambar. Silakan coba lagi.');
-      }
-    } else {
-      toast.error('Tidak ada gambar untuk didownload.');
-    }
-  };
-
-  const handleShare = async () => {
-    if (state.generatedImage && navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Hasil Renovasi Desain Cerdas',
-          text: 'Lihat hasil renovasi ruangan saya menggunakan AI!',
-          url: state.generatedImage
-        });
-      } catch (error) {
-        // Fallback to copy URL
-        navigator.clipboard.writeText(state.generatedImage);
-        toast.success('Link gambar berhasil disalin!');
-      }
-    } else if (state.generatedImage) {
-      navigator.clipboard.writeText(state.generatedImage);
-      toast.success('Link gambar berhasil disalin!');
-    }
-  };
+  if (authLoading) return <div className="flex h-screen items-center justify-center"><RefreshCw className="animate-spin text-green-600" /></div>;
+  if (!user) return <Navigate to="/auth" replace />;
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col space-y-4">
-            {/* Top row with home button, title, and AI status */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Button asChild variant="outline" className="border-accent/30 text-accent hover:bg-accent/10 p-2">
-                  <Link to="/">
-                    <Home className="w-4 h-4" />
-                  </Link>
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Desain Cerdas</h1>
-                </div>
-              </div>
-              
-              {/* API Status Indicator */}
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  apiStatus === 'connected' ? 'bg-green-500' :
-                  apiStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
-                }`} />
-                <span className="text-sm text-muted-foreground">
-                  {apiStatus === 'connected' ? 'Google AI Connected' :
-                   apiStatus === 'error' ? 'AI Disconnected' : 'Checking AI...'}
-                </span>
-              </div>
-            </div>
-            
-            {/* Full width description text */}
-            <div className="w-full">
-              <p className="text-muted-foreground text-center">Biarkan AI memberi inspirasi desain yang sesuai dengan gaya Anda</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="min-h-screen bg-gray-50 pb-20">
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {state.error && (
-          <div className="bg-destructive/15 border border-destructive/20 rounded-lg p-4 mb-6">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+        {/* Header */}
+        <div className="bg-white sticky top-0 z-40 border-b shadow-sm">
+          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" asChild>
+                <Link to="/dashboard"><Home className="w-5 h-5" /></Link>
+              </Button>
+              <div>
+                <h1 className="font-bold text-gray-900 text-lg">AI Room Renovator</h1>
+                <p className="text-xs text-gray-500">Free Tier Optimized</p>
               </div>
-              <div className="flex-1">
-                <h4 className="text-destructive font-medium mb-1">Error</h4>
-                <div className="text-destructive text-sm whitespace-pre-line">{state.error}</div>
-                {(state.error.includes('Storage bucket tidak ditemukan') || state.error.includes('Bucket not found')) && (
-                  <div className="mt-3 p-3 bg-card rounded border border-border">
-                    <p className="text-sm font-medium text-foreground mb-2">🔧 Cara Mengatasi:</p>
-                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                      <li>Buka Supabase Dashboard → Storage</li>
-                      <li>Buat bucket baru: <code className="bg-muted px-1 rounded">room-enhancer-images</code></li>
-                      <li>Set sebagai Public bucket</li>
-                      <li>Atau jalankan file: <code className="bg-muted px-1 rounded">setup_storage_bucket.sql</code></li>
-                    </ol>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      📖 Panduan lengkap: <code className="bg-muted px-1 rounded">SUPABASE_STORAGE_SETUP_GUIDE.md</code>
-                    </p>
+            </div>
+
+            {/* Steps Indicator */}
+            <div className="hidden md:flex items-center gap-2">
+              {STEPS.map((s) => (
+                <div key={s.id} className="flex items-center gap-2">
+                  <div className={`
+                    w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border
+                    ${step >= s.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 text-gray-400 border-gray-200'}
+                  `}>
+                    {step > s.id ? <CheckCircle2 className="w-3.5 h-3.5" /> : s.id}
                   </div>
-                )}
-              </div>
+                  <span className={`text-xs ${step >= s.id ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>{s.title}</span>
+                  {s.id < 5 && <div className="w-4 h-[1px] bg-gray-200 mx-1" />}
+                </div>
+              ))}
             </div>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
-          <FileUpload
-            onFileSelect={handleFileSelect}
-            selectedFile={state.selectedFile}
-            onFileRemove={handleFileRemove}
-            isLoading={state.isLoading}
-          />
-
-          {/* Prompt Dropdowns Section */}
-          <PromptDropdowns
-            selections={promptSelections}
-            onSelectionChange={(key, value) => 
-              setPromptSelections(prev => ({ ...prev, [key]: value }))
-            }
-            isLoading={state.isLoading}
-          />
         </div>
 
-        {/* AI Model Selection */}
-        <div className="flex justify-center mb-6">
-          <Card className="w-full max-w-md">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Wand2 className="h-5 w-5 text-accent" />
-                Model AI
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="realai"
-                    name="aiModel"
-                    value="realai"
-                    checked={selectedModel === 'realai'}
-                    onChange={(e) => setSelectedModel(e.target.value as 'realai' | 'gemini-flash')}
-                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
-                  />
-                  <label htmlFor="realai" className="text-sm font-medium text-foreground">
-                    Real AI Service
-                  </label>
-                  <Badge variant="secondary" className="text-xs">
-                    Default
-                  </Badge>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="gemini-flash"
-                    name="aiModel"
-                    value="gemini-flash"
-                    checked={selectedModel === 'gemini-flash'}
-                    onChange={(e) => setSelectedModel(e.target.value as 'realai' | 'gemini-flash')}
-                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
-                  />
-                  <label htmlFor="gemini-flash" className="text-sm font-medium text-foreground">
-                    Gemini Flash 2.5 Image Preview
-                  </label>
-                  <Badge variant="outline" className="text-xs border-accent/30 text-accent">
-                    New
-                  </Badge>
+        <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+              <AlertCircle className="w-5 h-5 mt-0.5" />
+              <div className="flex-1 text-sm">{error}</div>
+              <Button variant="ghost" size="sm" onClick={() => setError(null)} className="h-auto p-0 text-red-700 hover:text-red-800">Dismiss</Button>
+            </div>
+          )}
+
+          {/* Main Workspace */}
+          <div className="grid grid-cols-1 gap-6">
+
+            {/* Step 1: Input (Always visible until processed, then collapsed or hidden? We'll keep it visible but disabled during loading) */}
+            {step < 5 && (
+              <Card className="border-gray-200 shadow-sm overflow-hidden">
+                <CardHeader className="bg-gray-50/50 border-b border-gray-100 pb-4">
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Upload className="w-4 h-4 text-green-600" />
+                    Upload & Instruksi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {/* File Upload */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">1. Foto Ruangan</label>
+                    <FileUpload
+                      selectedFile={file}
+                      onFileSelect={(f) => setFile(f)}
+                      isLoading={isLoading}
+                      onFileRemove={() => setFile(null)}
+                    />
+                  </div>
+
+                  {/* Instruction Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 flex justify-between">
+                      <span>2. Instruksi Renovasi</span>
+                      <span className="text-xs text-gray-400 font-normal">Contoh: "Cat dinding warna sage green"</span>
+                    </label>
+                    <textarea
+                      placeholder="Apa yang ingin Anda ubah? Jelaskan warna, material, atau gaya yang diinginkan..."
+                      className="w-full min-h-[100px] p-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-sm"
+                      value={instruction}
+                      onChange={(e) => setInstruction(e.target.value)}
+                      disabled={isLoading}
+                    />
+                    <div className="flex gap-2 text-xs overflow-x-auto pb-2">
+                      {['Modern Minimalis', 'Dinding Krem', 'Lantai Kayu', 'Gaya Industrial'].map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => setInstruction(prev => prev ? `${prev}, ${tag}` : tag)}
+                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors whitespace-nowrap"
+                        >
+                          + {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <Button
+                    onClick={startRenovation}
+                    className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transition-all rounded-xl"
+                    disabled={isLoading || !file || !instruction}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>
+                          {step === 2 && 'Menganalisis Ruangan...'}
+                          {step === 3 && 'Menyempurnakan Prompt...'}
+                          {step === 4 && 'Merender Desain Baru...'}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Wand2 className="w-4 h-4" />
+                        <span>Mulai Renovasi Ajaib</span>
+                      </div>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Process Logs (Collapsible or just visible) */}
+            {(step > 2 || analysis) && (
+              <Card className={`border-gray-200 shadow-sm transition-all duration-300 ${step === 5 ? 'opacity-70 hover:opacity-100' : ''}`}>
+                <CardHeader className="py-3 px-4 bg-blue-50/50">
+                  <CardTitle className="text-sm font-medium text-blue-800 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    AI Process Log
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-4 text-xs font-mono">
+                  {analysis && (
+                    <div className="space-y-1 animate-in slide-in-from-left-2">
+                      <div className="font-bold text-gray-700 flex items-center gap-2">
+                        <Badge variant="outline" className="bg-white text-[10px] h-5">Gemini 1.5 Analysis</Badge>
+                      </div>
+                      <p className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-gray-600 leading-relaxed">
+                        {analysis}
+                      </p>
+                    </div>
+                  )}
+                  {refinedPrompt && (
+                    <div className="space-y-1 animate-in slide-in-from-left-2 delay-150">
+                      <div className="font-bold text-gray-700 flex items-center gap-2">
+                        <Badge variant="outline" className="bg-white text-[10px] h-5">Optimized Prompt</Badge>
+                      </div>
+                      <p className="p-3 bg-green-50 rounded-lg border border-green-100 text-gray-600 leading-relaxed">
+                        {refinedPrompt}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Result Section */}
+            {step === 5 && (
+              <div className="animate-in zoom-in-50 duration-500">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-4 bg-green-50 border-b border-green-100 flex justify-between items-center">
+                    <h2 className="font-bold text-green-900 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-green-600" />
+                      Hasil Renovasi
+                    </h2>
+                    <Button variant="outline" size="sm" onClick={handleReset} className="h-8 text-xs border-green-200 text-green-700 hover:bg-green-100">
+                      <RefreshCw className="w-3 h-3 mr-1" /> Buat Baru
+                    </Button>
+                  </div>
+                  <div className="p-6">
+                    <BeforeAfterViewer
+                      beforeImage={file}
+                      afterImage={resultImage}
+                      isLoading={false}
+                      aiAnalysis={refinedPrompt}
+                    />
+                    <div className="mt-4 text-center">
+                      <p className="text-xs text-gray-400">
+                        Disclaimer: Gambar dihasilkan oleh AI (Gemini 2.5 Flash). Hasil mungkin bervariasi.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Generate Button */}
-        <div className="flex justify-center">
-          <Button 
-            onClick={handleGenerate} 
-            className="px-12 py-4 text-lg font-semibold bg-gradient-to-r from-accent to-accent-dark hover:from-accent/90 hover:to-accent-dark/90 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105" 
-            size="lg"
-            disabled={state.isLoading || !state.selectedFile}
-          >
-            {state.isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                <span>Memproses Renovasi...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-5 w-5 mr-3" />
-                <span>Generate Renovasi AI</span>
-              </>
             )}
-          </Button>
-        </div>
-
-        {/* Results Section */}
-        {(state.selectedFile || state.generatedImage) && (
-          <BeforeAfterViewer
-            beforeImage={state.selectedFile}
-            afterImage={state.generatedImage}
-            isLoading={state.isLoading}
-            aiAnalysis={state.aiAnalysis}
-            onRegenerate={handleRegenerate}
-            onDownload={handleDownload}
-            onShare={handleShare}
-          />
-        )}
-
-        {/* Storage Management Section */}
-        <StorageManager />
+          </div>
         </div>
       </div>
     </ErrorBoundary>
