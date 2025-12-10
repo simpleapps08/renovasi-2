@@ -55,45 +55,79 @@ const Auth = () => {
     e.preventDefault()
     setIsLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginData.email,
-      password: loginData.password,
-    })
+    try {
+      console.log('🔐 Attempting login for:', loginData.email)
 
-    if (error) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
+      })
+
+      if (error) {
+        console.error('❌ Login error:', error)
+        toast({
+          title: "Login Gagal",
+          description: error.message,
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+
+      console.log('✅ Login successful, user:', data.user?.email)
+
+      if (data.user) {
+        console.log('🔍 Fetching profile for user_id:', data.user.id)
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (profileError) {
+          console.error('❌ Profile fetch error:', profileError)
+          toast({
+            title: "Login Berhasil",
+            description: "Tapi gagal mengambil data profil. Silakan coba lagi.",
+            variant: "destructive",
+          })
+          setIsLoading(false)
+          return
+        }
+
+        console.log('✅ Profile found:', profile)
+
+        toast({
+          title: "Login Berhasil",
+          description: "Selamat datang di SERVISOO!",
+        })
+
+        // Navigate based on role
+        if (profile?.role === 'super_admin') {
+          console.log('➡️ Redirecting to super admin dashboard')
+          navigate('/super-admin/dashboard')
+        } else if (profile?.role === 'admin') {
+          console.log('➡️ Redirecting to admin dashboard')
+          navigate('/admin')
+        } else if (profile?.role === 'admin_store') {
+          console.log('➡️ Redirecting to admin toko')
+          navigate('/admin/toko')
+        } else {
+          console.log('➡️ Redirecting to user dashboard')
+          navigate('/dashboard')
+        }
+      }
+    } catch (err) {
+      console.error('❌ Unexpected error during login:', err)
       toast({
-        title: "Login Gagal",
-        description: error.message,
+        title: "Error",
+        description: "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",
         variant: "destructive",
       })
+    } finally {
       setIsLoading(false)
-      return
     }
-
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .single()
-
-
-      toast({
-        title: "Login Berhasil",
-        description: "Selamat datang di SERVISOO!",
-      })
-
-      if (profile?.role === 'super_admin') {
-        navigate('/super-admin/dashboard')
-      } else if (profile?.role === 'admin') {
-        navigate('/admin')
-      } else if (profile?.role === 'admin_store') {
-        navigate('/admin/toko')
-      } else {
-        navigate('/dashboard')
-      }
-    }
-    setIsLoading(false)
   }
 
   const handleForgotPassword = async (e: React.FormEvent) => {
