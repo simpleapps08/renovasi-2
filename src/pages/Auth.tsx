@@ -33,8 +33,9 @@ const Auth = () => {
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)
           .single()
+
 
         if (profile?.role === 'super_admin') {
           navigate('/super-admin/dashboard')
@@ -73,8 +74,9 @@ const Auth = () => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('user_id', data.user.id)
+        .eq('id', data.user.id)
         .single()
+
 
       toast({
         title: "Login Berhasil",
