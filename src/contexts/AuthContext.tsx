@@ -54,24 +54,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Initial check
     (async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
 
-        if (currentUser) {
-            const { data: profileData, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .single();
+      if (currentUser) {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
 
-            if (error) {
-                console.error('Error fetching profile on initial load:', error);
-            }
-            setProfile(profileData as Profile | null);
+        if (error) {
+          console.error('Error fetching profile on initial load:', error);
         }
-        setLoading(false);
+        setProfile(profileData as Profile | null);
+      }
+      setLoading(false);
     })();
 
 
@@ -89,7 +89,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, session, profile, loading, signOut }}>
-      {!loading && children}
+      {loading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }
