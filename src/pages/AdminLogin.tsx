@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Link, useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/AuthContext"
 import { Shield, ArrowLeft } from "lucide-react"
 
 const AdminLogin = () => {
@@ -15,6 +16,7 @@ const AdminLogin = () => {
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { signOut: contextSignOut } = useAuth()
 
   useEffect(() => {
     // Redirect if already authenticated as admin
@@ -89,7 +91,11 @@ const AdminLogin = () => {
           description: "Gagal mengambil data profil pengguna.",
           variant: "destructive",
         })
-        await supabase.auth.signOut()
+        try {
+          await contextSignOut()
+        } catch (e) {
+          console.error('Error during cleanup:', e)
+        }
         setIsLoading(false)
         return
       }
@@ -118,7 +124,11 @@ const AdminLogin = () => {
           description: "Akun ini tidak memiliki akses administrator.",
           variant: "destructive",
         })
-        await supabase.auth.signOut()
+        try {
+          await contextSignOut()
+        } catch (e) {
+          console.error('Error during cleanup:', e)
+        }
       }
     }
     setIsLoading(false)

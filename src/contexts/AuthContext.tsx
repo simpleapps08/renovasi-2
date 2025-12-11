@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
+import { clearAllAuthStorage } from '@/lib/sessionCleanup';
 
 // Define the Profile interface based on your database schema
 interface Profile {
@@ -93,15 +94,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
-      authListener.subscription.unsubscribe();
+      // Defensive: only unsubscribe if subscription exists
+      try {
+        if (authListener && (authListener as any).subscription) {
+          (authListener as any).subscription.unsubscribe();
+        }
+      } catch (e) {
+        // swallow errors during cleanup
+      }
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Error during supabase signOut:', e);
+    }
+
+    // Comprehensive cleanup of all persisted Supabase/session keys
+    try {
+      clearAllAuthStorage();
+    } catch (e) {
+      console.error('Error during storage cleanup:', e);
+    }
+
+    // Reset React state to prevent stale data from causing infinite loading
     setUser(null);
     setSession(null);
     setProfile(null);
+    setLoading(false);
+    
+    console.log('✅ Auth state reset: user logged out completely');
   };
 
   return (

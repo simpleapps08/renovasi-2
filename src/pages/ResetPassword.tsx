@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Link, useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/AuthContext"
 import { Lock, CheckCircle2, AlertCircle } from "lucide-react"
 
 const ResetPassword = () => {
@@ -16,6 +17,7 @@ const ResetPassword = () => {
     const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null)
     const navigate = useNavigate()
     const { toast } = useToast()
+    const { signOut: contextSignOut } = useAuth()
 
     useEffect(() => {
         // Handle the auth callback from email link
@@ -140,7 +142,11 @@ const ResetPassword = () => {
         })
 
         // Sign out to clear session
-        await supabase.auth.signOut()
+        try {
+            await contextSignOut()
+        } catch (e) {
+            console.error('Error during cleanup:', e)
+        }
 
         // Redirect to login after 3 seconds
         setTimeout(() => {

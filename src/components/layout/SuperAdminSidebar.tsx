@@ -18,7 +18,6 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/enhanced-button"
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/integrations/supabase/client"
 
 const navigation = [
   { name: 'Beranda', href: '/', icon: Home },
@@ -38,18 +37,18 @@ interface SuperAdminSidebarProps {
 
 export function SuperAdminSidebar({ className }: SuperAdminSidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { profile } = useAuth()
+  const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
+      await signOut()
       toast({
         title: "Logout Berhasil",
         description: "Anda telah keluar dari sistem.",
       })
-      navigate("/login")
+      navigate("/")
     } catch (error) {
       console.error('Error signing out:', error)
       toast({

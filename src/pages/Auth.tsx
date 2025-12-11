@@ -59,18 +59,40 @@ const Auth = () => {
       console.log('🔐 Attempting login for:', loginData.email)
       console.log('📡 Calling supabase.auth.signInWithPassword...')
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password,
-      })
+      // Create timeout promise with longer timeout (30s for slow networks)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Koneksi timeout - silakan periksa jaringan')), 30000)
+      )
+
+      const { data, error } = await Promise.race([
+        supabase.auth.signInWithPassword({
+          email: loginData.email,
+          password: loginData.password,
+        }),
+        timeoutPromise,
+      ]) as any
 
       console.log('📥 signInWithPassword completed, hasError:', !!error, 'hasUser:', !!data?.user)
 
       if (error) {
-        console.error('❌ Login error:', error)
+        console.error('❌ Login error:', error.message || error)
+        const errorMsg = error.message || 'Terjadi kesalahan saat login'
         toast({
           title: "Login Gagal",
-          description: error.message,
+          description: errorMsg.includes('Invalid') 
+            ? 'Email atau password salah' 
+            : errorMsg,
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+
+      if (!data || !data.user) {
+        // handle unexpected absence of data
+        toast({
+          title: "Login Gagal",
+          description: "Respons dari server tidak diterima. Silakan coba lagi.",
           variant: "destructive",
         })
         setIsLoading(false)
@@ -123,11 +145,24 @@ const Auth = () => {
           navigate('/dashboard')
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Unexpected error during login:', err)
+      
+      // Handle timeout and network errors specifically
+      const errorMessage = err?.message || String(err)
+      let displayMsg = "Terjadi kesalahan yang tidak terduga. Silakan coba lagi."
+      
+      if (errorMessage.includes('timeout') || errorMessage.includes('Koneksi')) {
+        displayMsg = "Koneksi timeout. Periksa jaringan Anda dan coba lagi dalam beberapa saat."
+      } else if (errorMessage.includes('network') || errorMessage.includes('Network')) {
+        displayMsg = "Masalah jaringan. Periksa koneksi internet Anda."
+      } else if (errorMessage.includes('fetch')) {
+        displayMsg = "Gagal terhubung ke server. Silakan coba lagi."
+      }
+      
       toast({
         title: "Error",
-        description: "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",
+        description: displayMsg,
         variant: "destructive",
       })
     } finally {
@@ -250,7 +285,7 @@ const Auth = () => {
                       type="email"
                       placeholder="nama@email.com"
                       value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value.trim() })}
                       required
                     />
                   </div>
@@ -296,7 +331,7 @@ const Auth = () => {
                         type="email"
                         placeholder="Masukkan email Anda"
                         value={forgotPasswordEmail}
-                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value.trim())}
                         required
                       />
                       <div className="flex gap-2">
@@ -341,7 +376,7 @@ const Auth = () => {
                       type="email"
                       placeholder="nama@email.com"
                       value={registerData.email}
-                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value.trim() })}
                       required
                     />
                   </div>
