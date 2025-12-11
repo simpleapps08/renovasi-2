@@ -46,15 +46,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (session?.user && mounted) {
-        // Fetch profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (mounted) {
-          setProfile(profileData as Profile | null);
+        // Try to fetch profile from user_profiles table
+        try {
+          const { data: profileData, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single();
+          
+          if (mounted) {
+            // Fallback to null if profile not found or error (not critical)
+            if (error && error.code !== 'PGRST116') {
+              console.warn('Profile fetch warning:', error.message);
+            }
+            setProfile(profileData ? {
+              id: profileData.id,
+              user_id: profileData.user_id,
+              nama: profileData.full_name || session.user.email?.split('@')[0] || '',
+              role: profileData.role,
+              lokasi: profileData.address,
+            } as Profile : null);
+          }
+        } catch (err) {
+          console.warn('Error fetching profile:', err);
+          if (mounted) setProfile(null);
         }
       } else if (mounted) {
         setProfile(null);
@@ -72,15 +87,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(session);
             setUser(session.user);
 
-            // Fetch profile for initial session
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
-
-            if (mounted) {
-              setProfile(profileData as Profile | null);
+            // Try to fetch profile for initial session
+            try {
+              const { data: profileData, error } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              if (mounted) {
+                if (error && error.code !== 'PGRST116') {
+                  console.warn('Initial profile fetch warning:', error.message);
+                }
+                setProfile(profileData ? {
+                  id: profileData.id,
+                  user_id: profileData.user_id,
+                  nama: profileData.full_name || session.user.email?.split('@')[0] || '',
+                  role: profileData.role,
+                  lokasi: profileData.address,
+                } as Profile : null);
+              }
+            } catch (err) {
+              console.warn('Error fetching initial profile:', err);
+              if (mounted) setProfile(null);
             }
           }
           // Turn off loading regardless of outcome
@@ -106,7 +135,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    // Reset state BEFORE calling signOut to prevent race conditions
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setLoading(false);
+    
     try {
+      // Then call Supabase signOut
       await supabase.auth.signOut();
     } catch (e) {
       console.error('Error during supabase signOut:', e);
@@ -118,12 +154,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error('Error during storage cleanup:', e);
     }
-
-    // Reset React state to prevent stale data from causing infinite loading
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setLoading(false);
     
     console.log('✅ Auth state reset: user logged out completely');
   };

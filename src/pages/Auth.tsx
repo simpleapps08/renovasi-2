@@ -29,21 +29,28 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        // Check user profile and redirect
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single()
+        // Check user profile and redirect - with graceful fallback
+        try {
+          const { data: profile, error } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .single()
 
-
-        if (profile?.role === 'super_admin') {
-          navigate('/super-admin/dashboard')
-        } else if (profile?.role === 'admin') {
-          navigate('/admin')
-        } else if (profile?.role === 'admin_store') {
-          navigate('/admin/toko')
-        } else {
+          // If profile doesn't exist or error, still redirect to dashboard
+          const role = profile?.role || 'user'
+          
+          if (role === 'super_admin') {
+            navigate('/super-admin/dashboard')
+          } else if (role === 'admin') {
+            navigate('/admin')
+          } else if (role === 'admin_store') {
+            navigate('/admin/toko')
+          } else {
+            navigate('/dashboard')
+          }
+        } catch (err) {
+          console.warn('Profile check failed, redirecting to dashboard:', err)
           navigate('/dashboard')
         }
       }
@@ -104,26 +111,28 @@ const Auth = () => {
       if (data.user) {
         console.log('🔍 Fetching profile for user_id:', data.user.id)
 
-        console.log('📡 Querying profiles table...')
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .single()
-        console.log('📥 Profile query returned, error:', !!profileError, 'profile:', !!profile)
+        console.log('📡 Querying user_profiles table...')
+        let userRole = 'user' // Default role
+        
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('user_id', data.user.id)
+            .single()
+          console.log('📥 Profile query returned, error:', !!profileError, 'profile:', !!profile)
 
-        if (profileError) {
-          console.error('❌ Profile fetch error:', profileError)
-          toast({
-            title: "Login Berhasil",
-            description: "Tapi gagal mengambil data profil. Silakan coba lagi.",
-            variant: "destructive",
-          })
-          setIsLoading(false)
-          return
+          if (!profileError && profile) {
+            userRole = profile.role || 'user'
+            console.log('✅ Profile found with role:', userRole)
+          } else if (profileError && profileError.code !== 'PGRST116') {
+            console.warn('⚠️ Profile fetch warning:', profileError.message)
+            // Continue with default role
+          }
+        } catch (profileErr) {
+          console.warn('⚠️ Error fetching profile (continuing with default):', profileErr)
+          // Continue with default role
         }
-
-        console.log('✅ Profile found:', profile)
 
         toast({
           title: "Login Berhasil",
@@ -131,13 +140,13 @@ const Auth = () => {
         })
 
         // Navigate based on role
-        if (profile?.role === 'super_admin') {
+        if (userRole === 'super_admin') {
           console.log('➡️ Redirecting to super admin dashboard')
           navigate('/super-admin/dashboard')
-        } else if (profile?.role === 'admin') {
+        } else if (userRole === 'admin') {
           console.log('➡️ Redirecting to admin dashboard')
           navigate('/admin')
-        } else if (profile?.role === 'admin_store') {
+        } else if (userRole === 'admin_store') {
           console.log('➡️ Redirecting to admin toko')
           navigate('/admin/toko')
         } else {
