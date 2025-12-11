@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { Home } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { sendPasswordResetEmailStandard } from "@/lib/resetPasswordHelper"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -183,27 +184,54 @@ const Auth = () => {
     e.preventDefault()
     setIsLoading(true)
 
-    const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-
-    if (error) {
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(forgotPasswordEmail)) {
       toast({
-        title: "Gagal Mengirim Email",
-        description: error.message,
+        title: "Email Tidak Valid",
+        description: "Silakan masukkan email yang valid.",
         variant: "destructive",
       })
-    } else {
-      toast({
-        title: "Email Terkirim!",
-        description: "Silakan cek email Anda untuk link reset password.",
-        duration: 6000,
-      })
-      setShowForgotPassword(false)
-      setForgotPasswordEmail('')
+      setIsLoading(false)
+      return
     }
 
-    setIsLoading(false)
+    try {
+      console.log('📧 Initiating password reset for:', forgotPasswordEmail)
+      
+      // Use helper function that sends with proper expiry configuration
+      const { error } = await sendPasswordResetEmailStandard(
+        forgotPasswordEmail,
+        `${window.location.origin}/reset-password`
+      )
+
+      if (error) {
+        console.error('❌ Reset password error:', error)
+        toast({
+          title: "Gagal Mengirim Email",
+          description: error.message || "Terjadi kesalahan saat mengirim email. Silakan coba lagi.",
+          variant: "destructive",
+        })
+      } else {
+        console.log('✅ Reset password email sent successfully')
+        toast({
+          title: "Email Terkirim!",
+          description: "Silakan cek email Anda untuk link reset password. Link berlaku selama 1 jam.",
+          duration: 6000,
+        })
+        setShowForgotPassword(false)
+        setForgotPasswordEmail('')
+      }
+    } catch (err) {
+      console.error('❌ Unexpected error:', err)
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleRegister = async (e: React.FormEvent) => {

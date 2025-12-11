@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { Lock, CheckCircle2, AlertCircle } from "lucide-react"
+import { verifyResetToken } from "@/lib/resetPasswordHelper"
 
 const ResetPassword = () => {
     const [isLoading, setIsLoading] = useState(false)
@@ -22,27 +23,13 @@ const ResetPassword = () => {
     useEffect(() => {
         // Handle the auth callback from email link
         const handleAuthCallback = async () => {
-            console.log('🔍 Checking for auth session...')
+            console.log('🔍 Checking for valid reset token...')
             console.log('URL hash:', window.location.hash)
 
-            // Supabase automatically handles the hash and creates session
-            // We just need to check if session exists
-            const { data: { session }, error } = await supabase.auth.getSession()
+            // Use helper function to verify token
+            const isTokenValid = await verifyResetToken()
 
-            console.log('Session check result:', { session: !!session, error })
-
-            if (error) {
-                console.error('❌ Session error:', error)
-                setIsTokenValid(false)
-                toast({
-                    title: "Error",
-                    description: error.message,
-                    variant: "destructive",
-                })
-                return
-            }
-
-            if (!session) {
+            if (!isTokenValid) {
                 // Check if there's a hash in URL (recovery token)
                 const hashParams = new URLSearchParams(window.location.hash.substring(1))
                 const accessToken = hashParams.get('access_token')
@@ -51,18 +38,23 @@ const ResetPassword = () => {
                 console.log('Hash params:', { accessToken: !!accessToken, type })
 
                 if (type === 'recovery' && accessToken) {
-                    // Token is in URL, Supabase should handle it automatically
-                    // Wait a bit for Supabase to process
+                    console.log('⚠️ Recovery token found, waiting for processing...')
+                    // Give Supabase more time to process
                     setTimeout(async () => {
                         const { data: { session: newSession } } = await supabase.auth.getSession()
                         if (newSession) {
                             console.log('✅ Session created from recovery token')
                             setIsTokenValid(true)
                         } else {
-                            console.log('⚠️ Session still not available')
+                            console.log('❌ Token expired or invalid')
                             setIsTokenValid(false)
+                            toast({
+                                title: "Link Tidak Valid",
+                                description: "Link reset password tidak valid atau sudah kadaluarsa (expired setelah 1 jam).",
+                                variant: "destructive",
+                            })
                         }
-                    }, 500)
+                    }, 1000)
                 } else {
                     console.log('❌ No valid recovery token found')
                     setIsTokenValid(false)
@@ -73,7 +65,7 @@ const ResetPassword = () => {
                     })
                 }
             } else {
-                console.log('✅ Valid session found')
+                console.log('✅ Valid reset token found')
                 setIsTokenValid(true)
             }
         }
