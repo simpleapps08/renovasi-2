@@ -77,19 +77,19 @@ const Profil = () => {
       try {
         setLoading(true)
         
-        // Get additional profile data from profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
+        // Get additional profile data from user_profiles table
+        const { data: dbProfileData, error: profileError } = await supabase
+          .from('user_profiles')
           .select('*')
           .eq('user_id', user.id)
           .single()
         
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error loading profile:', error)
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error loading profile:', profileError)
         }
         
-        // Parse name from profile or user metadata
-        const fullName = profile?.nama || user.user_metadata?.full_name || user.email?.split('@')[0] || ''
+        // Parse name from database profile or user metadata
+        const fullName = dbProfileData?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || ''
         const nameParts = fullName.split(' ')
         const firstName = nameParts[0] || ''
         const lastName = nameParts.slice(1).join(' ') || ''
@@ -99,15 +99,15 @@ const Profil = () => {
           firstName,
           lastName,
           email: user.email || '',
-          phone: profileDetails?.phone || user.user_metadata?.phone || '',
-          address: profileDetails?.address || profile?.lokasi || '',
-          city: profileDetails?.city || '',
-          province: profileDetails?.province || '',
-          postalCode: profileDetails?.postal_code || '',
-          dateOfBirth: profileDetails?.date_of_birth || '',
-          gender: profileDetails?.gender || '',
-          occupation: profileDetails?.occupation || '',
-          bio: profileDetails?.bio || ''
+          phone: dbProfileData?.phone || user.user_metadata?.phone || '',
+          address: dbProfileData?.address || '',
+          city: dbProfileData?.city || '',
+          province: dbProfileData?.province || '',
+          postalCode: dbProfileData?.postal_code || '',
+          dateOfBirth: dbProfileData?.date_of_birth || '',
+          gender: dbProfileData?.gender || '',
+          occupation: dbProfileData?.occupation || '',
+          bio: dbProfileData?.bio || ''
         })
         
       } catch (error) {
@@ -158,11 +158,13 @@ const Profil = () => {
     try {
       setSaving(true)
       
-      // Update user profile in profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
+      // Update user profile in user_profiles table
+      const fullName = `${profileData.firstName} ${profileData.lastName}`.trim()
+      const { error: profileError } = await supabase
+        .from('user_profiles')
         .upsert({
           user_id: user.id,
+          full_name: fullName,
           phone: profileData.phone,
           address: profileData.address,
           city: profileData.city,
@@ -176,18 +178,6 @@ const Profil = () => {
         })
       
       if (profileError) throw profileError
-      
-      // Update profiles table (for nama)
-      const fullName = `${profileData.firstName} ${profileData.lastName}`.trim()
-      const { error: nameError } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          nama: fullName,
-          updated_at: new Date().toISOString()
-        })
-      
-      if (nameError) throw nameError
       
       // Update user metadata if email changed
       if (profileData.email !== user.email) {
