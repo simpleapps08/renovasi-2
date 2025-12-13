@@ -9,6 +9,7 @@ import { Home } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { sendPasswordResetEmailStandard } from "@/lib/resetPasswordHelper"
+import { sendRecoveryEmailAdmin, sendRecoveryEmailWithLogging } from "@/lib/extendedPasswordRecovery"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -199,17 +200,25 @@ const Auth = () => {
     try {
       console.log('📧 Initiating password reset for:', forgotPasswordEmail)
       
-      // Use helper function that sends with proper expiry configuration
-      const { error } = await sendPasswordResetEmailStandard(
-        forgotPasswordEmail,
-        `${window.location.origin}/reset-password`
-      )
+      // Try admin API first for better token expiry control
+      // If SERVICE_ROLE_KEY is not set, falls back to standard method
+      const redirectUrl = `${window.location.origin}/reset-password`
+      const hasServiceRole = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+      
+      let result
+      if (hasServiceRole) {
+        console.log('🔐 Using Admin API for recovery email...')
+        result = await sendRecoveryEmailAdmin(forgotPasswordEmail, redirectUrl)
+      } else {
+        console.log('📧 Using standard recovery email method...')
+        result = await sendRecoveryEmailWithLogging(forgotPasswordEmail, redirectUrl)
+      }
 
-      if (error) {
-        console.error('❌ Reset password error:', error)
+      if (result.error) {
+        console.error('❌ Reset password error:', result.error)
         toast({
           title: "Gagal Mengirim Email",
-          description: error.message || "Terjadi kesalahan saat mengirim email. Silakan coba lagi.",
+          description: result.error.message || "Terjadi kesalahan saat mengirim email. Silakan coba lagi.",
           variant: "destructive",
         })
       } else {
