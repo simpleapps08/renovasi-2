@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast"
 const navigation = [
   { name: 'Beranda', href: '/', icon: Home },
   { name: 'Dashboard', href: '/super-admin/dashboard', icon: Shield },
-  { name: 'User Management', href: '/admin/users', icon: Users },
+  { name: 'User Management', href: '/super-admin/users', icon: Users },
   { name: 'Admin Management', href: '/super-admin/admins', icon: UserCheck },
   { name: 'System Monitor', href: '/super-admin/system', icon: Server },
   { name: 'Analytics', href: '/super-admin/analytics', icon: BarChart3 },

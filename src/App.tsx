@@ -30,7 +30,6 @@ import Profil from "./pages/Profil";
 import RoomEnhancer from "./pages/RoomEnhancer";
 import Toko from "./pages/Toko";
 import AdminToko from "./pages/AdminToko";
-import SuperAdminUserManagement from "./pages/admin/SuperAdminUserManagement";
 import ProtectedAdminTokoRoute from "./components/ProtectedAdminTokoRoute";
 
 import NotFound from "./pages/NotFound";
@@ -128,13 +127,6 @@ const App = () => (
             } />
             <Route path="/super-admin/users" element={
               <ProtectedRoleRoute allowedRoles={['super_admin']} fallbackPath="/admin">
-                <SuperAdminUserManagement />
-              </ProtectedRoleRoute>
-            } />
-
-            {/* ============ ADMIN USER MANAGEMENT (admin, super_admin) ============ */}
-            <Route path="/admin/users" element={
-              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
                 <AdminUserManagement />
               </ProtectedRoleRoute>
             } />

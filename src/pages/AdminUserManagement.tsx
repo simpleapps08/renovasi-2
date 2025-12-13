@@ -10,8 +10,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Search, Edit, Trash2, Download, UserPlus, Shield, User, RotateCcw, Copy, Mail, Loader2 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
+import { SuperAdminSidebar } from "@/components/layout/SuperAdminSidebar"
+import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { getRoleBadgeVariant, formatRoleName, getAllRoles, getEditableRoles, hasPermission } from "@/utils/roleUtils"
 import { sendAdminPasswordResetEmail, generateAdminRecoveryLink } from "@/lib/adminPasswordReset"
@@ -30,7 +32,13 @@ interface UserData {
 
 const AdminUserManagement = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { profile } = useAuth()
   const { toast } = useToast()
+  
+  // Determine if this is being accessed from super-admin or admin path
+  const isSuperAdminPath = location.pathname.startsWith('/super-admin')
+  
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState('semua')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -507,17 +515,15 @@ const AdminUserManagement = () => {
       })
     }
   }
-     link.setAttribute("href", encodedUri);
-     link.setAttribute("download", "users_data.csv");
-     document.body.appendChild(link);
-     link.click();
-     document.body.removeChild(link);
-     
-     toast({
-       title: "Ekspor Berhasil",
-       description: "Data pengguna berhasil diekspor ke CSV.",
-     });
-   }
+  const exportToCSV = () => {
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      "Email,Nama,Role,Lokasi,Saldo Deposit,Tanggal Dibuat\n" +
+      filteredUsers.map(user => {
+        return `${user.email || ''},${user.nama},${user.role},${user.lokasi || ''},${user.saldo_deposit || 0},${user.created_at}`;
+      }).join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID')
@@ -525,7 +531,7 @@ const AdminUserManagement = () => {
 
   return (
     <div className="min-h-screen bg-secondary/20 flex">
-      <AdminSidebar />
+      {isSuperAdminPath ? <SuperAdminSidebar /> : <AdminSidebar />}
       
       <main className="flex-1 lg:ml-0 pt-16 lg:pt-0">
         <div className="p-4 sm:p-6">
@@ -533,11 +539,13 @@ const AdminUserManagement = () => {
           <div className="mb-6">
             <Button
               variant="ghost"
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate(isSuperAdminPath ? '/super-admin/dashboard' : '/admin')}
               className="mb-4 text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Kembali ke Admin Dashboard</span>
+              <span className="hidden sm:inline">
+                {isSuperAdminPath ? 'Kembali ke Super Admin Dashboard' : 'Kembali ke Admin Dashboard'}
+              </span>
               <span className="sm:hidden">Kembali</span>
             </Button>
             
