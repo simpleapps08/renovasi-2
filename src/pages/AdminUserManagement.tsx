@@ -9,11 +9,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft, Search, Edit, Trash2, Download, UserPlus, Shield, User } from "lucide-react"
+import { ArrowLeft, Search, Edit, Trash2, Download, UserPlus, Shield, User, RotateCcw, Copy, Mail, Loader2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
 import { supabase } from "@/integrations/supabase/client"
 import { getRoleBadgeVariant, formatRoleName, getAllRoles, getEditableRoles, hasPermission } from "@/utils/roleUtils"
+import { sendAdminPasswordResetEmail, generateAdminRecoveryLink } from "@/lib/adminPasswordReset"
 
 interface UserData {
   id: string
@@ -39,6 +40,14 @@ const AdminUserManagement = () => {
   const itemsPerPage = 10
 
   const [users, setUsers] = useState<UserData[]>([])
+
+  // Reset password states
+  const [showResetDialog, setShowResetDialog] = useState(false)
+  const [selectedUserForReset, setSelectedUserForReset] = useState<UserData | null>(null)
+  const [resetMethod, setResetMethod] = useState<'email' | 'link'>('email')
+  const [recoveryLink, setRecoveryLink] = useState('')
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   // Fetch current user role and permissions
   const fetchCurrentUserRole = async () => {
@@ -385,15 +394,119 @@ const AdminUserManagement = () => {
      setEditingUser(null)
    }
 
-   const exportToCSV = () => {
-     const csvContent = "data:text/csv;charset=utf-8," + 
-       "Email,Nama,Role,Lokasi,Saldo Deposit,Tanggal Dibuat\n" +
-       filteredUsers.map(user => {
-         return `${user.email || ''},${user.nama},${user.role},${user.lokasi || ''},${user.saldo_deposit || 0},${user.created_at}`;
-       }).join("\n");
-     
-     const encodedUri = encodeURI(csvContent);
-     const link = document.createElement("a");
+  // Reset Password Handlers
+  const handleOpenResetDialog = (user: UserData) => {
+    setSelectedUserForReset(user)
+    setResetMethod('email')
+    setRecoveryLink('')
+    setLinkCopied(false)
+    setShowResetDialog(true)
+  }
+
+  const handleSendResetEmail = async () => {
+    if (!selectedUserForReset?.email) {
+      toast({
+        title: "Error",
+        description: "User email not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsResettingPassword(true)
+      const result = await sendAdminPasswordResetEmail(
+        selectedUserForReset.email,
+        selectedUserForReset.nama
+      )
+
+      if ('error' in result && result.error) {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Berhasil",
+        description: `Password reset email sent to ${selectedUserForReset.email}`,
+      })
+      setShowResetDialog(false)
+    } catch (error) {
+      console.error('Error sending reset email:', error)
+      toast({
+        title: "Error",
+        description: "Failed to send reset email",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResettingPassword(false)
+    }
+  }
+
+  const handleGenerateRecoveryLink = async () => {
+    if (!selectedUserForReset?.email) {
+      toast({
+        title: "Error",
+        description: "User email not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsResettingPassword(true)
+      const result = await generateAdminRecoveryLink(selectedUserForReset.email)
+
+      if ('error' in result && result.error) {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      setRecoveryLink(result.resetLink)
+      setResetMethod('link')
+      toast({
+        title: "Berhasil",
+        description: "Recovery link generated",
+      })
+    } catch (error) {
+      console.error('Error generating recovery link:', error)
+      toast({
+        title: "Error",
+        description: "Failed to generate recovery link",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResettingPassword(false)
+    }
+  }
+
+  const handleCopyRecoveryLink = async () => {
+    if (!recoveryLink) return
+
+    try {
+      await navigator.clipboard.writeText(recoveryLink)
+      setLinkCopied(true)
+      toast({
+        title: "Copied",
+        description: "Recovery link copied to clipboard",
+      })
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch (error) {
+      console.error('Error copying link:', error)
+      toast({
+        title: "Error",
+        description: "Failed to copy link",
+        variant: "destructive",
+      })
+    }
+  }
      link.setAttribute("href", encodedUri);
      link.setAttribute("download", "users_data.csv");
      document.body.appendChild(link);
@@ -708,6 +821,18 @@ const AdminUserManagement = () => {
                               <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
                             </Button>
                           )}
+                          {canUpdateUser() && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenResetDialog(user)}
+                              className="h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+                              title="Reset Password"
+                            >
+                              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="sr-only sm:not-sr-only sm:ml-2">Reset</span>
+                            </Button>
+                          )}
                           {canDeleteUser() && user.id !== '1' && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -813,6 +938,163 @@ const AdminUserManagement = () => {
         </Card>
       </div>
     </main>
+
+    {/* Reset Password Dialog */}
+    <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+      <DialogContent className="max-w-2xl mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Reset Password User</DialogTitle>
+          <DialogDescription>
+            Kirim password reset link ke {selectedUserForReset?.email}
+          </DialogDescription>
+        </DialogHeader>
+
+        {selectedUserForReset && (
+          <div className="space-y-6 py-4">
+            {/* User Info */}
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+              <div>
+                <p className="text-sm text-muted-foreground">Nama</p>
+                <p className="font-medium">{selectedUserForReset.nama}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-medium text-sm truncate">{selectedUserForReset.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Role</p>
+                <Badge variant={getRoleBadgeVariant(selectedUserForReset.role)}>
+                  {formatRoleName(selectedUserForReset.role)}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Lokasi</p>
+                <p className="font-medium">{selectedUserForReset.lokasi || '-'}</p>
+              </div>
+            </div>
+
+            {/* Reset Method Selection */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Pilih cara pengiriman reset password:</Label>
+              
+              {/* Option 1: Send via Email */}
+              <div
+                className={`p-4 border rounded-lg cursor-pointer transition ${
+                  resetMethod === 'email'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted hover:border-muted-foreground'
+                }`}
+                onClick={() => {
+                  setResetMethod('email')
+                  setRecoveryLink('')
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Kirim Email Reset Password
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      User akan menerima email dengan link untuk reset password mereka
+                    </p>
+                  </div>
+                  <input
+                    type="radio"
+                    name="resetMethod"
+                    checked={resetMethod === 'email'}
+                    onChange={() => setResetMethod('email')}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              {/* Option 2: Generate Link */}
+              <div
+                className={`p-4 border rounded-lg cursor-pointer transition ${
+                  resetMethod === 'link'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted hover:border-muted-foreground'
+                }`}
+                onClick={() => setResetMethod('link')}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Copy className="h-4 w-4" />
+                      Generate dan Copy Link
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Generate link reset password untuk dikirim secara manual atau via channel lain
+                    </p>
+                  </div>
+                  <input
+                    type="radio"
+                    name="resetMethod"
+                    checked={resetMethod === 'link'}
+                    onChange={() => setResetMethod('link')}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Recovery Link Display */}
+            {recoveryLink && resetMethod === 'link' && (
+              <div className="p-4 bg-muted rounded-lg border border-border">
+                <p className="text-sm font-medium mb-2">Link Reset Password:</p>
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-background p-3 rounded border border-border text-xs break-all">
+                    {recoveryLink}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyRecoveryLink}
+                    className="whitespace-nowrap"
+                  >
+                    <Copy className="h-4 w-4" />
+                    {linkCopied ? 'Copied' : 'Copy'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowResetDialog(false)}
+                disabled={isResettingPassword}
+                className="order-2 sm:order-1"
+              >
+                Batal
+              </Button>
+              {resetMethod === 'email' && (
+                <Button
+                  onClick={handleSendResetEmail}
+                  disabled={isResettingPassword}
+                  className="order-1 sm:order-2"
+                >
+                  {isResettingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Kirim Email Reset
+                </Button>
+              )}
+              {resetMethod === 'link' && (
+                <Button
+                  onClick={handleGenerateRecoveryLink}
+                  disabled={isResettingPassword || !!recoveryLink}
+                  className="order-1 sm:order-2"
+                >
+                  {isResettingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {recoveryLink ? 'Link Sudah Generated' : 'Generate Link'}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   </div>
 )
 }
