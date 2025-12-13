@@ -46,10 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (session?.user && mounted) {
-        // Try to fetch profile from user_profiles table
+        // Try to fetch profile from profiles table
         try {
           const { data: profileData, error } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('*')
             .eq('user_id', session.user.id)
             .single();
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Try to fetch profile for initial session
             try {
               const { data: profileData, error } = await supabase
-                .from('user_profiles')
+                .from('profiles')
                 .select('*')
                 .eq('user_id', session.user.id)
                 .single();

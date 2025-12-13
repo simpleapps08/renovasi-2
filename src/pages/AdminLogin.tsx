@@ -25,9 +25,9 @@ const AdminLogin = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        // Use user_profiles table (correct table name)
+        // Use profiles table (correct table name)
         const { data: profile, error } = await supabase
-          .from('user_profiles')
+          .from('profiles')
           .select('role')
           .eq('user_id', session.user.id)
           .single()
@@ -79,9 +79,9 @@ const AdminLogin = () => {
     }
 
     if (data.user) {
-      // Use user_profiles table (correct table name)
+      // Use profiles table (correct table name)
       const { data: profile, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('role')
         .eq('user_id', data.user.id)
         .single()

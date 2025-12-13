@@ -34,7 +34,7 @@ const Auth = () => {
         // Check user profile and redirect - with graceful fallback
         try {
           const { data: profile, error } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('role')
             .eq('user_id', session.user.id)
             .single()
@@ -105,12 +105,12 @@ const Auth = () => {
       if (data.user) {
         console.log('🔍 Fetching profile for user_id:', data.user.id)
 
-        console.log('📡 Querying user_profiles table...')
+        console.log('📡 Querying profiles table...')
         let userRole = 'user' // Default role
         
         try {
           const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('role')
             .eq('user_id', data.user.id)
             .single()
