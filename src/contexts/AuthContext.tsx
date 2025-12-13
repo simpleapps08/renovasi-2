@@ -31,131 +31,176 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ BEST PRACTICE #1: Setup auth state listener FIRST
+  // Per Supabase docs: Subscribe to state changes, quick callbacks only
   useEffect(() => {
     let mounted = true;
+    console.log('🔐 Setting up auth state listener...');
 
-    // Listen for auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // console.log("Auth Event:", event, session?.user?.email);
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
+    // Quick callback - NO async operations here per Supabase docs
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth event:', event, '| User:', session?.user?.email || 'none');
+      
+      if (!mounted) return;
 
-        // Always turn off loading on auth event
-        setLoading(false);
-      }
+      // Set state synchronously (fast)
+      setSession(session);
+      setUser(session?.user ?? null);
 
-      if (session?.user && mounted) {
-        // Try to fetch profile from profiles table
-        try {
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
-          
-          if (mounted) {
-            // Fallback to null if profile not found or error (not critical)
-            if (error && error.code !== 'PGRST116') {
-              console.warn('Profile fetch warning:', error.message);
-            }
-            setProfile(profileData ? {
-              id: profileData.id,
-              user_id: profileData.user_id,
-              nama: profileData.full_name || session.user.email?.split('@')[0] || '',
-              role: profileData.role,
-              lokasi: profileData.address,
-            } as Profile : null);
-          }
-        } catch (err) {
-          console.warn('Error fetching profile:', err);
-          if (mounted) setProfile(null);
-        }
-      } else if (mounted) {
+      // ✅ CRITICAL FIX: Turn off loading on EVERY auth event (including SIGNED_OUT)
+      // This prevents infinite loading spinner after logout
+      setLoading(false);
+
+      // ✅ Clear profile when user signs out
+      if (!session?.user) {
         setProfile(null);
       }
+      // Profile will be fetched by separate effect if session exists
     });
 
-    // Initial check (Robust)
-    // We check getSession to catch the case where no event fires (e.g. no change detected but initial state exists or is null)
+    return () => {
+      mounted = false;
+      try {
+        authListener?.subscription?.unsubscribe();
+      } catch (e) {
+        console.warn('Error unsubscribing from auth listener:', e);
+      }
+    };
+  }, []);
+
+  // ✅ BEST PRACTICE #2: Initial session check - separate effect
+  // Per Supabase docs: Check initial session from storage
+  useEffect(() => {
+    let mounted = true;
+    console.log('🔍 Checking initial session...');
+
     (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Error getting initial session:', error);
+          if (mounted) setLoading(false);
+          return;
+        }
 
         if (mounted) {
-          if (session) {
-            setSession(session);
-            setUser(session.user);
-
-            // Try to fetch profile for initial session
-            try {
-              const { data: profileData, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-              
-              if (mounted) {
-                if (error && error.code !== 'PGRST116') {
-                  console.warn('Initial profile fetch warning:', error.message);
-                }
-                setProfile(profileData ? {
-                  id: profileData.id,
-                  user_id: profileData.user_id,
-                  nama: profileData.full_name || session.user.email?.split('@')[0] || '',
-                  role: profileData.role,
-                  lokasi: profileData.address,
-                } as Profile : null);
-              }
-            } catch (err) {
-              console.warn('Error fetching initial profile:', err);
-              if (mounted) setProfile(null);
-            }
+          if (initialSession) {
+            console.log('✅ Initial session found:', initialSession.user.email);
+            setSession(initialSession);
+            setUser(initialSession.user);
+            // Profile will be fetched by separate effect
+          } else {
+            console.log('ℹ️ No initial session found');
+            setSession(null);
+            setUser(null);
+            setProfile(null);
           }
-          // Turn off loading regardless of outcome
+          // Always turn off loading after initial check
           setLoading(false);
         }
       } catch (error) {
-        console.error("Auth check failed:", error);
-        if (mounted) setLoading(false);
+        console.error('❌ Exception during session check:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     })();
 
     return () => {
       mounted = false;
-      // Defensive: only unsubscribe if subscription exists
-      try {
-        if (authListener && (authListener as any).subscription) {
-          (authListener as any).subscription.unsubscribe();
-        }
-      } catch (e) {
-        // swallow errors during cleanup
-      }
     };
   }, []);
 
+  // ✅ BEST PRACTICE #3: Profile fetch as SEPARATE effect
+  // Per Supabase docs: Async operations should be deferred outside of auth callbacks
+  // Triggers when session changes
+  useEffect(() => {
+    let mounted = true;
+
+    if (!session?.user) {
+      // No session = no profile
+      if (mounted) setProfile(null);
+      return;
+    }
+
+    console.log('👤 Fetching profile for user:', session.user.id);
+
+    (async () => {
+      try {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (mounted) {
+          if (error) {
+            // PGRST116 = "not found" (user has no profile yet - not an error)
+            if (error.code !== 'PGRST116') {
+              console.warn('⚠️ Profile fetch error:', error.message);
+            } else {
+              console.log('ℹ️ User profile not found (will create on demand)');
+            }
+            setProfile(null);
+          } else if (profileData) {
+            console.log('✅ Profile loaded:', profileData.nama);
+            setProfile({
+              id: profileData.id,
+              user_id: profileData.user_id,
+              nama: profileData.full_name || session.user.email?.split('@')[0] || '',
+              role: profileData.role,
+              lokasi: profileData.address,
+              saldo_deposit: profileData.saldo_deposit,
+              created_at: profileData.created_at,
+              updated_at: profileData.updated_at,
+            } as Profile);
+          } else {
+            setProfile(null);
+          }
+        }
+      } catch (err) {
+        console.error('❌ Exception fetching profile:', err);
+        if (mounted) setProfile(null);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [session?.user?.id]);
+
   const signOut = async () => {
-    // Reset state BEFORE calling signOut to prevent race conditions
+    console.log('🔑 Starting logout process...');
+    
+    // ✅ CRITICAL: Reset React state IMMEDIATELY to stop loading spinner
+    // This ensures UI updates even if Supabase calls hang
     setUser(null);
     setSession(null);
     setProfile(null);
-    setLoading(false);
+    setLoading(false); // ✅ This is the critical fix for infinite loading
     
+    // Server-side logout (best effort - errors don't block UI update)
     try {
-      // Then call Supabase signOut
+      console.log('📡 Calling supabase.auth.signOut()...');
       await supabase.auth.signOut();
+      console.log('✅ Supabase signOut completed');
     } catch (e) {
-      console.error('Error during supabase signOut:', e);
+      console.error('⚠️ Error during supabase signOut:', e);
+      // Continue anyway - UI is already updated
     }
 
-    // Comprehensive cleanup of all persisted Supabase/session keys
+    // Client-side storage cleanup (best effort)
     try {
+      console.log('🧹 Clearing auth storage...');
       clearAllAuthStorage();
+      console.log('✅ Auth storage cleared');
     } catch (e) {
-      console.error('Error during storage cleanup:', e);
+      console.error('⚠️ Error during storage cleanup:', e);
+      // Continue anyway
     }
     
-    console.log('✅ Auth state reset: user logged out completely');
+    console.log('✅ Logout complete - state reset and storage cleared');
   };
 
   return (

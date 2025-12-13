@@ -27,30 +27,58 @@ const Auth = () => {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Redirect if already authenticated
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        // Check user profile and redirect - with graceful fallback
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .single()
+    // ✅ BEST PRACTICE: Check if already authenticated on mount
+    // Per Supabase docs: defer async operations, use graceful fallback
+    let mounted = true;
 
-          // If profile doesn't exist or error, still redirect to dashboard
-          const role = profile?.role || 'user'
-          const redirectPath = getRedirectPathByRole(role)
-          navigate(redirectPath)
-        } catch (err) {
-          console.warn('Profile check failed, redirecting to dashboard:', err)
-          navigate('/dashboard')
+    const checkAuthStatus = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return; // Prevent state updates on unmounted component
+
+        if (error) {
+          console.warn('⚠️ Error checking session:', error);
+          return; // Stay on login page
         }
+
+        if (session?.user) {
+          console.log('✅ User already authenticated, redirecting...');
+          
+          // Try to get role for better redirect, but use fallback if it fails
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('user_id', session.user.id)
+              .single();
+
+            if (mounted) {
+              const role = (!profileError && profile?.role) ? profile.role : 'user';
+              const redirectPath = getRedirectPathByRole(role);
+              console.log('➡️ Redirecting to:', redirectPath);
+              navigate(redirectPath);
+            }
+          } catch (profileErr) {
+            console.warn('⚠️ Profile fetch failed, using default redirect:', profileErr);
+            if (mounted) {
+              navigate('/dashboard');
+            }
+          }
+        }
+        // If no session, stay on login page (user needs to login)
+      } catch (err) {
+        console.error('❌ Exception checking auth status:', err);
+        // Stay on login page on error
       }
-    }
-    checkUser()
-  }, [navigate, toast])
+    };
+
+    checkAuthStatus();
+
+    return () => {
+      mounted = false;
+    };
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
