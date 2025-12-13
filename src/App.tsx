@@ -29,6 +29,7 @@ import Profil from "./pages/Profil";
 import RoomEnhancer from "./pages/RoomEnhancer";
 import Toko from "./pages/Toko";
 import AdminToko from "./pages/AdminToko";
+import SuperAdminUserManagement from "./pages/admin/SuperAdminUserManagement";
 import ProtectedAdminTokoRoute from "./components/ProtectedAdminTokoRoute";
 
 import NotFound from "./pages/NotFound";
@@ -139,6 +140,11 @@ const App = () => (
             <Route path="/super-admin/dashboard" element={
               <ProtectedRoute adminOnly>
                 <SuperAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute adminOnly>
+                <SuperAdminUserManagement />
               </ProtectedRoute>
             } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
