@@ -524,6 +524,17 @@ const AdminUserManagement = () => {
     
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "users_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Ekspor Berhasil",
+      description: "Data pengguna berhasil diekspor ke CSV.",
+    });
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID')
@@ -944,11 +955,11 @@ const AdminUserManagement = () => {
             )}
           </CardContent>
         </Card>
-      </div>
-    </main>
+        </div>
+      </main>
 
-    {/* Reset Password Dialog */}
-    <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+      {/* Reset Password Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
       <DialogContent className="max-w-2xl mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Reset Password User</DialogTitle>
