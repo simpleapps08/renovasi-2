@@ -26,12 +26,38 @@ const ResetPassword = () => {
             console.log('🔍 Checking for valid reset token...')
             console.log('URL hash:', window.location.hash)
 
+            // First, check for error in URL (otp_expired, invalid token, etc)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1))
+            const errorCode = hashParams.get('error_code')
+            const errorDescription = hashParams.get('error_description')
+            
+            if (errorCode) {
+                console.error('❌ Error in reset link:', { errorCode, errorDescription })
+                
+                if (errorCode === 'otp_expired') {
+                    setIsTokenValid(false)
+                    toast({
+                        title: "Link Sudah Kadaluarsa",
+                        description: "Link reset password sudah expired. Silakan minta link reset baru dari halaman login.",
+                        variant: "destructive",
+                    })
+                    return
+                } else if (errorCode === 'access_denied') {
+                    setIsTokenValid(false)
+                    toast({
+                        title: "Akses Ditolak",
+                        description: errorDescription || "Link reset password tidak valid. Silakan minta link reset baru.",
+                        variant: "destructive",
+                    })
+                    return
+                }
+            }
+
             // Use helper function to verify token
             const isTokenValid = await verifyResetToken()
 
             if (!isTokenValid) {
                 // Check if there's a hash in URL (recovery token)
-                const hashParams = new URLSearchParams(window.location.hash.substring(1))
                 const accessToken = hashParams.get('access_token')
                 const type = hashParams.get('type')
 
@@ -177,13 +203,19 @@ const ResetPassword = () => {
                             Link reset password tidak valid atau sudah kadaluarsa
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="text-center">
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Silakan minta link reset password baru dari halaman login.
+                    <CardContent className="text-center space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Link reset password berlaku selama 1 jam setelah dikirim.
+                            Jika link sudah expired, silakan minta link reset password baru.
                         </p>
-                        <Button asChild variant="hero" className="w-full">
-                            <Link to="/auth">Kembali ke Login</Link>
-                        </Button>
+                        <div className="space-y-3">
+                            <Button asChild variant="hero" className="w-full">
+                                <Link to="/auth">Minta Link Reset Baru</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full">
+                                <Link to="/">Kembali ke Beranda</Link>
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
