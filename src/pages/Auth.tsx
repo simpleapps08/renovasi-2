@@ -9,6 +9,7 @@ import { Home } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { sendPasswordResetEmail } from "@/lib/passwordRecoveryFREE"
+import { getRedirectPathByRole } from "@/utils/roleUtils"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -40,16 +41,8 @@ const Auth = () => {
 
           // If profile doesn't exist or error, still redirect to dashboard
           const role = profile?.role || 'user'
-          
-          if (role === 'super_admin') {
-            navigate('/super-admin/dashboard')
-          } else if (role === 'admin') {
-            navigate('/admin')
-          } else if (role === 'admin_store') {
-            navigate('/admin/toko')
-          } else {
-            navigate('/dashboard')
-          }
+          const redirectPath = getRedirectPathByRole(role)
+          navigate(redirectPath)
         } catch (err) {
           console.warn('Profile check failed, redirecting to dashboard:', err)
           navigate('/dashboard')
@@ -140,20 +133,10 @@ const Auth = () => {
           description: "Selamat datang di SERVISOO!",
         })
 
-        // Navigate based on role
-        if (userRole === 'super_admin') {
-          console.log('➡️ Redirecting to super admin dashboard')
-          navigate('/super-admin/dashboard')
-        } else if (userRole === 'admin') {
-          console.log('➡️ Redirecting to admin dashboard')
-          navigate('/admin')
-        } else if (userRole === 'admin_store') {
-          console.log('➡️ Redirecting to admin toko')
-          navigate('/admin/toko')
-        } else {
-          console.log('➡️ Redirecting to user dashboard')
-          navigate('/dashboard')
-        }
+        // Navigate based on role using centralized helper
+        const redirectPath = getRedirectPathByRole(userRole)
+        console.log('➡️ Redirecting to:', redirectPath)
+        navigate(redirectPath)
       }
     } catch (err: any) {
       console.error('❌ Unexpected error during login:', err)

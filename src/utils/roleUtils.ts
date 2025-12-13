@@ -1,10 +1,14 @@
 // Role utilities untuk sistem leveling role
 
+// Type-safe role definitions
+export type UserRole = 'super_admin' | 'admin' | 'admin_store' | 'moderator' | 'user' | 'guest';
+
 export interface RoleLevel {
   id: string;
   name: string;
   level: number;
   permissions: string[];
+  dashboardPath: string;
   description: string;
 }
 
@@ -15,6 +19,7 @@ export const ROLE_LEVELS: Record<string, RoleLevel> = {
     name: 'Super Admin',
     level: 100,
     permissions: ['*'],
+    dashboardPath: '/super-admin/dashboard',
     description: 'Akses penuh ke semua fitur sistem'
   },
   admin: {
@@ -31,18 +36,34 @@ export const ROLE_LEVELS: Record<string, RoleLevel> = {
       'dashboard.access',
       'reports.read'
     ],
+    dashboardPath: '/admin',
     description: 'Mengelola user dan akses ke dashboard admin'
+  },
+  admin_store: {
+    id: 'admin_store',
+    name: 'Admin Toko',
+    level: 60,
+    permissions: [
+      'store.read',
+      'store.manage',
+      'store.settings',
+      'products.manage',
+      'sales.read'
+    ],
+    dashboardPath: '/admin/toko',
+    description: 'Mengelola toko dan penjualan'
   },
   moderator: {
     id: 'moderator',
     name: 'Moderator',
-    level: 60,
+    level: 40,
     permissions: [
       'user.read',
       'user.update',
       'content.moderate',
       'reports.read'
     ],
+    dashboardPath: '/dashboard',
     description: 'Moderasi konten dan manajemen user terbatas'
   },
   user: {
@@ -55,6 +76,7 @@ export const ROLE_LEVELS: Record<string, RoleLevel> = {
       'content.create',
       'content.read'
     ],
+    dashboardPath: '/dashboard',
     description: 'User biasa dengan akses terbatas'
   },
   guest: {
@@ -64,6 +86,7 @@ export const ROLE_LEVELS: Record<string, RoleLevel> = {
     permissions: [
       'content.read'
     ],
+    dashboardPath: '/',
     description: 'Akses terbatas hanya untuk melihat konten'
   }
 };
@@ -75,6 +98,8 @@ export const getRoleBadgeVariant = (role: string): 'default' | 'secondary' | 'de
       return 'destructive';
     case 'admin':
       return 'destructive';
+    case 'admin_store':
+      return 'secondary';
     case 'moderator':
       return 'secondary';
     case 'user':
@@ -148,4 +173,104 @@ export const isValidRole = (role: string): boolean => {
 // Fungsi untuk mendapatkan semua role yang tersedia
 export const getAllRoles = (): RoleLevel[] => {
   return Object.values(ROLE_LEVELS).sort((a, b) => b.level - a.level);
+};
+
+// ========================================
+// NEW HELPER FUNCTIONS FOR ROUTING
+// ========================================
+
+/**
+ * Centralized role-to-dashboard mapping
+ * Single source of truth for role-based redirects
+ */
+export const ROLE_DASHBOARD_MAP: Record<UserRole, string> = {
+  super_admin: '/super-admin/dashboard',
+  admin: '/admin',
+  admin_store: '/admin/toko',
+  moderator: '/dashboard',
+  user: '/dashboard',
+  guest: '/'
+};
+
+/**
+ * Get the correct dashboard path for a given role
+ * Used in login pages to redirect users to their appropriate dashboard
+ * 
+ * @param role - The user's role
+ * @returns The dashboard path for that role
+ * 
+ * @example
+ * const redirectPath = getRedirectPathByRole(userProfile.role);
+ * navigate(redirectPath);
+ */
+export const getRedirectPathByRole = (role: string | undefined): string => {
+  if (!role) return '/dashboard';
+  return ROLE_DASHBOARD_MAP[role as UserRole] || '/dashboard';
+};
+
+/**
+ * Check if a user role is authorized for a specific set of required roles
+ * Uses role level hierarchy - higher or equal level grants access
+ * 
+ * @param userRole - The user's current role
+ * @param requiredRoles - Array of roles that are allowed
+ * @returns true if user is authorized
+ * 
+ * @example
+ * // User must be admin or super_admin
+ * const canAccess = isAuthorizedForRole(userRole, ['admin', 'super_admin']);
+ * 
+ * @example
+ * // User must be admin or above
+ * const canManageUsers = isAuthorizedForRole(userRole, ['admin']);
+ */
+export const isAuthorizedForRole = (
+  userRole: string | undefined, 
+  requiredRoles: UserRole[]
+): boolean => {
+  if (!userRole) return false;
+  
+  const userLevel = ROLE_LEVELS[userRole]?.level || -1;
+  if (userLevel === -1) return false;
+  
+  // Check if user's role level is >= any of the required role levels
+  return requiredRoles.some(role => {
+    const requiredLevel = ROLE_LEVELS[role]?.level || 0;
+    return userLevel >= requiredLevel;
+  });
+};
+
+/**
+ * Alias for isAuthorizedForRole - check if user has required role(s)
+ * 
+ * @param userRole - The user's current role
+ * @param requiredRoles - Array of roles or single role that is allowed
+ * @returns true if user has one of the required roles
+ */
+export const hasRequiredRole = (
+  userRole: string | undefined,
+  requiredRoles: UserRole | UserRole[]
+): boolean => {
+  const rolesArray = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+  return isAuthorizedForRole(userRole, rolesArray);
+};
+
+/**
+ * Check if user has specific permission within their role
+ * 
+ * @param userRole - The user's role
+ * @param requiredPermission - The permission to check
+ * @returns true if user has the permission
+ * 
+ * @example
+ * if (hasPermission(userRole, 'user.delete')) {
+ *   // Show delete button
+ * }
+ */
+export const hasPermissionForAction = (
+  userRole: string | undefined,
+  requiredPermission: string
+): boolean => {
+  if (!userRole) return false;
+  return hasPermission(userRole, requiredPermission);
 };

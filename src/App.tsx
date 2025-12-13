@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoleRoute from "@/components/ProtectedRoleRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
@@ -36,26 +37,6 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Protected Route Component
-// Protected Route Component
-function ProtectedRoute({ children, adminOnly }: { children: React.ReactNode, adminOnly?: boolean }) {
-  const { user, profile, loading } = useAuth();
-
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div></div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  if (adminOnly && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <>{children}</>;
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -65,92 +46,107 @@ const App = () => (
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <FloatingChatLeft />
           <Routes>
+            {/* ============ PUBLIC ROUTES ============ */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/confirm" element={<AuthConfirm />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/test-dashboard" element={<TestDashboard />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/simulate" element={
-              <ProtectedRoute>
-                <SimulasiRAB />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/history" element={
-              <ProtectedRoute>
-                <HistoriProyek />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/billing" element={
-              <ProtectedRoute>
-                <BillingDeposit />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/profile" element={
-              <ProtectedRoute>
-                <Profil />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={
-              <ProtectedRoute adminOnly>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/rab" element={
-              <ProtectedRoute adminOnly>
-                <AdminRAB />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/material" element={
-              <ProtectedRoute adminOnly>
-                <AdminMaterial />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/upah" element={
-              <ProtectedRoute adminOnly>
-                <AdminUpah />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users" element={
-              <ProtectedRoute adminOnly>
-                <AdminUserManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/gallery" element={
-              <ProtectedRoute adminOnly>
-                <AdminGallery />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/deposit-billing" element={
-              <ProtectedRoute adminOnly>
-                <AdminDepositBilling />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/content" element={
-              <ProtectedRoute adminOnly>
-                <AdminContentManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/super-admin/dashboard" element={
-              <ProtectedRoute adminOnly>
-                <SuperAdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users" element={
-              <ProtectedRoute adminOnly>
-                <SuperAdminUserManagement />
-              </ProtectedRoute>
-            } />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
             <Route path="/toko" element={<Toko />} />
-            <Route path="/admin/toko" element={<ProtectedAdminTokoRoute><AdminToko /></ProtectedAdminTokoRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+            {/* ============ USER DASHBOARD ROUTES (user, moderator, admin, super_admin) ============ */}
+            <Route path="/dashboard" element={
+              <ProtectedRoleRoute allowedRoles={['user', 'moderator', 'admin', 'super_admin']}>
+                <Dashboard />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/dashboard/simulate" element={
+              <ProtectedRoleRoute allowedRoles={['user', 'moderator', 'admin', 'super_admin']}>
+                <SimulasiRAB />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/dashboard/history" element={
+              <ProtectedRoleRoute allowedRoles={['user', 'moderator', 'admin', 'super_admin']}>
+                <HistoriProyek />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/dashboard/billing" element={
+              <ProtectedRoleRoute allowedRoles={['user', 'moderator', 'admin', 'super_admin']}>
+                <BillingDeposit />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/dashboard/profile" element={
+              <ProtectedRoleRoute allowedRoles={['user', 'moderator', 'admin', 'super_admin']}>
+                <Profil />
+              </ProtectedRoleRoute>
+            } />
+
+            {/* ============ ADMIN DASHBOARD ROUTES (admin, super_admin) ============ */}
+            <Route path="/admin" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminDashboard />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/admin/rab" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminRAB />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/admin/material" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminMaterial />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/admin/upah" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminUpah />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/admin/gallery" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminGallery />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/admin/deposit-billing" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminDepositBilling />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/admin/content" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminContentManagement />
+              </ProtectedRoleRoute>
+            } />
+
+            {/* ============ SUPER ADMIN ONLY ROUTES (super_admin only) ============ */}
+            <Route path="/super-admin/dashboard" element={
+              <ProtectedRoleRoute allowedRoles={['super_admin']} fallbackPath="/admin">
+                <SuperAdminDashboard />
+              </ProtectedRoleRoute>
+            } />
+            <Route path="/super-admin/users" element={
+              <ProtectedRoleRoute allowedRoles={['super_admin']} fallbackPath="/admin">
+                <SuperAdminUserManagement />
+              </ProtectedRoleRoute>
+            } />
+
+            {/* ============ ADMIN USER MANAGEMENT (admin, super_admin) ============ */}
+            <Route path="/admin/users" element={
+              <ProtectedRoleRoute allowedRoles={['admin', 'super_admin']} fallbackPath="/dashboard">
+                <AdminUserManagement />
+              </ProtectedRoleRoute>
+            } />
+
+            {/* ============ ADMIN STORE ROUTES (admin_store only) ============ */}
+            <Route path="/admin/toko" element={
+              <ProtectedAdminTokoRoute>
+                <AdminToko />
+              </ProtectedAdminTokoRoute>
+            } />
+
+            {/* ============ CATCH-ALL 404 ============ */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

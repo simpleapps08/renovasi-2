@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { Shield, ArrowLeft } from "lucide-react"
 import { sendPasswordResetEmailStandard } from "@/lib/resetPasswordHelper"
+import { getRedirectPathByRole, isAuthorizedForRole } from "@/utils/roleUtils"
 
 const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -24,8 +25,9 @@ const AdminLogin = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        // Use user_profiles table (correct table name)
         const { data: profile, error } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('role')
           .eq('user_id', session.user.id)
           .single()
@@ -40,12 +42,10 @@ const AdminLogin = () => {
           return
         }
 
-        if (profile?.role === 'super_admin') {
-          navigate('/super-admin/dashboard')
-        } else if (profile?.role === 'admin') {
-          navigate('/admin')
-        } else if (profile?.role === 'admin_store') {
-          navigate('/admin/toko')
+        // Check if user has admin-level role
+        if (isAuthorizedForRole(profile?.role, ['admin', 'super_admin', 'admin_store'])) {
+          const redirectPath = getRedirectPathByRole(profile?.role)
+          navigate(redirectPath)
         } else {
           toast({
             title: "Akses Ditolak",
@@ -79,8 +79,9 @@ const AdminLogin = () => {
     }
 
     if (data.user) {
+      // Use user_profiles table (correct table name)
       const { data: profile, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('role')
         .eq('user_id', data.user.id)
         .single()
@@ -101,24 +102,14 @@ const AdminLogin = () => {
         return
       }
 
-      if (profile?.role === 'super_admin') {
+      // Check if user has admin-level role
+      if (isAuthorizedForRole(profile?.role, ['admin', 'super_admin', 'admin_store'])) {
         toast({
           title: "Login Berhasil",
-          description: "Selamat datang di Super Admin Portal!",
+          description: "Selamat datang di Admin Portal!",
         })
-        navigate('/super-admin/dashboard')
-      } else if (profile?.role === 'admin') {
-        toast({
-          title: "Login Berhasil",
-          description: "Selamat datang, Administrator!",
-        })
-        navigate('/admin')
-      } else if (profile?.role === 'admin_store') {
-        toast({
-          title: "Login Berhasil",
-          description: "Selamat datang, Admin Toko!",
-        })
-        navigate('/admin/toko')
+        const redirectPath = getRedirectPathByRole(profile?.role)
+        navigate(redirectPath)
       } else {
         toast({
           title: "Akses Ditolak",
