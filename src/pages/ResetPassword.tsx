@@ -7,8 +7,8 @@ import { Link, useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
+import { validateRecoveryToken, getTokenRemainingTime, clearRecoverySession } from "@/lib/passwordRecoveryFREE"
 import { Lock, CheckCircle2, AlertCircle } from "lucide-react"
-import { verifyResetToken } from "@/lib/resetPasswordHelper"
 
 const ResetPassword = () => {
     const [isLoading, setIsLoading] = useState(false)
@@ -30,6 +30,8 @@ const ResetPassword = () => {
             const hashParams = new URLSearchParams(window.location.hash.substring(1))
             const errorCode = hashParams.get('error_code')
             const errorDescription = hashParams.get('error_description')
+            const accessToken = hashParams.get('access_token')
+            const type = hashParams.get('type')
             
             if (errorCode) {
                 console.error('❌ Error in reset link:', { errorCode, errorDescription })
@@ -53,26 +55,27 @@ const ResetPassword = () => {
                 }
             }
 
-            // Use helper function to verify token
-            const isTokenValid = await verifyResetToken()
-
-            if (!isTokenValid) {
-                // Check if there's a hash in URL (recovery token)
-                const accessToken = hashParams.get('access_token')
-                const type = hashParams.get('type')
-
-                console.log('Hash params:', { accessToken: !!accessToken, type })
-
-                if (type === 'recovery' && accessToken) {
-                    console.log('⚠️ Recovery token found, waiting for processing...')
-                    // Give Supabase more time to process
-                    setTimeout(async () => {
-                        const { data: { session: newSession } } = await supabase.auth.getSession()
-                        if (newSession) {
-                            console.log('✅ Session created from recovery token')
+            // Validate recovery token using app-level tracking (Free Plan mode)
+            if (type === 'recovery' && accessToken) {
+                console.log('🔐 Recovery token found in URL')
+                
+                try {
+                    const { data: { session } } = await supabase.auth.getSession()
+                    
+                    if (session && session.user) {
+                        console.log('✅ Session found for user:', session.user.email)
+                        
+                        // Validate app-level token tracking
+                        const validation = validateRecoveryToken(session.user.email!)
+                        
+                        if (validation.valid) {
+                            console.log('✅ Token is within validity window')
                             setIsTokenValid(true)
+                            const remaining = getTokenRemainingTime(session.user.email!)
+                            console.log(`⏰ ${remaining}`)
                         } else {
-                            console.log('❌ Token expired or invalid')
+                            console.log('❌ Token outside validity window:', validation.reason)
+                            clearRecoverySession(session.user.email!)
                             setIsTokenValid(false)
                             toast({
                                 title: "Link Tidak Valid",
@@ -80,19 +83,32 @@ const ResetPassword = () => {
                                 variant: "destructive",
                             })
                         }
-                    }, 1000)
-                } else {
-                    console.log('❌ No valid recovery token found')
+                    } else {
+                        console.log('❌ No session found for recovery token')
+                        setIsTokenValid(false)
+                        toast({
+                            title: "Link Tidak Valid",
+                            description: "Link reset password tidak valid.",
+                            variant: "destructive",
+                        })
+                    }
+                } catch (err) {
+                    console.error('❌ Error validating token:', err)
                     setIsTokenValid(false)
                     toast({
-                        title: "Link Tidak Valid",
-                        description: "Link reset password tidak valid atau sudah kadaluarsa.",
+                        title: "Error",
+                        description: "Terjadi kesalahan saat memproses link reset password.",
                         variant: "destructive",
                     })
                 }
             } else {
-                console.log('✅ Valid reset token found')
-                setIsTokenValid(true)
+                console.log('❌ No valid recovery token found in URL')
+                setIsTokenValid(false)
+                toast({
+                    title: "Link Tidak Valid",
+                    description: "Link reset password tidak valid atau sudah kadaluarsa.",
+                    variant: "destructive",
+                })
             }
         }
 

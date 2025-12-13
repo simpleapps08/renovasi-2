@@ -8,8 +8,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { Home } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { sendPasswordResetEmailStandard } from "@/lib/resetPasswordHelper"
-import { sendRecoveryEmailAdmin, sendRecoveryEmailWithLogging } from "@/lib/extendedPasswordRecovery"
+import { sendPasswordResetEmail } from "@/lib/passwordRecoveryFREE"
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -200,19 +199,11 @@ const Auth = () => {
     try {
       console.log('📧 Initiating password reset for:', forgotPasswordEmail)
       
-      // Try admin API first for better token expiry control
-      // If SERVICE_ROLE_KEY is not set, falls back to standard method
+      // Send recovery email with app-level token tracking
+      // Works with Free Plan by tracking validity in sessionStorage
       const redirectUrl = `${window.location.origin}/reset-password`
-      const hasServiceRole = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
       
-      let result
-      if (hasServiceRole) {
-        console.log('🔐 Using Admin API for recovery email...')
-        result = await sendRecoveryEmailAdmin(forgotPasswordEmail, redirectUrl)
-      } else {
-        console.log('📧 Using standard recovery email method...')
-        result = await sendRecoveryEmailWithLogging(forgotPasswordEmail, redirectUrl)
-      }
+      const result = await sendPasswordResetEmail(forgotPasswordEmail, redirectUrl)
 
       if (result.error) {
         console.error('❌ Reset password error:', result.error)
