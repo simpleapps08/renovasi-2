@@ -1,1 +1,6 @@
-/*    /index.html   200
+# Don't rewrite assets and API calls
+/assets/*                   404
+/api/*                       404
+
+# Rewrite everything else to index.html for SPA routing
+/*                          /index.html   200
