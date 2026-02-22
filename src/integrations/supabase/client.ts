@@ -5,12 +5,14 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY; // VITE_SUPABASE_ANON_KEY is preferred for consistency
 
-// Ensure environment variables are loaded
-if (!SUPABASE_URL) {
-  throw new Error('VITE_SUPABASE_URL is not defined in environment variables.');
-}
-if (!SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY is not defined in environment variables.');
+// Ensure environment variables are loaded (only check in browser to prevent build failures)
+if (typeof window !== 'undefined') {
+  if (!SUPABASE_URL) {
+    console.error('VITE_SUPABASE_URL is not defined in environment variables.');
+  }
+  if (!SUPABASE_PUBLISHABLE_KEY) {
+    console.error('VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY is not defined in environment variables.');
+  }
 }
 
 /**

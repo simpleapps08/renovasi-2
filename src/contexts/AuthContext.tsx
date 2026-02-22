@@ -148,8 +148,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       user_id: session.user.id, 
                       email: session.user.email,
                       full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.nama || session.user.email?.split('@')[0] || 'User',
+                      nama: session.user.user_metadata?.nama || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
                       role: 'user',
-                      address: session.user.user_metadata?.address || session.user.user_metadata?.lokasi || 'Indonesia'
+                      address: session.user.user_metadata?.address || session.user.user_metadata?.lokasi || 'Indonesia',
+                      lokasi: session.user.user_metadata?.lokasi || session.user.user_metadata?.address || 'Indonesia'
                     }
                   ])
                   .select()
@@ -159,13 +161,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   console.error('❌ Failed to create profile on demand:', createError.message);
                   setProfile(null);
                 } else {
-                  console.log('✅ Profile created on demand:', newProfile.full_name);
+                  console.log('✅ Profile created on demand:', newProfile.nama);
                   setProfile({
                     id: newProfile.id,
                     user_id: newProfile.user_id,
-                    nama: newProfile.full_name || newProfile.nama || '',
+                    nama: newProfile.nama || newProfile.full_name || '',
                     role: newProfile.role,
-                    lokasi: newProfile.address || newProfile.location || '',
+                    lokasi: newProfile.lokasi || newProfile.address || '',
                     saldo_deposit: newProfile.saldo_deposit,
                     created_at: newProfile.created_at,
                     updated_at: newProfile.updated_at,
