@@ -1,4 +1,5 @@
 // Enhanced Supabase client configuration with best practices for session management
+// Updated: 2024-03-24 for Vercel deployment fix
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
