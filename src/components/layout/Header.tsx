@@ -111,7 +111,7 @@ const Header = () => {
               className="block text-sm font-medium transition-colors hover:text-accent py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Gallery
+              Galeri
             </Link>
             <Link 
               to="/toko" 

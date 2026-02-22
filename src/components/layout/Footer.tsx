@@ -174,10 +174,10 @@ const Footer = () => {
       try {
         return JSON.parse(services.content)
       } catch {
-        return ['Renovasi Rumah', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
+        return ['Renovasi Gedung Sekolah dan Kantor', 'Renovasi Rumah', 'Pembuatan Taman (Landscape)', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
       }
     }
-    return ['Renovasi Rumah', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
+    return ['Renovasi Gedung Sekolah dan Kantor', 'Renovasi Rumah', 'Pembuatan Taman (Landscape)', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
   }
 
   if (loading) {

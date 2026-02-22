@@ -63,24 +63,24 @@ const initialServicesData = [
 const initialPortfolioData = [
   {
     id: 1,
-    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&h=400&fit=crop",
-    title: "Renovasi Rumah Modern",
-    category: "Residensial",
-    description: "Transformasi rumah klasik menjadi hunian modern minimalis"
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
+    title: "Renovasi Gedung Sekolah dan Kantor",
+    category: "Komersial",
+    description: "Transformasi gedung kantor dan sekolah menjadi ruang yang modern, fungsional, dan mendukung produktivitas."
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=600&h=400&fit=crop",
-    title: "Gedung Perkantoran",
-    category: "Komersial",
-    description: "Toko bangunan lengkap dengan berbagai material konstruksi berkualitas"
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
+    title: "Renovasi Rumah",
+    category: "Residensial",
+    description: "Mewujudkan hunian impian dengan desain interior terkini dan pengerjaan konstruksi yang berkualitas tinggi."
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop",
-    title: "Renovasi Dapur Modern",
-    category: "Interior",
-    description: "Desain dapur terbuka dengan island counter dan pencahayaan optimal"
+    image: "https://images.unsplash.com/photo-1579227114347-c0e556866f85?q=80&w=800",
+    title: "Pembuatan Taman (Landscape)",
+    category: "Landscape",
+    description: "Perancangan dan pembuatan taman estetik dengan konsep lanskap hijau yang memberikan kesejukan bagi properti Anda."
   }
 ]
 
