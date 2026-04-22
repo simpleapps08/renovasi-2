@@ -6,7 +6,7 @@ const trustPoints = [
   "Estimasi jelas sebelum mulai",
   "Pengerjaan rapi dan bersih",
   "Cocok untuk cat, plafon, dan renovasi rumah",
-  "Lebih tenang tanpa drama tukang",
+  "Melayani area Kabupaten Tuban dan sekitarnya",
 ]
 
 const proofItems = [
