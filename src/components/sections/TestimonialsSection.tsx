@@ -3,17 +3,17 @@ import { Star } from "lucide-react"
 const testimonials = [
   {
     name: "Ibu Rina",
-    role: "Pemilik rumah, Surabaya",
+    role: "Pemilik rumah, Kecamatan Tuban",
     quote: "Yang paling saya suka itu komunikasinya enak. Dari awal dijelaskan pelan-pelan, hasil cat juga rapi dan rumah tidak terasa seperti habis dikerjain asal-asalan.",
   },
   {
     name: "Pak Dimas",
-    role: "Pemilik rumah, Sidoarjo",
+    role: "Pemilik rumah, Kecamatan Semanding",
     quote: "Biasanya saya malas urus renovasi kecil karena capek ngawasin. Di sini rasanya lebih tenang karena progres dan kebutuhannya jelas dari awal.",
   },
   {
     name: "Ibu Maya",
-    role: "Pemilik rumah, Gresik",
+    role: "Pemilik rumah, Kecamatan Merakurak",
     quote: "Servisoo terasa bukan seperti tukang biasa. Lebih rapi, lebih proper, dan hasil finishing-nya kelihatan niat.",
   },
 ]

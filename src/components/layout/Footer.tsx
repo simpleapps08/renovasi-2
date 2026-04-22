@@ -45,6 +45,13 @@ const fallbackFooterContent: FooterContent[] = [
   { id: '2', section: 'services', content: 'Pengecatan Rumah,Plafon,Renovasi Finishing,Konsultasi Kebutuhan Rumah' }
 ]
 
+const footerNavItems = [
+  { label: 'Homepage', href: '/' },
+  { label: 'Jasa Renovasi Rumah Tuban', href: '/jasa-renovasi-rumah-tuban' },
+  { label: 'Jasa Cat Rumah Tuban', href: '/jasa-cat-rumah-tuban' },
+  { label: 'Jasa Plafon Tuban', href: '/jasa-plafon-tuban' },
+]
+
 const Footer = () => {
   const [socialLinks, setSocialLinks] = useState<SocialMediaLink[]>(fallbackSocialLinks)
   const [contactInfo, setContactInfo] = useState<ContactInfo[]>(fallbackContactInfo)
@@ -181,7 +188,7 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-16">
-        <div className={`grid grid-cols-1 gap-8 ${isHomepage ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
@@ -209,18 +216,18 @@ const Footer = () => {
           </div>
           
           {/* Quick Links */}
-          {!isHomepage && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Layanan</h3>
-              <ul className="space-y-2">
-                {getServices().map((service, index) => (
-                  <li key={index}>
-                    <span className="text-primary-foreground/80">{service}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Halaman</h3>
+            <ul className="space-y-2">
+              {footerNavItems.map((item) => (
+                <li key={item.href}>
+                  <Link to={item.href} className="text-primary-foreground/80 hover:text-accent transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
           
           {/* Contact Info */}
           <div>
