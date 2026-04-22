@@ -22,10 +22,11 @@ const FloatingChatLeft = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const location = useLocation()
 
-  // Hide floating button on pages where it becomes a distraction or conflicts with main CTA
+  // Hide floating button only on back-office/auth flows where it gets in the way
   const isDashboard = location.pathname.startsWith('/dashboard')
-  const isHomepage = location.pathname === '/'
-  const shouldHideFloatingChat = isDashboard || isHomepage
+  const isAdminArea = location.pathname.startsWith('/admin') || location.pathname.startsWith('/super-admin')
+  const isAuthFlow = location.pathname.startsWith('/auth') || location.pathname.startsWith('/reset-password')
+  const shouldHideFloatingChat = isDashboard || isAdminArea || isAuthFlow
 
   // URL n8n Chat Trigger untuk workflow Servisoo
   const N8N_CHAT_URL = 'https://n8n-djgsdd49u07h.siomay.sumopod.my.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'

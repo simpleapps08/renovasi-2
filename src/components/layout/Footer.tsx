@@ -197,22 +197,20 @@ const Footer = () => {
             <p className="text-primary-foreground/80 mb-6 max-w-md">
               {getFooterDescription()}
             </p>
-            {!isHomepage && (
-              <div className="flex space-x-4">
-                {socialLinks.map((social) => (
-                  <a 
-                    key={social.id}
-                    href={social.url} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent transition-colors"
-                    title={social.name}
-                  >
-                    {getSocialIcon(social.platform)}
-                  </a>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-4">
+              {socialLinks.map((social) => (
+                <a 
+                  key={social.id}
+                  href={social.url} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-accent/25 bg-accent/15 text-primary-foreground transition-all hover:-translate-y-0.5 hover:bg-accent hover:text-primary"
+                  title={social.name}
+                >
+                  {getSocialIcon(social.platform)}
+                </a>
+              ))}
+            </div>
           </div>
           
           {/* Quick Links */}
