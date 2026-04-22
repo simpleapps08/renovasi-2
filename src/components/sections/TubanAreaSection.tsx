@@ -5,16 +5,19 @@ const localServices = [
     icon: Home,
     title: "Jasa renovasi rumah Tuban",
     description: "Untuk pemilik rumah di Kabupaten Tuban yang ingin membenahi area rumah dengan proses yang lebih jelas dan hasil yang rapi.",
+    href: "/jasa-renovasi-rumah-tuban",
   },
   {
     icon: Paintbrush2,
     title: "Jasa cat rumah Tuban",
     description: "Cocok untuk rumah yang terlihat kusam, butuh tampilan lebih segar, dan ingin hasil pengecatan yang lebih bersih serta enak dilihat.",
+    href: "/jasa-cat-rumah-tuban",
   },
   {
     icon: Wrench,
     title: "Jasa plafon Tuban",
     description: "Untuk area rumah yang butuh perapian plafon dan finishing agar ruangan terasa lebih proper, lebih nyaman, dan lebih tertata.",
+    href: "/jasa-plafon-tuban",
   },
 ]
 
@@ -44,6 +47,9 @@ const TubanAreaSection = () => {
                 </div>
                 <h3 className="text-2xl font-semibold text-primary mb-3">{service.title}</h3>
                 <p className="text-muted-foreground leading-7">{service.description}</p>
+                <a href={service.href} className="mt-5 inline-flex text-sm font-semibold text-accent hover:text-accent-dark">
+                  Lihat halaman layanan →
+                </a>
               </div>
             )
           })}

@@ -31,6 +31,9 @@ import RoomEnhancer from "./pages/RoomEnhancer";
 import Toko from "./pages/Toko";
 import AdminToko from "./pages/AdminToko";
 import ProtectedAdminTokoRoute from "./components/ProtectedAdminTokoRoute";
+import JasaRenovasiRumahTuban from "./pages/JasaRenovasiRumahTuban";
+import JasaCatRumahTuban from "./pages/JasaCatRumahTuban";
+import JasaPlafonTuban from "./pages/JasaPlafonTuban";
 
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +57,9 @@ const App = () => (
             <Route path="/test-dashboard" element={<TestDashboard />} />
             <Route path="/room-enhancer" element={<RoomEnhancer />} />
             <Route path="/toko" element={<Toko />} />
+            <Route path="/jasa-renovasi-rumah-tuban" element={<JasaRenovasiRumahTuban />} />
+            <Route path="/jasa-cat-rumah-tuban" element={<JasaCatRumahTuban />} />
+            <Route path="/jasa-plafon-tuban" element={<JasaPlafonTuban />} />
 
             {/* ============ USER DASHBOARD ROUTES (user, moderator, admin, super_admin) ============ */}
             <Route path="/dashboard" element={
