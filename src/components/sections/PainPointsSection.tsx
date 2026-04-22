@@ -20,9 +20,9 @@ const painPoints = [
 
 const PainPointsSection = () => {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-24 bg-[linear-gradient(180deg,#ffffff_0%,rgba(247,247,247,0.9)_100%)]">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-12">
+        <div className="max-w-3xl mx-auto text-center mb-14">
           <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
             Masalah yang sering bikin capek duluan
           </span>
@@ -40,8 +40,9 @@ const PainPointsSection = () => {
             return (
               <div
                 key={item.title}
-                className="rounded-3xl border border-border bg-secondary/40 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-accent"
+                className="rounded-[2rem] border border-border bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-accent"
               >
+                <div className="mb-6 h-1.5 w-16 rounded-full bg-accent/80"></div>
                 <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
                   <Icon className="h-7 w-7" />
                 </div>

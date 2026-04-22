@@ -25,10 +25,10 @@ const reasons = [
 
 const WhyChooseSection = () => {
   return (
-    <section id="keunggulan" className="py-20 bg-secondary/30">
+    <section id="keunggulan" className="py-24 bg-secondary/40">
       <div className="container mx-auto px-4">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <div>
+          <div className="lg:sticky lg:top-24">
             <span className="inline-flex rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold mb-5">
               Kenapa banyak homeowner lebih tenang dengan Servisoo
             </span>
@@ -41,15 +41,15 @@ const WhyChooseSection = () => {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            {reasons.map((reason) => {
+            {reasons.map((reason, index) => {
               const Icon = reason.icon
               return (
-                <div key={reason.title} className="rounded-3xl bg-white border border-border p-7 shadow-sm hover:shadow-accent transition-all duration-300">
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                <div key={reason.title} className={`rounded-[2rem] border p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-accent ${index === 0 ? 'border-accent/30 bg-primary text-primary-foreground' : 'border-border bg-white'}`}>
+                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${index === 0 ? 'bg-white/10 text-green-300' : 'bg-accent/10 text-accent'}`}>
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-primary mb-2">{reason.title}</h3>
-                  <p className="text-muted-foreground leading-7 text-sm">{reason.description}</p>
+                  <h3 className={`text-xl font-semibold mb-2 ${index === 0 ? 'text-white' : 'text-primary'}`}>{reason.title}</h3>
+                  <p className={`leading-7 text-sm ${index === 0 ? 'text-white/75' : 'text-muted-foreground'}`}>{reason.description}</p>
                 </div>
               )
             })}
