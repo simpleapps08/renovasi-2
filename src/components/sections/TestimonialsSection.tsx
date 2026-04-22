@@ -24,13 +24,13 @@ const TestimonialsSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
-            Bukti sosial yang bikin lebih yakin
+            Testimoni dari homeowner
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
-            Orang tidak cukup diyakinkan dengan janji. Mereka butuh rasa percaya.
+            Hasil yang rapi memang penting, tapi rasa tenang selama proses juga tidak kalah penting
           </h2>
           <p className="text-lg text-muted-foreground leading-8">
-            Section testimonial perlu hadir untuk menjawab kekhawatiran paling umum, apakah hasilnya rapi, apakah orangnya enak diajak komunikasi, dan apakah prosesnya bikin ribet atau tidak.
+            Banyak customer akhirnya lanjut bukan cuma karena butuh diperbaiki, tapi karena merasa lebih nyaman dengan cara kami menjelaskan dan mengerjakan.
           </p>
         </div>
 

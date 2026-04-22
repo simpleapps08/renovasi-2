@@ -29,13 +29,13 @@ const ServicesSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mb-12">
           <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
-            Layanan utama yang harus lebih menonjol
+            Layanan utama Servisoo
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
-            Landing page harus bicara soal kebutuhan rumah yang nyata, bukan terlalu sibuk jual fitur sampingan
+            Layanan yang paling sering dicari pemilik rumah, kami buat lebih jelas sejak awal
           </h2>
           <p className="text-lg text-muted-foreground leading-8">
-            Fokus utama diarahkan ke layanan yang paling dekat dengan rasa sakit customer. Toko, AI, atau fitur tambahan sebaiknya jadi pendukung, bukan pemeran utama.
+            Fokus kami ada pada kebutuhan yang benar-benar terasa di rumah, mulai dari tampilan yang kusam, plafon yang butuh dibenahi, sampai area yang perlu dirapikan lagi.
           </p>
         </div>
 

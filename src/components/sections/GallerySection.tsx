@@ -7,7 +7,7 @@ const galleryItems = [
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80",
     title: "Pengecatan rumah tinggal",
     category: "Finishing rapi",
-    description: "Untuk calon customer, tampilan seperti ini lebih relevan karena menunjukkan rumah tinggal yang memang dekat dengan kebutuhan mereka.",
+    description: "Pengecatan rumah yang fokus pada hasil akhir yang lebih bersih, lebih segar, dan enak dilihat setiap hari.",
     result: "Rumah terasa lebih fresh dan proper"
   },
   {
@@ -15,7 +15,7 @@ const galleryItems = [
     image: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f1d?w=1200&q=80",
     title: "Area plafon dan interior",
     category: "Plafon",
-    description: "Visual pekerjaan rumah jauh lebih menjual daripada terlalu banyak foto proyek yang terasa komersial atau terlalu luas skopnya.",
+    description: "Perapian plafon dan area interior untuk membuat ruangan terasa lebih nyaman, lebih terang, dan lebih tertata.",
     result: "Area dalam rumah lebih rapi dan nyaman"
   },
   {
@@ -23,7 +23,7 @@ const galleryItems = [
     image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=80",
     title: "Renovasi finishing ruang",
     category: "Renovasi ringan",
-    description: "Gunakan portofolio yang berbicara soal rasa aman dan hasil akhir, bukan sekadar pamer proyek besar supaya kelihatan keren.",
+    description: "Cocok untuk area rumah yang perlu dibenahi tampilannya tanpa harus terasa seperti proyek besar yang melelahkan.",
     result: "Tampilan ruangan lebih enak dilihat"
   }
 ]
@@ -35,14 +35,14 @@ const GallerySection = () => {
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-end mb-12">
           <div>
             <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
-              Portofolio yang lebih meyakinkan
+              Beberapa contoh hasil pekerjaan
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
-              Untuk jasa rumah, bukti visual jauh lebih kuat daripada klaim manis yang kebanyakan
+              Untuk urusan rumah, bukti visual jauh lebih meyakinkan daripada janji manis
             </h2>
           </div>
           <p className="text-lg text-muted-foreground leading-8">
-            Section portofolio sebaiknya menampilkan pekerjaan yang dekat dengan kebutuhan homeowner, lengkap dengan hasil akhir yang rapi dan manfaat yang terasa. Kalau bisa nanti ditambah before-after dan testimoni per proyek, itu akan lebih gila konversinya.
+            Kami ingin Anda bisa langsung membayangkan hasil akhirnya. Karena itu, contoh pekerjaan yang ditampilkan dibuat dekat dengan kebutuhan rumah tinggal, bukan sekadar proyek yang kelihatan besar tapi terasa jauh dari kebutuhan sehari-hari.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ const GallerySection = () => {
 
         <div className="mt-10 flex flex-col items-center gap-4 text-center">
           <p className="max-w-2xl text-muted-foreground">
-            Setelah ini, section ini idealnya dikembangkan lagi dengan before-after, lokasi proyek, dan testimoni singkat biar trust makin tebal.
+            Punya area rumah yang kondisinya mirip? Ceritakan dulu kebutuhannya, nanti kami bantu arahkan solusi yang paling masuk akal.
           </p>
           <Button variant="outline" size="lg" asChild>
             <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer">Minta contoh pekerjaan yang relevan</a>

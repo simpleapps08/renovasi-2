@@ -7,15 +7,15 @@ const faqs = [
   },
   {
     question: "Kalau saya belum tahu scope pekerjaannya, apakah tetap bisa konsultasi?",
-    answer: "Bisa. Justru banyak customer datang dalam kondisi belum yakin harus mulai dari mana. Landing page perlu mendorong konsultasi awal, bukan memaksa orang sudah siap penuh dulu.",
+    answer: "Bisa. Banyak customer memang datang saat masih bingung harus mulai dari mana. Ceritakan dulu kebutuhannya, nanti kami bantu arahkan langkah awal yang paling masuk akal.",
   },
   {
     question: "Apakah harus langsung deal setelah konsultasi?",
-    answer: "Tidak. CTA sebaiknya terasa ringan dan aman. Fokusnya adalah membantu orang memahami kondisi rumahnya lebih dulu, lalu memutuskan langkah berikutnya dengan lebih tenang.",
+    answer: "Tidak. Tujuan konsultasi awal adalah membantu Anda memahami kondisi rumah lebih dulu, lalu memutuskan langkah berikutnya dengan lebih tenang.",
   },
   {
     question: "Apa yang bikin Servisoo beda dari tukang biasa?",
-    answer: "Servisoo perlu menekankan kualitas finishing, komunikasi yang jelas, proses yang tertata, dan rasa aman selama pengerjaan. Itu pembeda utamanya.",
+    answer: "Kami fokus pada hasil finishing yang rapi, komunikasi yang jelas, proses yang lebih tertata, dan rasa aman selama pengerjaan. Itu yang paling sering dirasakan beda oleh customer kami.",
   },
 ]
 
@@ -26,13 +26,13 @@ const FAQSection = () => {
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
-              FAQ yang menjawab keraguan utama
+              Pertanyaan yang sering ditanyakan
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
-              Orang belum tentu butuh harga dulu. Kadang mereka cuma ingin diyakinkan bahwa urusannya aman.
+              Sering kali orang bukan langsung cari harga, tapi ingin tahu dulu apakah urusannya aman ditangani
             </h2>
             <p className="text-lg text-muted-foreground leading-8">
-              FAQ di landing page ini bukan tempelan. Fungsinya untuk menurunkan keraguan sebelum orang klik WhatsApp atau minta konsultasi.
+              Kalau masih ada yang mengganjal, mulai dari sini. Setelah itu Anda bisa lanjut konsultasi dengan gambaran yang lebih jelas.
             </p>
           </div>
 

@@ -34,15 +34,15 @@ const HeroSection = () => {
         <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="max-w-4xl">
             <span className="mb-5 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur">
-              Partner perbaikan rumah yang rapi dan bisa dipercaya
+              Layanan perbaikan rumah yang rapi dan profesional
             </span>
 
             <h1 className="text-4xl font-bold leading-tight text-white md:text-6xl xl:text-7xl">
-              Renovasi, cat, dan plafon rumah yang <span className="text-green-400">rapi, profesional, dan tidak bikin ribet</span>
+              Butuh cat, plafon, atau renovasi rumah yang <span className="text-green-400">rapi, jelas, dan bisa dipercaya</span>?
             </h1>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-white/80 md:text-xl">
-              Servisoo membantu pemilik rumah yang ingin hasil bagus tanpa harus capek ngawasin terus. Mulai dari pengecatan, plafon, sampai renovasi finishing, prosesnya dibuat lebih jelas, rapi, dan enak diikuti.
+              Servisoo bantu pemilik rumah yang ingin hasil bagus tanpa harus capek ngawasin terus. Mulai dari pengecatan, plafon, sampai renovasi finishing, prosesnya dibuat lebih jelas, komunikatif, dan tetap fokus pada hasil akhir yang enak dilihat.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -70,11 +70,11 @@ const HeroSection = () => {
           <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-md lg:p-8">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-green-300">Kenapa ini lebih ngena</p>
-                <h2 className="mt-2 text-2xl font-bold text-white">Hero baru lebih conversion-oriented</h2>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-green-300">Kenapa pilih Servisoo</p>
+                <h2 className="mt-2 text-2xl font-bold text-white">Lebih nyaman untuk homeowner yang tidak mau ribet</h2>
               </div>
               <div className="rounded-2xl bg-green-400/15 px-4 py-2 text-sm font-semibold text-green-300">
-                Homeowner-first
+                Fokus kebutuhan rumah
               </div>
             </div>
 
@@ -103,8 +103,8 @@ const HeroSection = () => {
                 <div className="mt-1 text-xs text-white/70">Kepuasan klien</div>
               </div>
               <div className="rounded-2xl bg-black/20 px-3 py-4">
-                <div className="text-2xl font-bold text-green-300">Fast</div>
-                <div className="mt-1 text-xs text-white/70">Respons konsultasi</div>
+                <div className="text-2xl font-bold text-green-300">Cepat</div>
+                <div className="mt-1 text-xs text-white/70">Respons awal</div>
               </div>
             </div>
           </div>

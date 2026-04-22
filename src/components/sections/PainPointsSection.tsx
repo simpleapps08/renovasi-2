@@ -24,13 +24,13 @@ const PainPointsSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
-            Kenapa banyak orang masih ragu renovasi
+            Masalah yang sering bikin capek duluan
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
-            Masalahnya sering bukan cuma bangunan, tapi rasa was-was saat memilih yang mengerjakan
+            Urusan rumah sering terasa berat bukan cuma karena pekerjaannya, tapi karena takut salah pilih yang ngerjain
           </h2>
           <p className="text-lg text-muted-foreground">
-            Servisoo harus tampil sebagai partner yang bikin customer merasa aman sejak awal, bukan sekadar jasa yang terdengar teknis.
+            Banyak pemilik rumah ingin hasil rapi, tapi malas berhadapan dengan proses yang bikin bingung, molor, dan penuh drama.
           </p>
         </div>
 

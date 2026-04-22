@@ -19,7 +19,7 @@ const reasons = [
   {
     icon: Shield,
     title: "Lebih terasa aman dan profesional",
-    description: "Servisoo harus tampil sebagai partner yang bisa dipercaya untuk rumah sendiri, bukan sekadar pencari proyek.",
+    description: "Cocok untuk Anda yang ingin urusan rumah ditangani dengan lebih serius, lebih rapi, dan lebih bisa diandalkan.",
   },
 ]
 
@@ -30,13 +30,13 @@ const WhyChooseSection = () => {
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
             <span className="inline-flex rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold mb-5">
-              Kenapa Servisoo lebih layak dipilih
+              Kenapa banyak homeowner lebih tenang dengan Servisoo
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-primary mb-5 leading-tight">
-              Servisoo seharusnya terasa seperti partner perbaikan rumah yang rapi, bukan marketplace proyek yang dingin
+              Bukan sekadar cari tukang, Anda butuh partner kerja yang rapi dan enak diajak komunikasi
             </h2>
             <p className="text-lg text-muted-foreground leading-8">
-              Arah landing page baru menempatkan rasa aman, kerapian hasil, dan komunikasi yang jelas sebagai alasan utama orang menghubungi Servisoo.
+              Kami bantu urusan rumah terasa lebih ringan lewat proses yang jelas, hasil yang lebih rapi, dan komunikasi yang tidak bikin Anda menebak-nebak.
             </p>
           </div>
 
