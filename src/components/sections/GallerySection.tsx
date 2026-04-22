@@ -1,78 +1,78 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/enhanced-button"
 
-// Mock gallery data - will be managed by admin later
 const galleryItems = [
   {
     id: 1,
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-    title: "Renovasi Gedung Sekolah dan Kantor",
-    category: "Komersial",
-    description: "Transformasi gedung kantor dan sekolah menjadi ruang yang modern, fungsional, dan mendukung produktivitas."
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80",
+    title: "Pengecatan rumah tinggal",
+    category: "Finishing rapi",
+    description: "Untuk calon customer, tampilan seperti ini lebih relevan karena menunjukkan rumah tinggal yang memang dekat dengan kebutuhan mereka.",
+    result: "Rumah terasa lebih fresh dan proper"
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-    title: "Renovasi Rumah",
-    category: "Residensial",
-    description: "Mewujudkan hunian impian dengan desain interior terkini dan pengerjaan konstruksi yang berkualitas tinggi."
+    image: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f1d?w=1200&q=80",
+    title: "Area plafon dan interior",
+    category: "Plafon",
+    description: "Visual pekerjaan rumah jauh lebih menjual daripada terlalu banyak foto proyek yang terasa komersial atau terlalu luas skopnya.",
+    result: "Area dalam rumah lebih rapi dan nyaman"
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1579227114347-c0e556866f85?q=80&w=800",
-    title: "Pembuatan Taman (Landscape)",
-    category: "Landscape",
-    description: "Perancangan dan pembuatan taman estetik dengan konsep lanskap hijau yang memberikan kesejukan bagi properti Anda."
+    image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=80",
+    title: "Renovasi finishing ruang",
+    category: "Renovasi ringan",
+    description: "Gunakan portofolio yang berbicara soal rasa aman dan hasil akhir, bukan sekadar pamer proyek besar supaya kelihatan keren.",
+    result: "Tampilan ruangan lebih enak dilihat"
   }
 ]
 
 const GallerySection = () => {
   return (
-    <section id="gallery" className="py-24">
+    <section id="portfolio" className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
-            Portofolio Proyek
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Lihat hasil karya terbaik kami dalam berbagai kategori renovasi dan konstruksi
+        <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-end mb-12">
+          <div>
+            <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
+              Portofolio yang lebih meyakinkan
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
+              Untuk jasa rumah, bukti visual jauh lebih kuat daripada klaim manis yang kebanyakan
+            </h2>
+          </div>
+          <p className="text-lg text-muted-foreground leading-8">
+            Section portofolio sebaiknya menampilkan pekerjaan yang dekat dengan kebutuhan homeowner, lengkap dengan hasil akhir yang rapi dan manfaat yang terasa. Kalau bisa nanti ditambah before-after dan testimoni per proyek, itu akan lebih gila konversinya.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <div className="grid gap-6 lg:grid-cols-3">
           {galleryItems.map((item) => (
-            <Card key={item.id} className="project-card overflow-hidden border-0 shadow-md">
+            <Card key={item.id} className="overflow-hidden rounded-[2rem] border border-border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
               <div className="relative overflow-hidden">
-                <img 
-                  src={item.image} 
-                  alt={item.title}
-                  className="w-full h-64 object-cover transition-transform duration-300 hover:scale-110"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
-                    {item.category}
-                  </span>
+                <img src={item.image} alt={item.title} className="h-72 w-full object-cover transition-transform duration-500 hover:scale-105" />
+                <div className="absolute left-5 top-5 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-primary shadow-sm">
+                  {item.category}
                 </div>
               </div>
-              
+
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-primary mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  {item.description}
-                </p>
-                <Button variant="ghost" className="p-0 h-auto text-accent hover:text-accent-dark">
-                  Lihat Detail →
-                </Button>
+                <h3 className="text-2xl font-semibold text-primary mb-3">{item.title}</h3>
+                <p className="text-sm leading-7 text-muted-foreground mb-5">{item.description}</p>
+                <div className="rounded-2xl bg-secondary/40 px-4 py-4 text-sm font-medium text-primary">
+                  Hasil yang dijual: <span className="text-accent">{item.result}</span>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
-        
-        <div className="text-center mt-16">
-          <Button variant="outline" size="lg">
-            Lihat Semua Proyek
+
+        <div className="mt-10 flex flex-col items-center gap-4 text-center">
+          <p className="max-w-2xl text-muted-foreground">
+            Setelah ini, section ini idealnya dikembangkan lagi dengan before-after, lokasi proyek, dan testimoni singkat biar trust makin tebal.
+          </p>
+          <Button variant="outline" size="lg" asChild>
+            <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer">Minta contoh pekerjaan yang relevan</a>
           </Button>
         </div>
       </div>

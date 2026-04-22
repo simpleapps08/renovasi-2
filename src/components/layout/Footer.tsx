@@ -54,8 +54,8 @@ const Footer = () => {
       ])
       
       setFooterContent([
-        { id: '1', section: 'description', content: 'Servisoo adalah platform terpercaya untuk layanan renovasi dan pembangunan. Kami menghubungkan Anda dengan kontraktor profesional untuk mewujudkan rumah impian Anda.' },
-        { id: '2', section: 'services', content: 'Renovasi Rumah,Toko Bangunan,Desain & Perencanaan,Konsultasi RAB' }
+        { id: '1', section: 'description', content: 'Servisoo adalah partner perbaikan rumah untuk pengecatan, plafon, dan renovasi finishing dengan pendekatan yang lebih rapi, jelas, dan profesional.' },
+        { id: '2', section: 'services', content: 'Pengecatan Rumah,Plafon,Renovasi Finishing,Konsultasi Kebutuhan Rumah' }
       ])
       
       // Try to fetch from database if tables exist (for future use)
@@ -165,7 +165,7 @@ const Footer = () => {
 
   const getFooterDescription = () => {
     const description = footerContent.find(c => c.section === 'description')
-    return description ? description.content : 'Platform digital terdepan untuk renovasi rumah dan gedung. Dapatkan estimasi biaya yang akurat dan transparan untuk proyek impian Anda.'
+    return description ? description.content : 'Servisoo adalah partner perbaikan rumah untuk pengecatan, plafon, dan renovasi finishing dengan proses yang lebih jelas dan hasil yang rapi.'
   }
 
   const getServices = () => {
@@ -174,10 +174,10 @@ const Footer = () => {
       try {
         return JSON.parse(services.content)
       } catch {
-        return ['Renovasi Gedung Sekolah dan Kantor', 'Renovasi Rumah', 'Pembuatan Taman (Landscape)', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
+        return ['Pengecatan Rumah', 'Plafon', 'Renovasi Finishing', 'Konsultasi Kebutuhan Rumah']
       }
     }
-    return ['Renovasi Gedung Sekolah dan Kantor', 'Renovasi Rumah', 'Pembuatan Taman (Landscape)', 'Toko Bangunan', 'Desain & Perencanaan', 'Konsultasi RAB']
+    return ['Pengecatan Rumah', 'Plafon', 'Renovasi Finishing', 'Konsultasi Kebutuhan Rumah']
   }
 
   if (loading) {

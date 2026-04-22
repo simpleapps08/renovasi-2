@@ -1,90 +1,67 @@
 import { Button } from "@/components/ui/enhanced-button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Link } from "react-router-dom"
+import { ArrowRight, BadgeCheck, MessageCircle, PhoneCall } from "lucide-react"
 
 const CTASection = () => {
   return (
-    <section className="py-24 bg-secondary/30">
+    <section id="konsultasi" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
-        <Card className="gradient-card border-0 shadow-xl overflow-hidden">
-          <div className="relative">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--accent)) 2px, transparent 2px),
-                                 radial-gradient(circle at 75% 75%, hsl(var(--accent)) 2px, transparent 2px)`,
-                backgroundSize: '50px 50px'
-              }}></div>
-            </div>
-            
-            <CardContent className="relative p-12 md:p-16 text-center">
-              <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
-                Siap Memulai Proyek
-                <span className="block text-accent">Renovasi Anda?</span>
+        <Card className="overflow-hidden rounded-[2rem] border-0 shadow-xl gradient-card">
+          <CardContent className="grid gap-8 p-8 md:p-12 lg:grid-cols-[1.1fr_0.9fr] lg:p-16">
+            <div>
+              <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-5">
+                Final CTA yang lebih proper untuk jasa rumah
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold text-primary mb-5 leading-tight">
+                Jangan tunggu masalah rumah makin bikin capek. Ceritakan dulu, nanti Servisoo bantu analisa.
               </h2>
-              
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Dapatkan estimasi biaya yang akurat dengan simulasi RAB digital kami. 
-                Gratis, cepat, dan tanpa syarat.
+              <p className="text-lg text-muted-foreground leading-8 mb-8 max-w-2xl">
+                Untuk tahap awal, landing page harus menurunkan risiko dan mengajak ngobrol. CTA terbaik bukan terasa memaksa deal, tapi terasa aman untuk mulai konsultasi.
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+
+              <div className="flex flex-col gap-4 sm:flex-row">
                 <Button variant="cta" size="xl" asChild>
-                  <Link to="/auth">
-                    Mulai Simulasi RAB
-                    <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
+                  <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer">
+                    Konsultasi Gratis via WhatsApp
+                    <MessageCircle className="ml-2 h-5 w-5" />
+                  </a>
                 </Button>
-                
                 <Button variant="outline" size="xl" asChild>
-                  <a href="https://linktr.ee/servisoo.official" target="_blank" rel="noopener noreferrer">
-                    Konsultasi Gratis
+                  <a href="tel:+6282336548080">
+                    Hubungi Sekarang
+                    <PhoneCall className="ml-2 h-5 w-5" />
                   </a>
                 </Button>
               </div>
-              
-              {/* Trust Indicators */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pt-8 border-t border-border">
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+            </div>
+
+            <div className="rounded-[1.75rem] bg-primary p-8 text-primary-foreground">
+              <h3 className="text-2xl font-semibold mb-6">Apa yang perlu langsung terasa di akhir landing page</h3>
+              <div className="space-y-4">
+                {[
+                  "Bisa konsultasi dulu tanpa harus langsung deal",
+                  "Lebih terasa aman karena komunikasi dibuat jelas",
+                  "Fokus hasil rapi, bukan janji kosong yang kelewatan",
+                  "Cocok untuk pemilik rumah yang tidak mau ribet",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3 rounded-2xl bg-white/5 px-4 py-4">
+                    <BadgeCheck className="mt-0.5 h-5 w-5 text-green-400 shrink-0" />
+                    <p className="text-sm leading-7 text-white/80">{item}</p>
                   </div>
-                  <div>
-                    <div className="font-semibold text-primary">100% Gratis</div>
-                    <div className="text-sm text-muted-foreground">Tanpa biaya tersembunyi</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-primary">Hasil Instan</div>
-                    <div className="text-sm text-muted-foreground">Estimasi dalam hitungan menit</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-primary">Export PDF</div>
-                    <div className="text-sm text-muted-foreground">Laporan detail siap cetak</div>
-                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-sm font-medium uppercase tracking-[0.18em] text-green-300">CTA logic</p>
+                <p className="mt-3 text-sm leading-7 text-white/75">
+                  Primary CTA diarahkan ke konsultasi WhatsApp. Itu paling masuk akal untuk jasa rumah yang butuh ngobrol, foto kondisi, dan penjelasan singkat sebelum lanjut.
+                </p>
+                <div className="mt-4 inline-flex items-center text-sm font-semibold text-green-300">
+                  Conversion flow yang lebih natural <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </div>
-            </CardContent>
-          </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </section>
