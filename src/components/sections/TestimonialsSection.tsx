@@ -20,7 +20,7 @@ const testimonials = [
 
 const TestimonialsSection = () => {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
@@ -35,17 +35,17 @@ const TestimonialsSection = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {testimonials.map((testimonial) => (
-            <div key={testimonial.name} className="rounded-3xl border border-border bg-secondary/30 p-8 shadow-sm">
-              <div className="flex gap-1 text-warning mb-5">
+          {testimonials.map((testimonial, index) => (
+            <div key={testimonial.name} className={`rounded-[2rem] border p-8 shadow-sm ${index === 1 ? 'border-accent/30 bg-primary text-primary-foreground shadow-accent' : 'border-border bg-secondary/30'}`}>
+              <div className={`flex gap-1 mb-5 ${index === 1 ? 'text-green-300' : 'text-warning'}`}>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className="h-5 w-5 fill-current" />
                 ))}
               </div>
-              <p className="text-lg leading-8 text-foreground mb-6">“{testimonial.quote}”</p>
+              <p className={`text-lg leading-8 mb-6 ${index === 1 ? 'text-white' : 'text-foreground'}`}>“{testimonial.quote}”</p>
               <div>
-                <div className="font-semibold text-primary">{testimonial.name}</div>
-                <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                <div className={`font-semibold ${index === 1 ? 'text-white' : 'text-primary'}`}>{testimonial.name}</div>
+                <div className={`text-sm ${index === 1 ? 'text-white/65' : 'text-muted-foreground'}`}>{testimonial.role}</div>
               </div>
             </div>
           ))}

@@ -4,9 +4,9 @@ import { ArrowRight, BadgeCheck, MessageCircle, PhoneCall } from "lucide-react"
 
 const CTASection = () => {
   return (
-    <section id="konsultasi" className="py-20 bg-secondary/30">
+    <section id="konsultasi" className="py-24 bg-[linear-gradient(180deg,rgba(247,247,247,0.9)_0%,#ffffff_100%)]">
       <div className="container mx-auto px-4">
-        <Card className="overflow-hidden rounded-[2rem] border-0 shadow-xl gradient-card">
+        <Card className="overflow-hidden rounded-[2rem] border border-border/60 shadow-xl gradient-card">
           <CardContent className="grid gap-8 p-8 md:p-12 lg:grid-cols-[1.1fr_0.9fr] lg:p-16">
             <div>
               <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-5">
@@ -19,7 +19,7 @@ const CTASection = () => {
                 Anda bisa mulai dari cerita singkat atau kirim foto area rumah yang ingin dibenahi. Kami bantu arahkan langkah awal yang paling masuk akal, tanpa harus langsung buru-buru deal.
               </p>
 
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                 <Button variant="cta" size="xl" asChild>
                   <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer">
                     Konsultasi Gratis via WhatsApp
@@ -35,7 +35,7 @@ const CTASection = () => {
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] bg-primary p-8 text-primary-foreground">
+            <div className="rounded-[1.75rem] bg-primary p-8 text-primary-foreground shadow-primary">
               <h3 className="text-2xl font-semibold mb-6">Kenapa banyak orang mulai dari WhatsApp dulu</h3>
               <div className="space-y-4">
                 {[

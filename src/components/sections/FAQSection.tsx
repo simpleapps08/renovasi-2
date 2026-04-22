@@ -21,10 +21,10 @@ const faqs = [
 
 const FAQSection = () => {
   return (
-    <section className="py-20 bg-secondary/30">
+    <section className="py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
               Pertanyaan yang sering ditanyakan
             </span>
@@ -36,7 +36,7 @@ const FAQSection = () => {
             </p>
           </div>
 
-          <div className="rounded-3xl bg-white border border-border px-6 py-3 shadow-sm">
+          <div className="rounded-[2rem] bg-secondary/30 border border-border px-6 py-3 shadow-sm shadow-primary/5">
             <Accordion type="single" collapsible>
               {faqs.map((faq, index) => (
                 <AccordionItem key={faq.question} value={`item-${index}`}>

@@ -25,7 +25,7 @@ const services = [
 
 const ServicesSection = () => {
   return (
-    <section id="layanan" className="py-20 bg-secondary/30">
+    <section id="layanan" className="py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mb-12">
           <span className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-semibold text-accent mb-4">
@@ -40,18 +40,25 @@ const ServicesSection = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {services.map((service) => {
+          {services.map((service, index) => {
             const Icon = service.icon
             return (
-              <Card key={service.title} className="h-full rounded-[2rem] border border-border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-accent">
+              <Card key={service.title} className={`h-full rounded-[2rem] border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-accent ${index === 0 ? 'border-accent/30 shadow-accent' : 'border-border'}`}>
                 <CardHeader className="pb-4">
-                  <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-                    <Icon className="h-7 w-7" />
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                      <Icon className="h-7 w-7" />
+                    </div>
+                    {index === 0 && (
+                      <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                        Paling dicari
+                      </span>
+                    )}
                   </div>
                   <CardTitle className="text-2xl text-primary">{service.title}</CardTitle>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="flex h-full flex-col">
                   <p className="text-muted-foreground leading-7 mb-6">{service.description}</p>
                   <ul className="space-y-3 mb-8">
                     {service.features.map((feature) => (
@@ -62,7 +69,7 @@ const ServicesSection = () => {
                     ))}
                   </ul>
 
-                  <Button variant="service" className="w-full justify-between rounded-xl border border-accent/15 bg-secondary/40 px-5 py-6 text-left text-primary hover:bg-accent hover:text-white" asChild>
+                  <Button variant="service" className="mt-auto w-full justify-between rounded-xl border border-accent/15 bg-secondary/40 px-5 py-6 text-left text-primary hover:bg-accent hover:text-white" asChild>
                     <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer">
                       Konsultasikan kebutuhan ini
                       <ArrowRight className="h-4 w-4" />
