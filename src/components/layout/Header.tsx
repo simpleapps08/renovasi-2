@@ -29,21 +29,21 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#10241a]/92 text-white backdrop-blur supports-[backdrop-filter]:bg-[#10241a]/80">
-      <div className="container flex h-16 items-center justify-between gap-4">
+      <div className="container flex h-[72px] items-center justify-between gap-6">
         <Link to="/" className="flex items-center space-x-2 shrink-0">
           <img src="/logo.svg" alt="Servisoo Logo" className="h-10" />
         </Link>
 
         <nav className="hidden lg:flex items-center space-x-6">
           {navItems.map((item) => (
-            <a key={item.label} href={item.href} className="text-sm font-medium text-white/80 transition-colors hover:text-green-300">
+            <a key={item.label} href={item.href} className="text-sm font-medium text-white/90 transition-colors hover:text-green-300">
               {item.label}
             </a>
           ))}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/75 transition-colors hover:text-green-300">
+          <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/85 transition-colors hover:text-green-300">
             WhatsApp
           </a>
           <Button variant="hero" asChild>

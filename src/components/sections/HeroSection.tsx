@@ -31,9 +31,9 @@ const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-primary text-primary-foreground">
       <div className="absolute inset-0 z-0">
-        <img src={heroImage} alt="Servisoo home renovation service" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-black/72"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,197,94,0.28),transparent_30%)]"></div>
+        <img src={heroImage} alt="Servisoo home renovation service" className="h-full w-full scale-105 object-cover opacity-45" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,11,8,0.94)_0%,rgba(5,11,8,0.86)_42%,rgba(5,11,8,0.8)_100%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,36,26,0.35),transparent_34%)]"></div>
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-20 md:py-24 lg:py-28">
@@ -77,7 +77,7 @@ const HeroSection = () => {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-md lg:p-8">
+          <div className="rounded-[2rem] border border-white/10 bg-[#0f1f18]/78 p-6 shadow-2xl backdrop-blur-md lg:p-8">
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-green-300">Mulai dari yang paling gampang</p>

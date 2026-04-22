@@ -25,11 +25,30 @@ interface FooterContent {
   content: string
 }
 
+const fallbackSocialLinks: SocialMediaLink[] = [
+  { id: '1', platform: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/servisoo.official/', icon: 'instagram', display_order: 1 },
+  { id: '2', platform: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/servisoo.official', icon: 'facebook', display_order: 2 },
+  { id: '3', platform: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/@servisoo.official', icon: 'tiktok', display_order: 3 },
+  { id: '4', platform: 'x', name: 'Twitter/X', url: 'https://x.com/servisoo', icon: 'x', display_order: 4 },
+  { id: '5', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 5 }
+]
+
+const fallbackContactInfo: ContactInfo[] = [
+  { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
+  { id: '2', type: 'phone', label: 'Phone', value: '+6282336548080', formatted_value: '+62 823-3654-8080' },
+  { id: '3', type: 'whatsapp', label: 'WhatsApp', value: '+6285808675233', formatted_value: '+62 858-0867-5233' },
+  { id: '4', type: 'address', label: 'Alamat', value: 'Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318', formatted_value: null }
+]
+
+const fallbackFooterContent: FooterContent[] = [
+  { id: '1', section: 'description', content: 'Servisoo adalah partner perbaikan rumah untuk pengecatan, plafon, dan renovasi finishing dengan pendekatan yang lebih rapi, jelas, dan profesional.' },
+  { id: '2', section: 'services', content: 'Pengecatan Rumah,Plafon,Renovasi Finishing,Konsultasi Kebutuhan Rumah' }
+]
+
 const Footer = () => {
-  const [socialLinks, setSocialLinks] = useState<SocialMediaLink[]>([])
-  const [contactInfo, setContactInfo] = useState<ContactInfo[]>([])
-  const [footerContent, setFooterContent] = useState<FooterContent[]>([])
-  const [loading, setLoading] = useState(true)
+  const [socialLinks, setSocialLinks] = useState<SocialMediaLink[]>(fallbackSocialLinks)
+  const [contactInfo, setContactInfo] = useState<ContactInfo[]>(fallbackContactInfo)
+  const [footerContent, setFooterContent] = useState<FooterContent[]>(fallbackFooterContent)
   const location = useLocation()
   const isHomepage = location.pathname === '/'
 
@@ -39,27 +58,6 @@ const Footer = () => {
 
   const fetchFooterData = async () => {
     try {
-      // Set fallback data immediately since tables don't exist yet
-      setSocialLinks([
-        { id: '1', platform: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/servisoo.official/', icon: 'instagram', display_order: 1 },
-        { id: '2', platform: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/servisoo.official', icon: 'facebook', display_order: 2 },
-        { id: '3', platform: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/@servisoo.official', icon: 'tiktok', display_order: 3 },
-        { id: '4', platform: 'x', name: 'Twitter/X', url: 'https://x.com/servisoo', icon: 'x', display_order: 4 },
-        { id: '5', platform: 'youtube', name: 'YouTube', url: '#', icon: 'youtube', display_order: 5 }
-      ])
-      
-      setContactInfo([
-        { id: '1', type: 'email', label: 'Email', value: 'servisoo.dev@gmail.com', formatted_value: null },
-        { id: '2', type: 'phone', label: 'Phone', value: '+6282336548080', formatted_value: '+62 823-3654-8080' },
-        { id: '3', type: 'whatsapp', label: 'WhatsApp', value: '+6285808675233', formatted_value: '+62 858-0867-5233' },
-        { id: '4', type: 'address', label: 'Alamat', value: 'Jl. Pahlawan Gang Selorejo 2, No. 248 B, Kabupaten Tuban, Jawa Timur 62318', formatted_value: null }
-      ])
-      
-      setFooterContent([
-        { id: '1', section: 'description', content: 'Servisoo adalah partner perbaikan rumah untuk pengecatan, plafon, dan renovasi finishing dengan pendekatan yang lebih rapi, jelas, dan profesional.' },
-        { id: '2', section: 'services', content: 'Pengecatan Rumah,Plafon,Renovasi Finishing,Konsultasi Kebutuhan Rumah' }
-      ])
-      
       // Try to fetch from database if tables exist (for future use)
       try {
         const { data: socialData, error: socialError } = await supabase
@@ -96,8 +94,6 @@ const Footer = () => {
       
     } catch (error) {
       console.error('Error in fetchFooterData:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -180,18 +176,6 @@ const Footer = () => {
       }
     }
     return ['Pengecatan Rumah', 'Plafon', 'Renovasi Finishing', 'Konsultasi Kebutuhan Rumah']
-  }
-
-  if (loading) {
-    return (
-      <footer className="bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <p className="text-primary-foreground/60">Memuat...</p>
-          </div>
-        </div>
-      </footer>
-    )
   }
 
   return (
