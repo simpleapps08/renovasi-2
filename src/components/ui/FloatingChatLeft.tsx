@@ -22,8 +22,10 @@ const FloatingChatLeft = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const location = useLocation()
 
-  // Hide floating button on dashboard pages where BottomNav is present
+  // Hide floating button on pages where it becomes a distraction or conflicts with main CTA
   const isDashboard = location.pathname.startsWith('/dashboard')
+  const isHomepage = location.pathname === '/'
+  const shouldHideFloatingChat = isDashboard || isHomepage
 
   // URL n8n Chat Trigger untuk workflow Servisoo
   const N8N_CHAT_URL = 'https://n8n-djgsdd49u07h.siomay.sumopod.my.id/webhook/c684fd84-12fe-4349-b82f-f2087a78d314/chat'
@@ -273,8 +275,8 @@ const FloatingChatLeft = () => {
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
-      {/* Chat Button - Only show if NOT on dashboard */}
-      {!isDashboard && (
+      {/* Chat Button - Only show when it doesn't compete with the main page CTA */}
+      {!shouldHideFloatingChat && (
         <Button
           onClick={() => setIsOpen(true)}
           className="h-14 w-14 rounded-full shadow-2xl animate-bounce hover:animate-none hover:bg-[#128C7E] transition-all duration-300 group"

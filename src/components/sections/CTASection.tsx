@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/enhanced-button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, BadgeCheck, MessageCircle, PhoneCall } from "lucide-react"
+import { ArrowRight, BadgeCheck, MessageCircle } from "lucide-react"
 
 const CTASection = () => {
   return (
@@ -26,13 +26,11 @@ const CTASection = () => {
                     <MessageCircle className="ml-2 h-5 w-5" />
                   </a>
                 </Button>
-                <Button variant="outline" size="xl" asChild>
-                  <a href="tel:+6282336548080">
-                    Hubungi Sekarang
-                    <PhoneCall className="ml-2 h-5 w-5" />
-                  </a>
-                </Button>
               </div>
+
+              <p className="mt-4 text-sm text-muted-foreground">
+                Lebih enak mulai dari WhatsApp, karena Anda bisa langsung kirim foto area rumah yang ingin dibenahi.
+              </p>
             </div>
 
             <div className="rounded-[1.75rem] bg-primary p-8 text-primary-foreground shadow-primary">

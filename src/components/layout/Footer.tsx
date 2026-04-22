@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 
@@ -30,6 +30,8 @@ const Footer = () => {
   const [contactInfo, setContactInfo] = useState<ContactInfo[]>([])
   const [footerContent, setFooterContent] = useState<FooterContent[]>([])
   const [loading, setLoading] = useState(true)
+  const location = useLocation()
+  const isHomepage = location.pathname === '/'
 
   useEffect(() => {
     fetchFooterData()
@@ -195,7 +197,7 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className={`grid grid-cols-1 gap-8 ${isHomepage ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
@@ -204,35 +206,37 @@ const Footer = () => {
             <p className="text-primary-foreground/80 mb-6 max-w-md">
               {getFooterDescription()}
             </p>
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a 
-                  key={social.id}
-                  href={social.url} 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent transition-colors"
-                  title={social.name}
-                >
-                  {getSocialIcon(social.platform)}
-                </a>
-              ))}
-            </div>
+            {!isHomepage && (
+              <div className="flex space-x-4">
+                {socialLinks.map((social) => (
+                  <a 
+                    key={social.id}
+                    href={social.url} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent transition-colors"
+                    title={social.name}
+                  >
+                    {getSocialIcon(social.platform)}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Layanan</h3>
-            <ul className="space-y-2">
-              {getServices().map((service, index) => (
-                <li key={index}>
-                  <Link to="#" className="text-primary-foreground/80 hover:text-accent transition-colors">
-                    {service}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {!isHomepage && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Layanan</h3>
+              <ul className="space-y-2">
+                {getServices().map((service, index) => (
+                  <li key={index}>
+                    <span className="text-primary-foreground/80">{service}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           
           {/* Contact Info */}
           <div>
@@ -282,21 +286,32 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-primary-foreground/20 flex flex-col md:flex-row justify-between items-center">
+        <div className="mt-12 pt-8 border-t border-primary-foreground/20 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="text-primary-foreground/60 text-sm">
             © 2024 Servisoo. All rights reserved.
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link to="/privacy" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="/terms" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">
-              Terms of Service
-            </Link>
-            <Link to="/admin/login" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">
-              Admin
-            </Link>
-          </div>
+          {isHomepage ? (
+            <a
+              href="https://wa.me/6285808675233"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-primary-foreground/80 hover:text-accent transition-colors"
+            >
+              Konsultasi cepat via WhatsApp
+            </a>
+          ) : (
+            <div className="flex space-x-6 mt-0">
+              <Link to="/privacy" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">
+                Terms of Service
+              </Link>
+              <Link to="/admin/login" className="text-primary-foreground/60 hover:text-accent text-sm transition-colors">
+                Admin
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </footer>
