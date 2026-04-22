@@ -17,6 +17,10 @@ const faqs = [
     question: "Apa yang bikin Servisoo beda dari tukang biasa?",
     answer: "Kami fokus pada hasil finishing yang rapi, komunikasi yang jelas, proses yang lebih tertata, dan rasa aman selama pengerjaan. Itu yang paling sering dirasakan beda oleh customer kami.",
   },
+  {
+    question: "Apakah Servisoo melayani area Kabupaten Tuban?",
+    answer: "Ya. Servisoo fokus melayani kebutuhan renovasi rumah, pengecatan, plafon, dan perbaikan rumah untuk area Kabupaten Tuban dan sekitarnya.",
+  },
 ]
 
 const FAQSection = () => {

@@ -40,15 +40,15 @@ const HeroSection = () => {
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="max-w-4xl">
             <span className="mb-5 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur">
-              Home repair, painting, plafon, dan renovasi rumah
+              Jasa renovasi rumah, cat, dan plafon di Tuban
             </span>
 
             <h1 className="text-4xl font-bold leading-tight text-white md:text-6xl xl:text-7xl">
-              Rumah kusam, plafon rusak, atau area rumah mulai bikin was-was? <span className="text-green-400">Kami bantu rapikan cepat dan jelas biayanya.</span>
+              Butuh jasa renovasi rumah, cat, atau plafon di Tuban yang <span className="text-green-400">rapi dan jelas biayanya</span>?
             </h1>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-white/80 md:text-xl">
-              Servisoo bantu pemilik rumah yang ingin hasil rapi tanpa proses yang bikin capek. Cocok untuk pengecatan, plafon, dan renovasi rumah, dengan konsultasi awal, estimasi yang lebih transparan, dan pengerjaan yang tetap enak diajak koordinasi.
+              Servisoo membantu pemilik rumah di Kabupaten Tuban yang ingin hasil rapi tanpa proses yang bikin capek. Cocok untuk pengecatan, plafon, dan renovasi rumah, dengan konsultasi awal, estimasi yang lebih transparan, dan pengerjaan yang tetap enak diajak koordinasi.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
