@@ -1,123 +1,143 @@
 import { Button } from "@/components/ui/enhanced-button"
 import heroImage from "@/assets/hero-construction.jpg"
-import { CheckCircle2, Clock3, FileText, MessageCircle, ShieldCheck } from "lucide-react"
+import { CheckCircle2, MessageCircle, Star, Users, Clock } from "lucide-react"
 
 const trustPoints = [
-  "Estimasi jelas sebelum mulai",
-  "Pengerjaan rapi dan bersih",
-  "Cocok untuk cat, plafon, dan renovasi rumah",
-  "Melayani area Kabupaten Tuban dan sekitarnya",
-]
-
-const proofItems = [
-  {
-    icon: Clock3,
-    title: "Respon cepat",
-    description: "Mulai dari konsultasi awal sampai penjadwalan survey, arahnya dibuat cepat dan jelas.",
-  },
-  {
-    icon: FileText,
-    title: "Estimasi lebih transparan",
-    description: "Anda tidak dibiarkan menebak-nebak. Scope kerja dan gambaran biaya dibahas lebih terang.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Fokus hasil rapi",
-    description: "Targetnya bukan cuma selesai, tapi rumah terasa lebih proper dan enak dilihat setelah dikerjakan.",
-  },
+  "Estimasi jelas sebelum mulai — nggak ada biaya sembunyi",
+  "Pengerjaan rapi dan bersih — finishing diperhatikan",
+  "Cocok untuk cat, plafon, dan renovasi rumah di Tuban",
 ]
 
 const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-primary text-primary-foreground">
       <div className="absolute inset-0 z-0">
-        <img src={heroImage} alt="Servisoo home renovation service" className="h-full w-full scale-105 object-cover opacity-45" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,11,8,0.94)_0%,rgba(5,11,8,0.86)_42%,rgba(5,11,8,0.8)_100%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,36,26,0.35),transparent_34%)]"></div>
+        <img src={heroImage} alt="Servisoo home renovation service" className="h-full w-full scale-105 object-cover opacity-35" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,11,8,0.95)_0%,rgba(5,11,8,0.85)_50%,rgba(5,11,8,0.75)_100%)]"></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-20 md:py-24 lg:py-28">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="max-w-4xl">
-            <span className="mb-5 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur">
-              Jasa renovasi rumah, cat, dan plafon di Tuban
+      <div className="relative z-10 container mx-auto px-4 py-16 md:py-24">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-16">
+
+          {/* Left Column — Main Content */}
+          <div className="flex-1 max-w-3xl">
+            {/* Social Proof Bar — moved up */}
+            <div className="mb-6 flex flex-wrap items-center gap-5">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <span className="text-sm text-white/70">4.9 — 120+ ulasan</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-white/70">
+                <Users className="h-4 w-4" />
+                <span>500+ proyek sejak 2022</span>
+              </div>
+            </div>
+
+            {/* Badge */}
+            <span className="mb-5 inline-flex rounded-full border border-green-400/20 bg-green-400/10 px-4 py-2 text-sm font-semibold text-green-300 backdrop-blur">
+              Jasa renovasi, cat & plafon — Kabupaten Tuban
             </span>
 
-            <h1 className="text-4xl font-bold leading-tight text-white md:text-6xl xl:text-7xl">
-              Butuh jasa renovasi rumah, cat, atau plafon di Tuban yang <span className="text-green-400">rapi dan jelas biayanya</span>?
+            {/* Headline — Now a Statement */}
+            <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl xl:text-6xl">
+              Renovasi Rumah di Tuban — 
+              <span className="text-green-400"> Rapi, Jelas Biayanya, Tanpa Drama</span>
             </h1>
 
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-white/80 md:text-xl">
-              Servisoo membantu pemilik rumah di Kabupaten Tuban yang ingin hasil rapi tanpa proses yang bikin capek. Cocok untuk pengecatan, plafon, dan renovasi rumah, dengan konsultasi awal, estimasi yang lebih transparan, dan pengerjaan yang tetap enak diajak koordinasi.
+            {/* Subheadline — Tightened */}
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/75">
+              500+ pemilik rumah di Tuban udah percayain cat, plafon, dan renovasi rumahnya ke Servisoo. 
+              Konsultasi gratis lewat WhatsApp — kirim foto, kami analisa, kamu tau gambaran biaya tanpa drama.
             </p>
 
+            {/* CTA Row */}
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Button variant="cta" size="xl" asChild>
                 <a href="https://wa.me/6285808675233" target="_blank" rel="noopener noreferrer">
-                  Minta Survei & Estimasi
+                  Konsultasi Gratis via WA
                   <MessageCircle className="ml-2 h-5 w-5" />
                 </a>
               </Button>
-              <Button variant="outline" size="xl" className="border-white/30 bg-white/5 text-white hover:bg-white hover:text-primary" asChild>
-                <a href="#portfolio">Lihat Hasil Pekerjaan</a>
+              <Button variant="outline" size="xl" className="border-white/20 bg-white/5 text-white hover:bg-white hover:text-primary" asChild>
+                <a href="#portfolio">Lihat Hasil Pekerjaan →</a>
               </Button>
             </div>
 
-            <p className="mt-4 text-sm text-white/65">
-              Bisa mulai dari kirim foto area rumah yang ingin dibenahi lewat WhatsApp.
+            {/* Low Friction Note */}
+            <p className="mt-3 text-sm text-white/50">
+              Bisa mulai dari kirim foto area rumah — nggak perlu janjian dulu.
             </p>
 
-            <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {/* Trust Points — Simplified */}
+            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
               {trustPoints.map((point) => (
-                <div key={point} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-sm">
+                <div key={point} className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-400" />
-                  <span className="text-sm leading-6 text-white/85">{point}</span>
+                  <span className="text-sm leading-6 text-white/80">{point}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-[#0f1f18]/78 p-6 shadow-2xl backdrop-blur-md lg:p-8">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-green-300">Mulai dari yang paling gampang</p>
-                <h2 className="mt-2 text-2xl font-bold text-white">Kirim foto area rumah, lalu kami bantu arahkan langkah awalnya</h2>
-              </div>
-              <div className="rounded-2xl bg-green-400/15 px-4 py-2 text-sm font-semibold text-green-300">
-                WhatsApp-first
-              </div>
-            </div>
+          {/* Right Column — Trust Bar with Process */}
+          <div className="mt-12 lg:mt-0 lg:w-[380px] shrink-0">
+            <div className="rounded-[2rem] border border-white/10 bg-[#0f1f18]/90 p-6 shadow-2xl backdrop-blur-md">
+              <h3 className="text-lg font-bold text-white mb-5">
+                Cara Mulai — Selesai dalam 3 Langkah
+              </h3>
 
-            <div className="space-y-4">
-              {proofItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <div key={item.title} className="rounded-3xl border border-white/10 bg-black/20 p-5">
-                    <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-green-400/15 text-green-300">
-                      <Icon className="h-5 w-5" />
+              <div className="space-y-4">
+                {[
+                  {
+                    step: "1",
+                    title: "Kirim Foto",
+                    desc: "Foto area yang mau dibenahi lewat WhatsApp — gratis, nggak ada kewajiban.",
+                  },
+                  {
+                    step: "2",
+                    title: "Dapat Estimasi",
+                    desc: "Kami analisa dan kirim gambaran biaya + timeline pengerjaan.",
+                  },
+                  {
+                    step: "3",
+                    title: "Hasil Rapi",
+                    desc: "Setuju? Kami kerja. Nggak setuju? Nggak masalah. Tanpa drama.",
+                  },
+                ].map((item) => (
+                  <div key={item.step} className="flex gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-400/20 text-sm font-bold text-green-300">
+                      {item.step}
                     </div>
-                    <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-white/75">{item.description}</p>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{item.title}</p>
+                      <p className="mt-1 text-xs leading-6 text-white/60">{item.desc}</p>
+                    </div>
                   </div>
-                )
-              })}
-            </div>
+                ))}
+              </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-2xl bg-black/20 px-3 py-4">
-                <div className="text-2xl font-bold text-green-300">500+</div>
-                <div className="mt-1 text-xs text-white/70">Proyek ditangani</div>
-              </div>
-              <div className="rounded-2xl bg-black/20 px-3 py-4">
-                <div className="text-2xl font-bold text-green-300">98%</div>
-                <div className="mt-1 text-xs text-white/70">Kepuasan klien</div>
-              </div>
-              <div className="rounded-2xl bg-black/20 px-3 py-4">
-                <div className="text-2xl font-bold text-green-300">Jelas</div>
-                <div className="mt-1 text-xs text-white/70">Arah kerjanya</div>
+              {/* Stats Footer */}
+              <div className="mt-5 grid grid-cols-3 gap-3 rounded-2xl bg-black/20 p-4 text-center">
+                <div>
+                  <div className="text-xl font-bold text-green-300">500+</div>
+                  <div className="text-xs text-white/50">proyek selesai</div>
+                </div>
+                <div className="border-x border-white/10">
+                  <div className="text-xl font-bold text-green-300">98%</div>
+                  <div className="text-xs text-white/50">puas</div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-green-300">1-3</div>
+                  <div className="text-xs text-white/50">hari respon</div>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
